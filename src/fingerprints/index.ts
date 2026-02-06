@@ -302,6 +302,7 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'SonicWall|SonicWALL|NetExtender',
         weight: 10,
+        versionExtract: /SonicOS[- ]?(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -320,6 +321,7 @@ export const fingerprints: Fingerprint[] = [
         path: '/',
         match: 'SonicWall SSL VPN|Virtual Office',
         weight: 8,
+        versionExtract: /Version[: ]+(\d+\.\d+\.\d+-\d+)/i,
       },
       {
         type: 'certificate',
@@ -376,6 +378,7 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Citrix|NetScaler|nsg-',
         weight: 10,
+        versionExtract: /NetScaler[- ]?Gateway[- ]?(\d+\.\d+-\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -462,6 +465,7 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'F5|BIG-IP|Access Policy',
         weight: 10,
+        versionExtract: /BIG-IP[- ]?(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -497,6 +501,7 @@ export const fingerprints: Fingerprint[] = [
         path: '/',
         match: 'F5 Networks|BIG-IP|/vdesk/',
         weight: 9,
+        versionExtract: /Version[: ]+(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'certificate',
