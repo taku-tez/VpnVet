@@ -1,18 +1,42 @@
 /**
  * VPN Device Fingerprints Database
+ * Updated with official documentation research (2026-02-06)
  */
 
 import type { Fingerprint } from '../types.js';
 
 export const fingerprints: Fingerprint[] = [
   // ============================================================
-  // Fortinet FortiGate
+  // Fortinet FortiGate (5 CISA KEV CVEs)
+  // Official Docs: docs.fortinet.com, fortiguard.com/psirt
   // ============================================================
   {
     vendor: 'fortinet',
     product: 'FortiGate',
     patterns: [
-      // SSL VPN endpoints
+      // Most reliable: Server header (Shodan: ~490,000 devices)
+      {
+        type: 'header',
+        match: 'Server: xxxxxxxx-xxxxx',
+        weight: 10,
+      },
+      // SSL VPN cookies (definitive)
+      {
+        type: 'header',
+        match: 'SVPNCOOKIE',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'SVPNNETWORKCOOKIE',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'SVPNTMPCOOKIE',
+        weight: 9,
+      },
+      // SSL VPN login endpoints
       {
         type: 'endpoint',
         path: '/remote/login',
@@ -22,11 +46,19 @@ export const fingerprints: Fingerprint[] = [
       },
       {
         type: 'endpoint',
+        path: '/remote/logincheck',
+        method: 'GET',
+        match: 'remote|login',
+        weight: 8,
+      },
+      {
+        type: 'endpoint',
         path: '/login',
         method: 'GET',
         match: 'fgt_lang|ftnt-fortinet|NEUTRINO_THEME',
         weight: 10,
       },
+      // Language file (CVE-2018-13379 target)
       {
         type: 'endpoint',
         path: '/remote/fgt_lang?lang=en',
@@ -34,7 +66,33 @@ export const fingerprints: Fingerprint[] = [
         match: '"msg"\\s*:',
         weight: 9,
       },
-      // Version detection endpoints
+      // JS redirect pattern
+      {
+        type: 'body',
+        path: '/',
+        match: 'top\\.location="/remote/login"',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'top\\.location="/login"',
+        weight: 9,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/remote/login',
+        match: 'fgt_lang|fortigate|fgd_icon',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/login',
+        match: 'fgt_lang|ftnt-fortinet',
+        weight: 9,
+      },
+      // Version detection via API (requires auth usually)
       {
         type: 'endpoint',
         path: '/api/v2/monitor/system/firmware',
@@ -43,97 +101,101 @@ export const fingerprints: Fingerprint[] = [
         weight: 8,
         versionExtract: /"version"\s*:\s*"v?(\d+\.\d+\.\d+)"/,
       },
-      {
-        type: 'body',
-        path: '/remote/login',
-        match: 'sslvpn/js/webvpn',
-        weight: 8,
-        versionExtract: /FortiOS[- ]?v?(\d+\.\d+)/i,
-      },
-      {
-        type: 'body',
-        path: '/login',
-        match: 'fgt_lang|ftnt-fortinet',
-        weight: 9,
-        versionExtract: /version["\s:]+v?(\d+\.\d+)/i,
-      },
-      // Headers
-      {
-        type: 'header',
-        match: 'SVPNCOOKIE',
-        weight: 10,
-      },
-      {
-        type: 'header',
-        match: 'Server: xxxxxxxx-xxxxx',
-        weight: 5,
-      },
       // Certificate
       {
         type: 'certificate',
         match: 'FortiGate|Fortinet',
         weight: 7,
       },
-      // Favicon
-      {
-        type: 'favicon',
-        path: '/favicon.ico',
-        match: 'f8b3c21a',
-        weight: 6,
-      },
     ],
   },
 
   // ============================================================
-  // Palo Alto GlobalProtect
+  // Palo Alto GlobalProtect (2 CISA KEV CVEs)
+  // Official Docs: docs.paloaltonetworks.com
+  // Version detection: ETag epoch method (panos-scanner)
   // ============================================================
   {
     vendor: 'paloalto',
     product: 'GlobalProtect',
     patterns: [
-      // Portal endpoints
-      {
-        type: 'endpoint',
-        path: '/global-protect/portal/css/login.css',
-        method: 'GET',
-        match: 'global-protect|gp-portal',
-        weight: 10,
-      },
-      {
-        type: 'endpoint',
-        path: '/global-protect/login.esp',
-        method: 'GET',
-        match: 'GlobalProtect|pan-globalprotect',
-        weight: 10,
-        versionExtract: /PAN-OS[- ]?(\d+\.\d+)/i,
-      },
-      {
-        type: 'endpoint',
-        path: '/global-protect/portal/portal.cgi',
-        method: 'GET',
-        match: 'portal-prelogon|prelogon-response',
-        weight: 9,
-        versionExtract: /<portal-version>(\d+\.\d+\.\d+)<\/portal-version>/,
-      },
-      {
-        type: 'endpoint',
-        path: '/ssl-vpn/hipreport.esp',
-        method: 'GET',
-        match: 'Palo Alto|GlobalProtect',
-        weight: 9,
-      },
-      // Headers
+      // Server header (most reliable)
       {
         type: 'header',
         match: 'Server: PanWeb Server',
         weight: 10,
       },
+      // Prelogin endpoints (pre-auth, XML response)
       {
-        type: 'body',
-        path: '/global-protect/portal/portal.cgi',
-        match: 'portal-prelogon|prelogon-response',
+        type: 'endpoint',
+        path: '/global-protect/prelogin.esp',
+        method: 'GET',
+        match: 'prelogin-response|status',
+        weight: 10,
+        versionExtract: /<panos-version>([^<]+)<\/panos-version>/,
+      },
+      {
+        type: 'endpoint',
+        path: '/ssl-vpn/prelogin.esp',
+        method: 'GET',
+        match: 'prelogin-response',
+        weight: 10,
+        versionExtract: /<panos-version>([^<]+)<\/panos-version>/,
+      },
+      // Portal login
+      {
+        type: 'endpoint',
+        path: '/global-protect/login.esp',
+        method: 'GET',
+        match: 'GlobalProtect|pan-globalprotect|PAN_FORM_CONTENT',
+        weight: 10,
+      },
+      // Portal page
+      {
+        type: 'endpoint',
+        path: '/global-protect/portal/portal.esp',
+        method: 'GET',
+        match: 'GlobalProtect|Palo Alto',
+        weight: 9,
+      },
+      // HIP report (CVE-2024-3400 target)
+      {
+        type: 'endpoint',
+        path: '/global-protect/hipreport.esp',
+        method: 'GET',
+        match: 'Palo Alto|GlobalProtect|hip',
+        weight: 9,
+      },
+      // Static resources for ETag version detection
+      {
+        type: 'endpoint',
+        path: '/global-protect/portal/images/favicon.ico',
+        method: 'GET',
+        match: '.*',
+        weight: 7,
+      },
+      {
+        type: 'endpoint',
+        path: '/global-protect/portal/css/login.css',
+        method: 'GET',
+        match: 'global-protect|gp-portal',
         weight: 8,
       },
+      // XML body patterns
+      {
+        type: 'body',
+        path: '/global-protect/prelogin.esp',
+        match: '<prelogin-response>|<saml-auth-method>|<authentication-message>',
+        weight: 10,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: 'GlobalProtect|Palo Alto Networks|PaloAltoNetworks',
+        weight: 9,
+      },
+      // Certificate
       {
         type: 'certificate',
         match: 'Palo Alto Networks',
@@ -143,20 +205,30 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // Cisco AnyConnect / ASA
+  // Cisco AnyConnect / ASA (2 CISA KEV CVEs)
+  // Official Docs: cisco.com/c/en/us/support
+  // Version detection: /CSCOSSLC/config-auth XML
   // ============================================================
   {
     vendor: 'cisco',
     product: 'AnyConnect',
     patterns: [
+      // Definitive: Version info endpoint
+      {
+        type: 'endpoint',
+        path: '/CSCOSSLC/config-auth',
+        method: 'GET',
+        match: 'config-auth|version',
+        weight: 10,
+        versionExtract: /<version who="sg">([^<]+)<\/version>/,
+      },
       // Login endpoints
       {
         type: 'endpoint',
         path: '/+CSCOE+/logon.html',
         method: 'GET',
-        match: 'webvpn|anyconnect|AnyConnect',
+        match: 'webvpn|anyconnect|AnyConnect|csco_',
         weight: 10,
-        versionExtract: /AnyConnect[- ]?(\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -164,21 +236,45 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Cisco|WebVPN|ASA',
         weight: 9,
-        versionExtract: /Version[: ]+(\d+\.\d+\(\d+\))/i,
       },
+      // Translation table (CVE-2020-3452 target)
       {
         type: 'endpoint',
-        path: '/CACHE/sdesktop/install/binaries/',
+        path: '/+CSCOT+/translation-table',
         method: 'GET',
-        match: 'anyconnect|hostscan',
+        match: 'translation|cisco',
         weight: 8,
       },
-      // Headers with version info
+      // Pre-auth content path
+      {
+        type: 'endpoint',
+        path: '/+CSCOU+/',
+        method: 'GET',
+        match: '.*',
+        weight: 7,
+      },
+      // WebVPN cookies
       {
         type: 'header',
-        match: 'webvpn',
+        match: 'webvpnlogin',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'webvpn_portal',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'webvpncontext',
         weight: 9,
       },
+      {
+        type: 'header',
+        match: 'webvpn_as',
+        weight: 9,
+      },
+      // Protocol headers
       {
         type: 'header',
         match: 'X-Transcend-Version',
@@ -186,8 +282,28 @@ export const fingerprints: Fingerprint[] = [
       },
       {
         type: 'header',
-        match: 'Server: Cisco',
-        weight: 8,
+        match: 'X-Aggregate-Auth',
+        weight: 9,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: 'csco_ShowLoginForm|/\\+CSCOE\\+/|/\\+CSCOU\\+/',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'SSL VPN Service|Cisco ASA|Cisco Secure Firewall',
+        weight: 9,
+      },
+      // XML patterns
+      {
+        type: 'body',
+        path: '/CSCOSSLC/config-auth',
+        match: '<config-auth|<version who=',
+        weight: 10,
       },
       // Certificate
       {
@@ -199,37 +315,23 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // Pulse Secure (Now Ivanti)
+  // Pulse Secure (Now Ivanti) - Legacy branding
   // ============================================================
   {
     vendor: 'pulse',
     product: 'Pulse Connect Secure',
     patterns: [
-      // Login endpoints
+      // Cookie fingerprints (most reliable)
       {
-        type: 'endpoint',
-        path: '/dana-na/auth/url_default/welcome.cgi',
-        method: 'GET',
-        match: 'Pulse Secure|dana|welcome_msg',
+        type: 'header',
+        match: 'DSID',
         weight: 10,
-        versionExtract: /Pulse[- ]?Connect[- ]?Secure[- ]?(\d+\.\d+)/i,
       },
       {
-        type: 'endpoint',
-        path: '/dana-na/auth/url_admin/welcome.cgi',
-        method: 'GET',
-        match: 'dana|admin',
-        weight: 9,
+        type: 'header',
+        match: 'DSBrowserID',
+        weight: 10,
       },
-      {
-        type: 'endpoint',
-        path: '/dana/home/index.cgi',
-        method: 'GET',
-        match: 'Pulse|dana-na',
-        weight: 8,
-        versionExtract: /version["\s:]+(\d+\.\d+[R.]\d+)/i,
-      },
-      // Headers
       {
         type: 'header',
         match: 'DSSignInURL',
@@ -237,13 +339,62 @@ export const fingerprints: Fingerprint[] = [
       },
       {
         type: 'header',
-        match: 'DSID',
+        match: 'DSLastAccess',
         weight: 9,
       },
+      // Login endpoints
       {
-        type: 'header',
-        match: 'DSLastAccess',
+        type: 'endpoint',
+        path: '/dana-na/auth/url_default/welcome.cgi',
+        method: 'GET',
+        match: 'Pulse Secure|dana|welcome',
+        weight: 10,
+        versionExtract: /ProductVersion"\s+VALUE="([0-9.]+)"/,
+      },
+      {
+        type: 'endpoint',
+        path: '/dana-na/auth/url_admin/welcome.cgi',
+        method: 'GET',
+        match: 'dana|admin',
+        weight: 9,
+        versionExtract: /ProductVersion"\s+VALUE="([0-9.]+)"/,
+      },
+      // SAML endpoints (CVE-2024-21893 targets)
+      {
+        type: 'endpoint',
+        path: '/dana-ws/saml20.ws',
+        method: 'GET',
+        match: 'saml|dana',
         weight: 8,
+      },
+      {
+        type: 'endpoint',
+        path: '/dana-na/auth/saml-sso.cgi',
+        method: 'GET',
+        match: 'saml',
+        weight: 8,
+      },
+      // Host Checker (version detection)
+      {
+        type: 'endpoint',
+        path: '/dana-cached/hc/HostCheckerInstaller.osx',
+        method: 'HEAD',
+        match: '.*',
+        weight: 7,
+        versionExtract: /<string>([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)<\/string>/,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: '/dana-na/|/dana-cached/|Pulse Secure',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'PulseSecure_Host_Checker|danaparams|xsauth_token',
+        weight: 9,
       },
       // Certificate
       {
@@ -255,36 +406,206 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // Ivanti Connect Secure (Newer version of Pulse)
+  // Ivanti Connect Secure (4 CISA KEV CVEs)
+  // Official Docs: forums.ivanti.com/s/documentation
+  // Version format: XX.YRZ.W (e.g., 22.7R2.7)
   // ============================================================
   {
     vendor: 'ivanti',
     product: 'Connect Secure',
     patterns: [
+      // Cookie fingerprints (most reliable)
       {
-        type: 'endpoint',
-        path: '/dana-na/auth/url_default/welcome.cgi',
-        method: 'GET',
-        match: 'Ivanti|Connect Secure',
+        type: 'header',
+        match: 'DSID',
         weight: 10,
-        versionExtract: /Connect[- ]?Secure[- ]?(\d+\.\d+[R.]\d+)/i,
       },
       {
-        type: 'endpoint',
-        path: '/api/v1/totp/user-backup-code',
-        method: 'GET',
-        match: 'Ivanti',
-        weight: 8,
+        type: 'header',
+        match: 'DSBrowserID',
+        weight: 10,
       },
       {
         type: 'header',
         match: 'DSSignInURL',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'DSLastAccess',
         weight: 9,
       },
+      // Login endpoints
+      {
+        type: 'endpoint',
+        path: '/dana-na/auth/url_default/welcome.cgi',
+        method: 'GET',
+        match: 'Ivanti|Connect Secure|dana',
+        weight: 10,
+        versionExtract: /ProductVersion"\s+VALUE="([0-9.]+)"/,
+      },
+      {
+        type: 'endpoint',
+        path: '/dana-na/auth/url_admin/welcome.cgi?type=inter',
+        method: 'GET',
+        match: 'Ivanti|dana',
+        weight: 9,
+        versionExtract: /ProductVersion"\s+VALUE="([0-9.]+)"/,
+      },
+      // REST API (CVE-2024-21887 target)
+      {
+        type: 'endpoint',
+        path: '/api/v1/totp/user-backup-code',
+        method: 'GET',
+        match: 'Ivanti|totp',
+        weight: 8,
+      },
+      {
+        type: 'endpoint',
+        path: '/api/v1/license/keys-status',
+        method: 'GET',
+        match: 'license|keys',
+        weight: 8,
+      },
+      // SAML endpoints (CVE-2024-21893 SSRF targets)
+      {
+        type: 'endpoint',
+        path: '/dana-ws/saml20.ws',
+        method: 'GET',
+        match: 'saml',
+        weight: 8,
+      },
+      {
+        type: 'endpoint',
+        path: '/dana-na/auth/saml-logout.cgi',
+        method: 'GET',
+        match: 'saml',
+        weight: 8,
+      },
+      // Host Checker (version in binary)
+      {
+        type: 'endpoint',
+        path: '/dana-cached/hc/HostCheckerInstaller.osx',
+        method: 'HEAD',
+        match: '.*',
+        weight: 7,
+        versionExtract: /<string>([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)<\/string>/,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: '/dana-na/|Ivanti Connect Secure',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: '/dana-cached/|danaparams',
+        weight: 9,
+      },
+      // Certificate
       {
         type: 'certificate',
         match: 'Ivanti',
         weight: 8,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Citrix Gateway / NetScaler (3 CISA KEV CVEs)
+  // Official Docs: docs.citrix.com
+  // Version detection: ?v=<MD5hash> in HTML (fox-it/citrix-netscaler-triage)
+  // ============================================================
+  {
+    vendor: 'citrix',
+    product: 'Citrix Gateway',
+    patterns: [
+      // NSC_ cookies (most reliable)
+      {
+        type: 'header',
+        match: 'NSC_AAAC',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'NSC_TMAS',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'NSC_TMAA',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'NSC_',
+        weight: 9,
+      },
+      // Login pages
+      {
+        type: 'endpoint',
+        path: '/vpn/index.html',
+        method: 'GET',
+        match: 'Citrix|NetScaler|nsg-',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/logon/LogonPoint/index.html',
+        method: 'GET',
+        match: 'Citrix|logon/LogonPoint',
+        weight: 10,
+      },
+      // Plugin version info
+      {
+        type: 'endpoint',
+        path: '/vpn/pluginlist.xml',
+        method: 'GET',
+        match: 'plugin|version|Netscaler',
+        weight: 9,
+        versionExtract: /version="([^"]+)"/,
+      },
+      // EPA endpoints
+      {
+        type: 'endpoint',
+        path: '/epa/scripts/win/nsepa_setup.exe',
+        method: 'HEAD',
+        match: '.*',
+        weight: 8,
+      },
+      {
+        type: 'endpoint',
+        path: '/epa/epa.html',
+        method: 'GET',
+        match: 'epa|Citrix',
+        weight: 8,
+      },
+      // HTML patterns (includes version hash)
+      {
+        type: 'body',
+        path: '/vpn/index.html',
+        match: '\\?v=[a-f0-9]{32}',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Citrix Gateway|NetScaler Gateway|NetScaler AAA',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: '/vpn/images/AccessGateway\\.ico|frame-busting',
+        weight: 8,
+      },
+      // Certificate
+      {
+        type: 'certificate',
+        match: 'Citrix|NetScaler',
+        weight: 7,
       },
     ],
   },
@@ -360,53 +681,6 @@ export const fingerprints: Fingerprint[] = [
       {
         type: 'certificate',
         match: 'Check Point',
-        weight: 7,
-      },
-    ],
-  },
-
-  // ============================================================
-  // Citrix Gateway (NetScaler)
-  // ============================================================
-  {
-    vendor: 'citrix',
-    product: 'Citrix Gateway',
-    patterns: [
-      {
-        type: 'endpoint',
-        path: '/vpn/index.html',
-        method: 'GET',
-        match: 'Citrix|NetScaler|nsg-',
-        weight: 10,
-        versionExtract: /NetScaler[- ]?Gateway[- ]?(\d+\.\d+-\d+\.\d+)/i,
-      },
-      {
-        type: 'endpoint',
-        path: '/cgi/login',
-        method: 'GET',
-        match: 'Citrix Gateway|NetScaler',
-        weight: 9,
-      },
-      {
-        type: 'endpoint',
-        path: '/logon/LogonPoint/index.html',
-        method: 'GET',
-        match: 'Citrix|logon/LogonPoint',
-        weight: 10,
-      },
-      {
-        type: 'header',
-        match: 'NSC_',
-        weight: 9,
-      },
-      {
-        type: 'header',
-        match: 'Citrix',
-        weight: 10,
-      },
-      {
-        type: 'certificate',
-        match: 'Citrix|NetScaler',
         weight: 7,
       },
     ],

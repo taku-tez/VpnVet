@@ -2,6 +2,48 @@
 
 All notable changes to VpnVet will be documented in this file.
 
+## [0.6.0] - 2026-02-06
+
+### Added - Official Documentation Research
+Major fingerprint accuracy improvements based on official vendor documentation research.
+
+#### Fortinet FortiGate
+- `Server: xxxxxxxx-xxxxx` header (most reliable, ~490K devices on Shodan)
+- `SVPNNETWORKCOOKIE`, `SVPNTMPCOOKIE` cookies
+- JS redirect pattern `top.location="/remote/login"`
+
+#### Palo Alto GlobalProtect
+- `/global-protect/prelogin.esp`, `/ssl-vpn/prelogin.esp` (pre-auth XML)
+- `<prelogin-response>`, `<panos-version>` XML patterns
+- ETag epoch method for version detection (panos-scanner)
+
+#### Cisco AnyConnect/ASA
+- `/CSCOSSLC/config-auth` version endpoint (`<version who="sg">`)
+- `webvpnlogin`, `webvpn_portal`, `webvpncontext` cookies
+- `/+CSCOT+/`, `/+CSCOU+/` path patterns
+
+#### Ivanti Connect Secure (Pulse Secure)
+- `DSBrowserID` cookie (Shodan fingerprint)
+- SAML endpoints (`/dana-ws/saml20.ws`, `/dana-na/auth/saml-logout.cgi`)
+- REST API endpoints (CVE-2024-21887 targets)
+- HostCheckerInstaller.osx version extraction
+
+#### Citrix Gateway (NetScaler)
+- `NSC_AAAC`, `NSC_TMAS`, `NSC_TMAA` cookies
+- `/vpn/pluginlist.xml` plugin version info
+- `?v=<MD5hash>` version hash pattern (fox-it/citrix-netscaler-triage)
+- EPA endpoints
+
+### Improved
+- Higher confidence detection for top 5 VPN vendors (16 CISA KEV CVEs)
+- More accurate version extraction patterns
+- Pre-auth endpoint coverage for vulnerability scanning
+
+### Stats
+- 44 vendors
+- 41 CVEs (28 CISA KEV)
+- 122 tests (115 passed, 7 skipped)
+
 ## [0.3.0] - 2026-02-06
 
 ### Added
