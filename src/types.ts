@@ -121,6 +121,8 @@ export interface ScanOptions {
   userAgent?: string;
   followRedirects?: boolean;
   headers?: Record<string, string>;
+  fast?: boolean; // Stop on first match
+  vendor?: string; // Test specific vendor only
 }
 
 export interface Fingerprint {

@@ -21,6 +21,13 @@ export const fingerprints: Fingerprint[] = [
       },
       {
         type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'fgt_lang|ftnt-fortinet',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
         path: '/remote/fgt_lang?lang=en',
         method: 'GET',
         match: '"msg"\\s*:',
@@ -41,6 +48,12 @@ export const fingerprints: Fingerprint[] = [
         path: '/remote/login',
         match: 'sslvpn/js/webvpn',
         weight: 8,
+      },
+      {
+        type: 'body',
+        path: '/login',
+        match: 'fgt_lang|ftnt-fortinet|NEUTRINO_THEME',
+        weight: 9,
       },
       {
         type: 'certificate',

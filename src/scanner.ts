@@ -30,6 +30,8 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
   followRedirects: true,
   headers: {},
+  fast: false,
+  vendor: '',
 };
 
 interface HttpResponse {
@@ -96,8 +98,14 @@ export class VpnScanner {
   private async detectDevice(baseUrl: string): Promise<VpnDevice | undefined> {
     const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[] }> = new Map();
 
+    // Filter fingerprints if vendor specified
+    let fingerprintsToTest = fingerprints;
+    if (this.options.vendor) {
+      fingerprintsToTest = fingerprints.filter(f => f.vendor === this.options.vendor);
+    }
+
     // Test each fingerprint
-    for (const fingerprint of fingerprints) {
+    for (const fingerprint of fingerprintsToTest) {
       let totalScore = 0;
       const methods: DetectionMethod[] = [];
       const endpoints: string[] = [];
@@ -135,6 +143,20 @@ export class VpnScanner {
             methods: [...new Set(methods)],
             endpoints: [...new Set(endpoints)],
           });
+        }
+
+        // Fast mode: return immediately on first strong match
+        if (this.options.fast && totalScore >= 10) {
+          const maxPossibleScore = fingerprint.patterns.reduce((sum, p) => sum + p.weight, 0);
+          const confidence = Math.min(100, Math.round((totalScore / maxPossibleScore) * 100));
+          
+          return {
+            vendor: fingerprint.vendor,
+            product: fingerprint.product,
+            confidence,
+            detectionMethod: [...new Set(methods)],
+            endpoints: [...new Set(endpoints)],
+          };
         }
       }
     }

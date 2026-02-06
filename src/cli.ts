@@ -42,6 +42,7 @@ SCAN OPTIONS:
   --skip-version           Skip version detection
   -q, --quiet              Suppress progress output
   -v, --verbose            Verbose output
+  --vendor <name>          Test specific vendor only (faster)
 
 EXAMPLES:
   vpnvet scan vpn.example.com
@@ -336,6 +337,10 @@ async function main(): Promise<void> {
         options.quiet = true;
       } else if (arg === '-v' || arg === '--verbose') {
         options.verbose = true;
+      } else if (arg === '--vendor') {
+        options.vendor = args[++i];
+      } else if (arg === '--fast') {
+        options.fast = true;
       } else if (!arg.startsWith('-')) {
         targets.push(arg);
       }
