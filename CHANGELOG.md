@@ -2,6 +2,55 @@
 
 All notable changes to VpnVet will be documented in this file.
 
+## [0.7.0] - 2026-02-06
+
+### Added - Second Wave Official Documentation Research
+Major fingerprint improvements for 5 additional vendors (10 CISA KEV CVEs total).
+
+#### F5 BIG-IP APM
+- `Server: BigIP` header
+- `MRHSession`, `LastMRH_Session`, `MRHSHint` APM cookies (32-char hex)
+- `BIGipServer` LTM persistence cookie (can leak internal IP)
+- `/tmui/login.jsp` (CVE-2020-5902), `/mgmt/tm/util/bash` (CVE-2022-1388)
+- `/vdesk/webtop.eui`, `/public/include/js/agent_common.js`
+
+#### Juniper SRX / J-Web
+- Title: "Log In - Juniper Web Device Manager"
+- Favicon hash `2141724739` (Shodan)
+- `/dynamic-vpn` SSL VPN portal
+- `/webauth_operation.php` (CVE-2023-36844/45/46/47 target)
+- `/jsdm/ajax/logging_browse.php` (CVE-2022-22241 Phar)
+- Version format: `21.4R3`, `21.4R3-S4`
+
+#### SonicWall SMA
+- `Server: SonicWALL`, `Server: SMA/12.x` (version extractable)
+- SMA 100 vs SMA 1000 detection
+- `login_box_sonicwall` CSS class
+- `/cgi-bin/userLogin`, `/__api__/v1/logon`
+- Version format: `10.2.1.5-57sv` (SMA 100), `12.4.1` (SMA 1000)
+
+#### Zyxel USG/ZyWALL/ATP
+- Product names in HTML title (USG FLEX, ATP100, VPN50, etc.)
+- `zyFunction.js` script reference (high confidence)
+- `/zld_product_spec.js` version info
+- `/ztp/cgi-bin/parse_config.py` (CVE-2023-33012)
+- `authtok` auth cookie
+- Version format: `V5.39`, `V4.72`
+
+#### Sophos XG Firewall / SFOS
+- `UserPortalLogin.js` script reference
+- "Without JavaScript support user portal will not work" text
+- User Portal (443/4443), WebAdmin (4444), VPN Portal (443)
+- `/userportal/Controller`, `/webconsole/Controller`
+- Legacy `Cyberoam.c$rFt0k3n` CSRF token
+- Version format: `SFOS 19.5.3 MR-3`
+
+### Stats
+- 44 vendors with official documentation-based fingerprints
+- 41 CVEs (28 CISA KEV)
+- Top 10 vendors now research-backed
+- 122 tests (115 passed, 7 skipped)
+
 ## [0.6.0] - 2026-02-06
 
 ### Added - Official Documentation Research

@@ -611,38 +611,95 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // SonicWall
+  // SonicWall (1 CISA KEV CVE)
+  // Official Docs: psirt.global.sonicwall.com
+  // Products: SMA 100 Series, SMA 1000 Series
   // ============================================================
   {
     vendor: 'sonicwall',
     product: 'SMA',
     patterns: [
+      // Server header (most reliable, version extractable for SMA 1000)
+      {
+        type: 'header',
+        match: 'Server: SonicWALL',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'Server: SMA/',
+        weight: 10,
+        versionExtract: /SMA\/(\d+\.\d+(?:\.\d+)?)/,
+      },
+      {
+        type: 'header',
+        match: 'Server: SonicWALL SSL-VPN Web Server',
+        weight: 10,
+      },
+      // CGI endpoints
       {
         type: 'endpoint',
         path: '/cgi-bin/welcome',
         method: 'GET',
         match: 'SonicWall|SonicWALL|NetExtender',
         weight: 10,
-        versionExtract: /SonicOS[- ]?(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
         path: '/cgi-bin/userLogin',
-        method: 'GET',
-        match: 'SonicWall|sslvpn',
-        weight: 9,
+        method: 'POST',
+        match: 'SonicWall|sslvpn|userLogin',
+        weight: 10,
       },
       {
-        type: 'header',
-        match: 'SonicWall',
+        type: 'endpoint',
+        path: '/cgi-bin/supportLogin',
+        method: 'GET',
+        match: 'SonicWall|support',
+        weight: 8,
+      },
+      // REST API
+      {
+        type: 'endpoint',
+        path: '/__api__/v1/logon',
+        method: 'GET',
+        match: 'api|logon',
+        weight: 8,
+      },
+      // SonicOS 7.x login
+      {
+        type: 'endpoint',
+        path: '/sonicui/7/login/',
+        method: 'GET',
+        match: 'sonicui|login',
+        weight: 9,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: 'login_box_sonicwall|Virtual Office|NetExtender',
         weight: 10,
       },
       {
         type: 'body',
         path: '/',
-        match: 'SonicWall SSL VPN|Virtual Office',
+        match: 'SonicWall SSL VPN|SonicWALL Secure Access',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'WorkPlace|Appliance Management Console',
+        weight: 9,
+      },
+      // Version extraction
+      {
+        type: 'body',
+        path: '/',
+        match: 'SonicWall|SonicWALL',
         weight: 8,
-        versionExtract: /Version[: ]+(\d+\.\d+\.\d+-\d+)/i,
+        versionExtract: /(\d+\.\d+\.\d+\.\d+)-(\d+)sv/,
       },
       {
         type: 'certificate',
@@ -727,19 +784,55 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // F5 BIG-IP APM (Access Policy Manager)
+  // F5 BIG-IP APM (3 CISA KEV CVEs)
+  // Official Docs: my.f5.com, techdocs.f5.com
   // ============================================================
   {
     vendor: 'f5',
     product: 'BIG-IP APM',
     patterns: [
+      // Server header
+      {
+        type: 'header',
+        match: 'Server: BigIP',
+        weight: 10,
+      },
+      // APM session cookies (most reliable, 32-char hex)
+      {
+        type: 'header',
+        match: 'MRHSession',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'LastMRH_Session',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'MRHSHint',
+        weight: 9,
+      },
+      // LTM persistence cookie (can leak internal IP)
+      {
+        type: 'header',
+        match: 'BIGipServer',
+        weight: 10,
+      },
+      // APM endpoints
       {
         type: 'endpoint',
         path: '/my.policy',
         method: 'GET',
-        match: 'F5|BIG-IP|Access Policy',
+        match: 'F5|BIG-IP|Access Policy|302',
         weight: 10,
-        versionExtract: /BIG-IP[- ]?(\d+\.\d+\.\d+)/i,
+      },
+      {
+        type: 'endpoint',
+        path: '/vdesk/webtop.eui',
+        method: 'GET',
+        match: 'webtop|vdesk',
+        weight: 10,
       },
       {
         type: 'endpoint',
@@ -750,32 +843,45 @@ export const fingerprints: Fingerprint[] = [
       },
       {
         type: 'endpoint',
-        path: '/my.logout.php3',
+        path: '/public/include/js/agent_common.js',
         method: 'GET',
-        match: 'F5|BIG-IP',
+        match: 'agent|F5',
         weight: 8,
       },
+      // TMUI (CVE-2020-5902 target)
       {
-        type: 'header',
-        match: 'BIGipServer',
+        type: 'endpoint',
+        path: '/tmui/login.jsp',
+        method: 'GET',
+        match: 'tmui|BIG-IP|Configuration Utility',
         weight: 10,
       },
+      // iControl REST (CVE-2022-1388 target)
       {
-        type: 'header',
-        match: 'MRHSession',
-        weight: 9,
-      },
-      {
-        type: 'header',
-        match: 'F5',
+        type: 'endpoint',
+        path: '/mgmt/tm/util/bash',
+        method: 'GET',
+        match: 'mgmt|bash',
         weight: 8,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: 'apmui/page/logon|f5-w-|F5_ST=',
+        weight: 10,
       },
       {
         type: 'body',
         path: '/',
         match: 'F5 Networks|BIG-IP|/vdesk/',
         weight: 9,
-        versionExtract: /Version[: ]+(\d+\.\d+\.\d+)/i,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: '<title>BIG-IP',
+        weight: 10,
       },
       {
         type: 'certificate',
@@ -786,17 +892,59 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // Juniper SRX / Junos Pulse
+  // Juniper SRX / Junos (2 CISA KEV CVEs)
+  // Official Docs: supportportal.juniper.net
+  // J-Web: PHP-based, GoAhead httpd
   // ============================================================
   {
     vendor: 'juniper',
     product: 'SRX SSL VPN',
     patterns: [
+      // J-Web title (most reliable)
+      {
+        type: 'body',
+        path: '/',
+        match: 'Log In - Juniper Web Device Manager|Juniper Web Device Manager',
+        weight: 10,
+      },
+      // Dynamic VPN portal
+      {
+        type: 'endpoint',
+        path: '/dynamic-vpn',
+        method: 'GET',
+        match: 'Dynamic VPN|Juniper|download',
+        weight: 10,
+      },
+      // Vulnerable endpoints (CVE-2023-36844/45/46/47)
+      {
+        type: 'endpoint',
+        path: '/webauth_operation.php',
+        method: 'GET',
+        match: 'webauth|php',
+        weight: 9,
+      },
+      // CVE-2022-22241 Phar deserialization
+      {
+        type: 'endpoint',
+        path: '/jsdm/ajax/logging_browse.php',
+        method: 'GET',
+        match: 'logging|jsdm',
+        weight: 8,
+      },
+      // Error page (CVE-2022-22242 XSS)
+      {
+        type: 'endpoint',
+        path: '/error.php',
+        method: 'GET',
+        match: 'error|Juniper',
+        weight: 7,
+      },
+      // Dana endpoints (legacy Juniper Pulse)
       {
         type: 'endpoint',
         path: '/dana-na/',
         method: 'GET',
-        match: 'Juniper|Junos|SRX',
+        match: 'Juniper|Junos|SRX|dana',
         weight: 9,
       },
       {
@@ -806,15 +954,17 @@ export const fingerprints: Fingerprint[] = [
         match: 'Juniper|SRX|Dynamic VPN',
         weight: 10,
       },
+      // Headers
       {
         type: 'header',
         match: 'Juniper',
         weight: 10,
       },
+      // HTML body patterns
       {
         type: 'body',
         path: '/',
-        match: 'Juniper Networks|Dynamic VPN|SRX',
+        match: 'Juniper Networks|J-Web|junos',
         weight: 9,
       },
       {
@@ -822,16 +972,77 @@ export const fingerprints: Fingerprint[] = [
         match: 'Juniper',
         weight: 8,
       },
+      // Favicon hash (Shodan: 2141724739)
+      {
+        type: 'favicon',
+        path: '/favicon.ico',
+        match: '2141724739',
+        weight: 9,
+      },
     ],
   },
 
   // ============================================================
-  // Zyxel USG / ZyWALL VPN
+  // Zyxel USG / ZyWALL / ATP / USG FLEX (2 CISA KEV CVEs)
+  // Official Docs: www.zyxel.com/support
+  // ZLD Firmware, ExtJS-based UI
   // ============================================================
   {
     vendor: 'zyxel',
     product: 'USG/ZyWALL',
     patterns: [
+      // Product names in title (most reliable)
+      {
+        type: 'body',
+        path: '/',
+        match: '<title>(USG FLEX|ATP\\d+|VPN\\d+|ZyWALL)',
+        weight: 10,
+      },
+      // Zyxel-specific JavaScript (high confidence)
+      {
+        type: 'body',
+        path: '/',
+        match: 'zyFunction\\.js',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'zld_product_spec',
+        weight: 9,
+      },
+      // ExtJS Zyxel app
+      {
+        type: 'body',
+        path: '/',
+        match: 'Ext\\.create.*Zyxel',
+        weight: 9,
+      },
+      // Version info endpoint
+      {
+        type: 'endpoint',
+        path: '/zld_product_spec.js',
+        method: 'GET',
+        match: 'ZLD|version|product',
+        weight: 9,
+        versionExtract: /ZLD\s*V?(\d+\.\d+)/i,
+      },
+      // ZTP endpoints (CVE-2023-33012 target)
+      {
+        type: 'endpoint',
+        path: '/ztp/cgi-bin/parse_config.py',
+        method: 'GET',
+        match: 'ParseError|0xC0DE',
+        weight: 8,
+      },
+      {
+        type: 'endpoint',
+        path: '/ztp/cgi-bin/dumpztplog.py',
+        method: 'GET',
+        match: 'ztp|log',
+        weight: 8,
+      },
+      // CGI endpoints
       {
         type: 'endpoint',
         path: '/weblogin.cgi',
@@ -841,27 +1052,28 @@ export const fingerprints: Fingerprint[] = [
       },
       {
         type: 'endpoint',
-        path: '/ext-js/app.js',
+        path: '/cgi-bin/dispatcher.cgi',
         method: 'GET',
-        match: 'ZyXEL|Zyxel',
-        weight: 8,
-      },
-      {
-        type: 'endpoint',
-        path: '/webman/index.cgi',
-        method: 'GET',
-        match: 'ZyXEL|Zyxel|USG|ATP',
+        match: 'Zyxel|dispatcher',
         weight: 9,
       },
+      // Cookie
+      {
+        type: 'header',
+        match: 'authtok',
+        weight: 9,
+      },
+      // Headers
       {
         type: 'header',
         match: 'ZyXEL|Zyxel',
         weight: 10,
       },
+      // HTML body patterns
       {
         type: 'body',
         path: '/',
-        match: 'ZyXEL|Zyxel|ZyWALL|USG FLEX',
+        match: 'ZyXEL|Zyxel|ZyWALL|USG FLEX|ATP\\d+',
         weight: 9,
       },
       {
@@ -873,43 +1085,97 @@ export const fingerprints: Fingerprint[] = [
   },
 
   // ============================================================
-  // Sophos XG / UTM SSL VPN
+  // Sophos XG Firewall / SFOS (2 CISA KEV CVEs)
+  // Official Docs: docs.sophos.com
+  // SFOS: User Portal (443/4443), WebAdmin (4444), VPN Portal (443)
   // ============================================================
   {
     vendor: 'sophos',
     product: 'XG Firewall',
     patterns: [
+      // User Portal JavaScript (most reliable)
+      {
+        type: 'body',
+        path: '/',
+        match: 'UserPortalLogin\\.js',
+        weight: 10,
+      },
+      // Noscript messages (high confidence)
+      {
+        type: 'body',
+        path: '/',
+        match: 'Without JavaScript support user portal will not work',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Without JavaScript support web console will not work',
+        weight: 10,
+      },
+      // User Portal endpoints
       {
         type: 'endpoint',
         path: '/userportal/webpages/myaccount/login.jsp',
         method: 'GET',
-        match: 'Sophos|XG|UTM',
+        match: 'Sophos|XG|UTM|userportal',
         weight: 10,
       },
+      {
+        type: 'endpoint',
+        path: '/userportal/Controller',
+        method: 'GET',
+        match: 'Controller|mode=451',
+        weight: 9,
+      },
+      // WebAdmin Console (port 4444)
       {
         type: 'endpoint',
         path: '/webconsole/webpages/login.jsp',
         method: 'GET',
-        match: 'Sophos|XG Firewall',
+        match: 'Sophos|XG Firewall|webconsole',
         weight: 10,
       },
       {
         type: 'endpoint',
-        path: '/sslvpnLogin.html',
+        path: '/webconsole/Controller',
         method: 'GET',
-        match: 'Sophos|SSL VPN',
+        match: 'Controller|mode=151',
+        weight: 9,
+      },
+      // VPN Portal (SFOS 20.0+)
+      {
+        type: 'endpoint',
+        path: '/vpnportal/',
+        method: 'GET',
+        match: 'VPN|Sophos|portal',
+        weight: 9,
+      },
+      // Legacy Cyberoam patterns
+      {
+        type: 'body',
+        path: '/',
+        match: 'Cyberoam\\.c\\$rFt0k3n',
+        weight: 9,
+      },
+      // HTML title
+      {
+        type: 'body',
+        path: '/',
+        match: '<title>Sophos</title>',
+        weight: 9,
+      },
+      // HTML body patterns
+      {
+        type: 'body',
+        path: '/',
+        match: 'Sophos|XG Firewall|Cyberoam|sfos|sophos-firewall',
         weight: 9,
       },
       {
         type: 'header',
         match: 'Sophos',
         weight: 10,
-      },
-      {
-        type: 'body',
-        path: '/',
-        match: 'Sophos|XG Firewall|Cyberoam|sfos',
-        weight: 9,
       },
       {
         type: 'certificate',
