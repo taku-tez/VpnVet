@@ -1,7 +1,8 @@
 {
   "name": "vpnvet",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "VPN device detection and vulnerability scanner for ASM",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -9,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "jest --config jest.config.cjs",
     "lint": "eslint src/ --ext .ts",
     "prepublishOnly": "npm run build"
   },

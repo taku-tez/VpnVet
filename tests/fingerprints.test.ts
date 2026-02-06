@@ -9,6 +9,7 @@ describe('Fingerprints', () => {
     it('should have fingerprints for major vendors', () => {
       const vendors = getAllVendors();
       
+      // Original 9 vendors
       expect(vendors).toContain('fortinet');
       expect(vendors).toContain('paloalto');
       expect(vendors).toContain('cisco');
@@ -18,11 +19,21 @@ describe('Fingerprints', () => {
       expect(vendors).toContain('checkpoint');
       expect(vendors).toContain('citrix');
       expect(vendors).toContain('openvpn');
+      
+      // New vendors
+      expect(vendors).toContain('f5');
+      expect(vendors).toContain('juniper');
+      expect(vendors).toContain('zyxel');
+      expect(vendors).toContain('sophos');
+      expect(vendors).toContain('watchguard');
+      expect(vendors).toContain('barracuda');
+      expect(vendors).toContain('sangfor');
+      expect(vendors).toContain('array');
     });
 
-    it('should have at least 9 vendors', () => {
+    it('should have at least 17 vendors', () => {
       const vendors = getAllVendors();
-      expect(vendors.length).toBeGreaterThanOrEqual(9);
+      expect(vendors.length).toBeGreaterThanOrEqual(17);
     });
 
     it('should have valid fingerprint structure', () => {
@@ -112,6 +123,56 @@ describe('Fingerprints', () => {
         p => p.type === 'endpoint' && (p.path?.includes('vpn') || p.path?.includes('logon'))
       );
       expect(citrixPattern).toBeDefined();
+    });
+  });
+
+  describe('F5 BIG-IP patterns', () => {
+    it('should have APM endpoint patterns', () => {
+      const f5 = getFingerprintsByVendor('f5')[0];
+      expect(f5).toBeDefined();
+      expect(f5.product).toBe('BIG-IP APM');
+      
+      const policyPattern = f5.patterns.find(
+        p => p.type === 'endpoint' && p.path?.includes('my.policy')
+      );
+      expect(policyPattern).toBeDefined();
+    });
+
+    it('should have BIGipServer cookie pattern', () => {
+      const f5 = getFingerprintsByVendor('f5')[0];
+      const cookiePattern = f5.patterns.find(
+        p => p.type === 'header' && String(p.match).includes('BIGipServer')
+      );
+      expect(cookiePattern).toBeDefined();
+    });
+  });
+
+  describe('Zyxel patterns', () => {
+    it('should have USG/ZyWALL patterns', () => {
+      const zyxel = getFingerprintsByVendor('zyxel')[0];
+      expect(zyxel).toBeDefined();
+      expect(zyxel.product).toBe('USG/ZyWALL');
+    });
+  });
+
+  describe('Sophos patterns', () => {
+    it('should have XG Firewall patterns', () => {
+      const sophos = getFingerprintsByVendor('sophos')[0];
+      expect(sophos).toBeDefined();
+      expect(sophos.product).toBe('XG Firewall');
+    });
+  });
+
+  describe('Sangfor patterns', () => {
+    it('should have SSL VPN patterns', () => {
+      const sangfor = getFingerprintsByVendor('sangfor')[0];
+      expect(sangfor).toBeDefined();
+      
+      // Should detect Chinese manufacturer patterns
+      const chinesePattern = sangfor.patterns.find(
+        p => String(p.match).includes('深信服')
+      );
+      expect(chinesePattern).toBeDefined();
     });
   });
 });

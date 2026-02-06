@@ -318,6 +318,224 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: true,
     cisaKev: true,
   },
+
+  // ============================================================
+  // F5 BIG-IP
+  // ============================================================
+  {
+    cve: 'CVE-2022-1388',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'F5 BIG-IP iControl REST authentication bypass allowing RCE',
+    affected: [
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '16.1.0', versionEnd: '16.1.2.1' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '15.1.5' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.4.5' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.4' },
+    ],
+    references: [
+      'https://support.f5.com/csp/article/K23605346',
+      'https://nvd.nist.gov/vuln/detail/CVE-2022-1388',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2023-46747',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'F5 BIG-IP Configuration utility authentication bypass',
+    affected: [
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '17.1.0', versionEnd: '17.1.0' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '16.1.0', versionEnd: '16.1.4' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '15.1.10' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.5' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.5' },
+    ],
+    references: [
+      'https://my.f5.com/manage/s/article/K000137353',
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-46747',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2020-5902',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'F5 BIG-IP TMUI RCE vulnerability',
+    affected: [
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.0.0', versionEnd: '15.1.0.3' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.2.5' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.3.3' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '12.1.0', versionEnd: '12.1.5.1' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '11.6.1', versionEnd: '11.6.5.1' },
+    ],
+    references: [
+      'https://support.f5.com/csp/article/K52145254',
+      'https://nvd.nist.gov/vuln/detail/CVE-2020-5902',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Juniper
+  // ============================================================
+  {
+    cve: 'CVE-2023-36844',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Juniper Junos OS J-Web PHP external variable modification (chained with CVE-2023-36845 for RCE)',
+    affected: [
+      { vendor: 'juniper', product: 'SRX SSL VPN' },
+    ],
+    references: [
+      'https://supportportal.juniper.net/JSA72300',
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-36844',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2024-21591',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Juniper Junos OS J-Web out-of-bounds write allowing RCE',
+    affected: [
+      { vendor: 'juniper', product: 'SRX SSL VPN' },
+    ],
+    references: [
+      'https://supportportal.juniper.net/JSA75729',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-21591',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Zyxel
+  // ============================================================
+  {
+    cve: 'CVE-2022-30525',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Zyxel firewall unauthenticated command injection',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL' },
+    ],
+    references: [
+      'https://www.zyxel.com/support/Zyxel-security-advisory-for-OS-command-injection-vulnerability-of-firewalls.shtml',
+      'https://nvd.nist.gov/vuln/detail/CVE-2022-30525',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2023-28771',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Zyxel firewall OS command injection in IPSec VPN',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL' },
+    ],
+    references: [
+      'https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-remote-command-injection-vulnerability-of-firewalls',
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-28771',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Sophos
+  // ============================================================
+  {
+    cve: 'CVE-2022-3236',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Sophos Firewall code injection in User Portal and Webadmin',
+    affected: [
+      { vendor: 'sophos', product: 'XG Firewall' },
+    ],
+    references: [
+      'https://www.sophos.com/en-us/security-advisories/sophos-sa-20220923-sfos-rce',
+      'https://nvd.nist.gov/vuln/detail/CVE-2022-3236',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2020-12271',
+    severity: 'critical',
+    cvss: 10.0,
+    description: 'Sophos XG Firewall SQL injection (Asnarök)',
+    affected: [
+      { vendor: 'sophos', product: 'XG Firewall' },
+    ],
+    references: [
+      'https://www.sophos.com/en-us/security-advisories/sophos-sa-20200421-asnarok',
+      'https://nvd.nist.gov/vuln/detail/CVE-2020-12271',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Barracuda
+  // ============================================================
+  {
+    cve: 'CVE-2023-2868',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Barracuda ESG command injection via .tar file processing',
+    affected: [
+      { vendor: 'barracuda', product: 'CloudGen Firewall' },
+    ],
+    references: [
+      'https://www.barracuda.com/company/legal/esg-vulnerability',
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-2868',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Array Networks
+  // ============================================================
+  {
+    cve: 'CVE-2023-28461',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Array Networks AG/vxAG remote code execution',
+    affected: [
+      { vendor: 'array', product: 'AG Series' },
+    ],
+    references: [
+      'https://support.arraynetworks.net/prx/001/http/supportportal.arraynetworks.net/documentation/index.html?documentation/advisories.html',
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-28461',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Sangfor
+  // ============================================================
+  {
+    cve: 'CVE-2021-22005',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Sangfor SSL VPN arbitrary file write leading to RCE',
+    affected: [
+      { vendor: 'sangfor', product: 'SSL VPN' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2021-22005',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

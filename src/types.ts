@@ -22,6 +22,16 @@ export type VpnVendor =
   | 'ivanti'
   | 'openvpn'
   | 'wireguard'
+  | 'f5'
+  | 'juniper'
+  | 'zyxel'
+  | 'sophos'
+  | 'watchguard'
+  | 'barracuda'
+  | 'sangfor'
+  | 'array'
+  | 'netmotion'
+  | 'hillstone'
   | 'unknown';
 
 export type DetectionMethod =

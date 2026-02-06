@@ -15,8 +15,8 @@ describe('Vulnerabilities', () => {
       expect(vulnerabilities.length).toBeGreaterThan(0);
     });
 
-    it('should have at least 15 CVEs', () => {
-      expect(vulnerabilities.length).toBeGreaterThanOrEqual(15);
+    it('should have at least 25 CVEs', () => {
+      expect(vulnerabilities.length).toBeGreaterThanOrEqual(25);
     });
 
     it('should have valid vulnerability structure', () => {
@@ -59,6 +59,12 @@ describe('Vulnerabilities', () => {
       expect(kevCves).toContain('CVE-2019-19781'); // Citrix Shitrix
       expect(kevCves).toContain('CVE-2024-21762'); // FortiOS RCE
       expect(kevCves).toContain('CVE-2024-3400');  // PAN-OS RCE
+      
+      // New vendor CVEs
+      expect(kevCves).toContain('CVE-2022-1388');  // F5 BIG-IP
+      expect(kevCves).toContain('CVE-2022-30525'); // Zyxel
+      expect(kevCves).toContain('CVE-2022-3236');  // Sophos
+      expect(kevCves).toContain('CVE-2023-2868');  // Barracuda
     });
   });
 
