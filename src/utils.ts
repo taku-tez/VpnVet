@@ -4,6 +4,30 @@
 
 import type { Vulnerability, VpnVendor } from './types.js';
 
+// ============================================================
+// Logging (xxVet unified pattern)
+// ============================================================
+
+let verbose = false;
+
+export function setVerbose(v: boolean): void {
+  verbose = v;
+}
+
+export function logProgress(message: string): void {
+  if (verbose) {
+    console.error(`[vpnvet] ${message}`);
+  }
+}
+
+export function logError(message: string): void {
+  console.error(`[vpnvet] ERROR: ${message}`);
+}
+
+export function logInfo(message: string): void {
+  console.error(`[vpnvet] ${message}`);
+}
+
 /**
  * Normalize a target URL
  */

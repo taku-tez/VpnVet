@@ -7,12 +7,18 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { VpnScanner } from './scanner.js';
 import { fingerprints } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
-import type { ScanResult, ScanOptions, ReportOptions } from './types.js';
+import { setVerbose, logProgress, logError, logInfo, formatVendorName } from './utils.js';
+import type { ScanResult, ScanOptions } from './types.js';
 
-const VERSION = '0.1.0';
+// Get version from package.json
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkgPath = path.join(__dirname, '..', 'package.json');
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+const VERSION = pkg.version;
 
 interface CliOptions extends ScanOptions {
   format: 'json' | 'sarif' | 'csv' | 'table';
@@ -71,7 +77,8 @@ function listVendors(): void {
   }
   
   for (const [vendor, products] of vendorProducts) {
-    console.log(`  ${vendor}`);
+    const displayName = formatVendorName(vendor as Parameters<typeof formatVendorName>[0]);
+    console.log(`  ${displayName} (${vendor})`);
     for (const product of products) {
       console.log(`    - ${product}`);
     }
@@ -347,12 +354,17 @@ async function main(): Promise<void> {
     }
     
     if (targets.length === 0) {
-      console.error('No targets specified. Provide a target or use --targets <file>');
+      logError('No targets specified. Provide a target or use --targets <file>');
       process.exit(1);
     }
     
+    // Set verbose mode for logging
+    if (options.verbose) {
+      setVerbose(true);
+    }
+    
     if (!options.quiet) {
-      console.log(`VpnVet v${VERSION} - Scanning ${targets.length} target(s)...\n`);
+      logInfo(`VpnVet v${VERSION} - Scanning ${targets.length} target(s)...`);
     }
     
     const scanner = new VpnScanner(options);

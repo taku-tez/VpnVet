@@ -10,15 +10,20 @@ import * as tls from 'node:tls';
 import { URL } from 'node:url';
 import { fingerprints } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
+import {
+  normalizeUrl,
+  compareVersions,
+  isVersionAffected,
+  getSeverityWeight,
+  getConfidenceWeight,
+} from './utils.js';
 import type {
   ScanResult,
   ScanOptions,
   VpnDevice,
-  VpnVendor,
   Fingerprint,
   FingerprintPattern,
   VulnerabilityMatch,
-  Vulnerability,
   DetectionMethod,
 } from './types.js';
 
@@ -57,7 +62,7 @@ export class VpnScanner {
 
     try {
       // Normalize target URL
-      const baseUrl = this.normalizeUrl(target);
+      const baseUrl = normalizeUrl(target);
       
       // Try to detect VPN device
       const device = await this.detectDevice(baseUrl);
@@ -86,13 +91,6 @@ export class VpnScanner {
     }
     
     return results;
-  }
-
-  private normalizeUrl(target: string): string {
-    if (!target.startsWith('http://') && !target.startsWith('https://')) {
-      return `https://${target}`;
-    }
-    return target;
   }
 
   private async detectDevice(baseUrl: string): Promise<VpnDevice | undefined> {
@@ -397,12 +395,12 @@ export class VpnScanner {
 
         if (device.version) {
           const affectedVersion = vuln.affected.find(
-            a => a.vendor === device.vendor && this.isVersionAffected(device.version!, a)
+            a => a.vendor === device.vendor && isVersionAffected(device.version!, a)
           );
 
           if (affectedVersion) {
             confidence = 'confirmed';
-            evidence = `Version ${device.version} is within affected range`;
+            evidence = `Version ${device.version} is in affected range`;
           } else {
             // Version detected but not in affected range - skip
             continue;
@@ -425,48 +423,13 @@ export class VpnScanner {
 
     // Sort by severity and confidence
     return matches.sort((a, b) => {
-      const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-      const confidenceOrder = { confirmed: 0, likely: 1, potential: 2 };
-      
-      const severityDiff = severityOrder[a.vulnerability.severity] - severityOrder[b.vulnerability.severity];
+      const severityDiff = getSeverityWeight(a.vulnerability.severity) - getSeverityWeight(b.vulnerability.severity);
       if (severityDiff !== 0) return severityDiff;
       
-      return confidenceOrder[a.confidence] - confidenceOrder[b.confidence];
+      return getConfidenceWeight(a.confidence) - getConfidenceWeight(b.confidence);
     });
   }
 
-  private isVersionAffected(
-    version: string,
-    affected: { versionStart?: string; versionEnd?: string; versionExact?: string }
-  ): boolean {
-    if (affected.versionExact) {
-      return version === affected.versionExact;
-    }
-
-    if (affected.versionStart && affected.versionEnd) {
-      return this.compareVersions(version, affected.versionStart) >= 0 &&
-             this.compareVersions(version, affected.versionEnd) <= 0;
-    }
-
-    return false;
-  }
-
-  private compareVersions(a: string, b: string): number {
-    const partsA = a.split(/[.\-]/).map(p => parseInt(p, 10) || 0);
-    const partsB = b.split(/[.\-]/).map(p => parseInt(p, 10) || 0);
-    
-    const maxLen = Math.max(partsA.length, partsB.length);
-    
-    for (let i = 0; i < maxLen; i++) {
-      const numA = partsA[i] || 0;
-      const numB = partsB[i] || 0;
-      
-      if (numA < numB) return -1;
-      if (numA > numB) return 1;
-    }
-    
-    return 0;
-  }
 }
 
 export async function scan(target: string, options?: ScanOptions): Promise<ScanResult> {
