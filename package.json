@@ -1,0 +1,43 @@
+{
+  "name": "vpnvet",
+  "version": "0.1.0",
+  "description": "VPN device detection and vulnerability scanner for ASM",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "vpnvet": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "lint": "eslint src/ --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "vpn",
+    "security",
+    "vulnerability",
+    "scanner",
+    "asm",
+    "fortigate",
+    "palo-alto",
+    "cisco",
+    "pulse-secure"
+  ],
+  "author": "taku-tez",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taku-tez/VpnVet.git"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
