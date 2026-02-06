@@ -12,18 +12,19 @@ export const fingerprints: Fingerprint[] = [
     vendor: 'fortinet',
     product: 'FortiGate',
     patterns: [
+      // SSL VPN endpoints
       {
         type: 'endpoint',
         path: '/remote/login',
         method: 'GET',
-        match: 'FortiToken|fortinet|fgt_lang',
+        match: 'FortiToken|fortinet|fgt_lang|sslvpn',
         weight: 10,
       },
       {
         type: 'endpoint',
         path: '/login',
         method: 'GET',
-        match: 'fgt_lang|ftnt-fortinet',
+        match: 'fgt_lang|ftnt-fortinet|NEUTRINO_THEME',
         weight: 10,
       },
       {
@@ -33,6 +34,30 @@ export const fingerprints: Fingerprint[] = [
         match: '"msg"\\s*:',
         weight: 9,
       },
+      // Version detection endpoints
+      {
+        type: 'endpoint',
+        path: '/api/v2/monitor/system/firmware',
+        method: 'GET',
+        match: 'current|version',
+        weight: 8,
+        versionExtract: /"version"\s*:\s*"v?(\d+\.\d+\.\d+)"/,
+      },
+      {
+        type: 'body',
+        path: '/remote/login',
+        match: 'sslvpn/js/webvpn',
+        weight: 8,
+        versionExtract: /FortiOS[- ]?v?(\d+\.\d+)/i,
+      },
+      {
+        type: 'body',
+        path: '/login',
+        match: 'fgt_lang|ftnt-fortinet',
+        weight: 9,
+        versionExtract: /version["\s:]+v?(\d+\.\d+)/i,
+      },
+      // Headers
       {
         type: 'header',
         match: 'SVPNCOOKIE',
@@ -43,27 +68,17 @@ export const fingerprints: Fingerprint[] = [
         match: 'Server: xxxxxxxx-xxxxx',
         weight: 5,
       },
-      {
-        type: 'body',
-        path: '/remote/login',
-        match: 'sslvpn/js/webvpn',
-        weight: 8,
-      },
-      {
-        type: 'body',
-        path: '/login',
-        match: 'fgt_lang|ftnt-fortinet|NEUTRINO_THEME',
-        weight: 9,
-      },
+      // Certificate
       {
         type: 'certificate',
         match: 'FortiGate|Fortinet',
         weight: 7,
       },
+      // Favicon
       {
         type: 'favicon',
         path: '/favicon.ico',
-        match: 'f8b3c21a', // FortiGate favicon hash (partial)
+        match: 'f8b3c21a',
         weight: 6,
       },
     ],
@@ -76,6 +91,7 @@ export const fingerprints: Fingerprint[] = [
     vendor: 'paloalto',
     product: 'GlobalProtect',
     patterns: [
+      // Portal endpoints
       {
         type: 'endpoint',
         path: '/global-protect/portal/css/login.css',
@@ -89,6 +105,15 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'GlobalProtect|pan-globalprotect',
         weight: 10,
+        versionExtract: /PAN-OS[- ]?(\d+\.\d+)/i,
+      },
+      {
+        type: 'endpoint',
+        path: '/global-protect/portal/portal.cgi',
+        method: 'GET',
+        match: 'portal-prelogon|prelogon-response',
+        weight: 9,
+        versionExtract: /<portal-version>(\d+\.\d+\.\d+)<\/portal-version>/,
       },
       {
         type: 'endpoint',
@@ -97,6 +122,7 @@ export const fingerprints: Fingerprint[] = [
         match: 'Palo Alto|GlobalProtect',
         weight: 9,
       },
+      // Headers
       {
         type: 'header',
         match: 'Server: PanWeb Server',
@@ -123,19 +149,22 @@ export const fingerprints: Fingerprint[] = [
     vendor: 'cisco',
     product: 'AnyConnect',
     patterns: [
+      // Login endpoints
       {
         type: 'endpoint',
         path: '/+CSCOE+/logon.html',
         method: 'GET',
         match: 'webvpn|anyconnect|AnyConnect',
         weight: 10,
+        versionExtract: /AnyConnect[- ]?(\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
         path: '/+webvpn+/index.html',
         method: 'GET',
-        match: 'Cisco|WebVPN',
+        match: 'Cisco|WebVPN|ASA',
         weight: 9,
+        versionExtract: /Version[: ]+(\d+\.\d+\(\d+\))/i,
       },
       {
         type: 'endpoint',
@@ -144,6 +173,7 @@ export const fingerprints: Fingerprint[] = [
         match: 'anyconnect|hostscan',
         weight: 8,
       },
+      // Headers with version info
       {
         type: 'header',
         match: 'webvpn',
@@ -154,6 +184,12 @@ export const fingerprints: Fingerprint[] = [
         match: 'X-Transcend-Version',
         weight: 10,
       },
+      {
+        type: 'header',
+        match: 'Server: Cisco',
+        weight: 8,
+      },
+      // Certificate
       {
         type: 'certificate',
         match: 'Cisco|ASA',
@@ -169,12 +205,14 @@ export const fingerprints: Fingerprint[] = [
     vendor: 'pulse',
     product: 'Pulse Connect Secure',
     patterns: [
+      // Login endpoints
       {
         type: 'endpoint',
         path: '/dana-na/auth/url_default/welcome.cgi',
         method: 'GET',
         match: 'Pulse Secure|dana|welcome_msg',
         weight: 10,
+        versionExtract: /Pulse[- ]?Connect[- ]?Secure[- ]?(\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -189,7 +227,9 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Pulse|dana-na',
         weight: 8,
+        versionExtract: /version["\s:]+(\d+\.\d+[R.]\d+)/i,
       },
+      // Headers
       {
         type: 'header',
         match: 'DSSignInURL',
@@ -200,6 +240,12 @@ export const fingerprints: Fingerprint[] = [
         match: 'DSID',
         weight: 9,
       },
+      {
+        type: 'header',
+        match: 'DSLastAccess',
+        weight: 8,
+      },
+      // Certificate
       {
         type: 'certificate',
         match: 'Pulse Secure|Ivanti',
@@ -221,6 +267,7 @@ export const fingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Ivanti|Connect Secure',
         weight: 10,
+        versionExtract: /Connect[- ]?Secure[- ]?(\d+\.\d+[R.]\d+)/i,
       },
       {
         type: 'endpoint',

@@ -96,7 +96,7 @@ export class VpnScanner {
   }
 
   private async detectDevice(baseUrl: string): Promise<VpnDevice | undefined> {
-    const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[] }> = new Map();
+    const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string }> = new Map();
 
     // Filter fingerprints if vendor specified
     let fingerprintsToTest = fingerprints;
@@ -109,12 +109,18 @@ export class VpnScanner {
       let totalScore = 0;
       const methods: DetectionMethod[] = [];
       const endpoints: string[] = [];
+      let detectedVersion: string | undefined;
 
       for (const pattern of fingerprint.patterns) {
         const matched = await this.testPattern(baseUrl, pattern);
         
         if (matched.success) {
           totalScore += pattern.weight;
+          
+          // Track version if detected
+          if (matched.version && !detectedVersion) {
+            detectedVersion = matched.version;
+          }
           
           // Track detection methods
           if (pattern.type === 'endpoint') {
@@ -142,6 +148,7 @@ export class VpnScanner {
             score: totalScore,
             methods: [...new Set(methods)],
             endpoints: [...new Set(endpoints)],
+            version: detectedVersion,
           });
         }
 
@@ -153,6 +160,7 @@ export class VpnScanner {
           return {
             vendor: fingerprint.vendor,
             product: fingerprint.product,
+            version: detectedVersion,
             confidence,
             detectionMethod: [...new Set(methods)],
             endpoints: [...new Set(endpoints)],
@@ -162,7 +170,7 @@ export class VpnScanner {
     }
 
     // Find highest scoring match
-    let bestMatch: { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[] } | undefined;
+    let bestMatch: { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string } | undefined;
     
     for (const match of scores.values()) {
       if (!bestMatch || match.score > bestMatch.score) {
@@ -178,6 +186,7 @@ export class VpnScanner {
       return {
         vendor: bestMatch.fingerprint.vendor,
         product: bestMatch.fingerprint.product,
+        version: bestMatch.version,
         confidence,
         detectionMethod: bestMatch.methods,
         endpoints: bestMatch.endpoints,
