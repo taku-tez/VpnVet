@@ -12,26 +12,64 @@ export interface VpnDevice {
 }
 
 export type VpnVendor =
+  // Tier 1 Enterprise
   | 'fortinet'
   | 'paloalto'
   | 'cisco'
-  | 'pulse'
-  | 'sonicwall'
   | 'checkpoint'
-  | 'citrix'
-  | 'ivanti'
-  | 'openvpn'
-  | 'wireguard'
   | 'f5'
   | 'juniper'
-  | 'zyxel'
+  // SSL VPN Specialists
+  | 'pulse'
+  | 'ivanti'
+  | 'citrix'
+  | 'array'
+  | 'sonicwall'
+  // UTM / NGFW
   | 'sophos'
   | 'watchguard'
   | 'barracuda'
-  | 'sangfor'
-  | 'array'
-  | 'netmotion'
+  | 'zyxel'
+  | 'stormshield'
+  | 'lancom'
+  | 'kerio'
+  | 'untangle'
+  | 'endian'
+  // SMB / SOHO
+  | 'draytek'
+  | 'mikrotik'
+  | 'ubiquiti'
+  | 'pfsense'
+  | 'opnsense'
+  | 'netgear'
+  | 'tplink'
+  // Asia / China
+  | 'huawei'
+  | 'h3c'
   | 'hillstone'
+  | 'sangfor'
+  | 'ruijie'
+  | 'nsfocus'
+  | 'venustech'
+  | 'topsec'
+  | 'dptech'
+  // Korea
+  | 'ahnlab'
+  | 'secui'
+  // Open Source
+  | 'openvpn'
+  | 'wireguard'
+  // Enterprise Mobility
+  | 'netmotion'
+  | 'mobileiron'
+  // Cloud / ZTNA (also detectable when self-hosted)
+  | 'zscaler'
+  | 'cloudflare'
+  | 'netskope'
+  | 'cato'
+  // Other
+  | 'aruba'
+  | 'meraki'
   | 'unknown';
 
 export type DetectionMethod =

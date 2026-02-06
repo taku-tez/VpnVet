@@ -31,9 +31,9 @@ describe('Fingerprints', () => {
       expect(vendors).toContain('array');
     });
 
-    it('should have at least 17 vendors', () => {
+    it('should have at least 35 vendors', () => {
       const vendors = getAllVendors();
-      expect(vendors.length).toBeGreaterThanOrEqual(17);
+      expect(vendors.length).toBeGreaterThanOrEqual(35);
     });
 
     it('should have valid fingerprint structure', () => {

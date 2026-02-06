@@ -536,6 +536,148 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: true,
     cisaKev: false,
   },
+
+  // ============================================================
+  // DrayTek
+  // ============================================================
+  {
+    cve: 'CVE-2024-41592',
+    severity: 'critical',
+    cvss: 10.0,
+    description: 'DrayTek Vigor routers stack buffer overflow in web UI',
+    affected: [
+      { vendor: 'draytek', product: 'Vigor' },
+    ],
+    references: [
+      'https://www.draytek.com/support/security-advisories',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-41592',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
+  {
+    cve: 'CVE-2020-8515',
+    severity: 'critical',
+    cvss: 10.0,
+    description: 'DrayTek Vigor pre-auth remote code execution',
+    affected: [
+      { vendor: 'draytek', product: 'Vigor' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2020-8515',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // MikroTik
+  // ============================================================
+  {
+    cve: 'CVE-2018-14847',
+    severity: 'critical',
+    cvss: 9.1,
+    description: 'MikroTik RouterOS Winbox authentication bypass',
+    affected: [
+      { vendor: 'mikrotik', product: 'RouterOS' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2018-14847',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // pfSense
+  // ============================================================
+  {
+    cve: 'CVE-2022-31814',
+    severity: 'high',
+    cvss: 8.8,
+    description: 'pfBlockerNG unauthenticated RCE via command injection',
+    affected: [
+      { vendor: 'pfsense', product: 'pfSense' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2022-31814',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
+
+  // ============================================================
+  // NETGEAR
+  // ============================================================
+  {
+    cve: 'CVE-2021-45382',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'NETGEAR router remote code execution via SOAP',
+    affected: [
+      { vendor: 'netgear', product: 'ProSAFE' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2021-45382',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // TP-Link
+  // ============================================================
+  {
+    cve: 'CVE-2023-1389',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'TP-Link Archer routers command injection',
+    affected: [
+      { vendor: 'tplink', product: 'Omada' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-1389',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // Huawei
+  // ============================================================
+  {
+    cve: 'CVE-2017-17215',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Huawei HG532 router remote code execution',
+    affected: [
+      { vendor: 'huawei', product: 'USG' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2017-17215',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
+
+  // ============================================================
+  // Aruba
+  // ============================================================
+  {
+    cve: 'CVE-2022-37913',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Aruba EdgeConnect Enterprise Orchestrator RCE',
+    affected: [
+      { vendor: 'aruba', product: 'ClearPass' },
+    ],
+    references: [
+      'https://www.arubanetworks.com/assets/alert/ARUBA-PSA-2022-016.txt',
+      'https://nvd.nist.gov/vuln/detail/CVE-2022-37913',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

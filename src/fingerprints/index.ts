@@ -833,6 +833,877 @@ export const fingerprints: Fingerprint[] = [
       },
     ],
   },
+
+  // ============================================================
+  // Huawei USG / SecoManager
+  // ============================================================
+  {
+    vendor: 'huawei',
+    product: 'USG',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/view/pages/login.html',
+        method: 'GET',
+        match: 'Huawei|HUAWEI|USG|SecoManager',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/webui/',
+        method: 'GET',
+        match: 'Huawei|USG|华为',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'Huawei|HUAWEI',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Huawei Technologies|USG6000|华为',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Huawei',
+        weight: 8,
+      },
+    ],
+  },
+
+  // ============================================================
+  // H3C SecPath
+  // ============================================================
+  {
+    vendor: 'h3c',
+    product: 'SecPath',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/wnm/ssl/web/frame/login.php',
+        method: 'GET',
+        match: 'H3C|SecPath',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/login.html',
+        method: 'GET',
+        match: 'H3C|新华三',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'H3C',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'H3C Technologies|SecPath|新华三',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'H3C',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // DrayTek Vigor
+  // ============================================================
+  {
+    vendor: 'draytek',
+    product: 'Vigor',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/weblogin.htm',
+        method: 'GET',
+        match: 'DrayTek|Vigor',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/doc/login.shtml',
+        method: 'GET',
+        match: 'DrayTek|Vigor',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'DrayTek',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'DrayTek|Vigor|VigorConnect',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'DrayTek',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // MikroTik RouterOS
+  // ============================================================
+  {
+    vendor: 'mikrotik',
+    product: 'RouterOS',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/webfig/',
+        method: 'GET',
+        match: 'MikroTik|RouterOS|webfig',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/winbox/',
+        method: 'GET',
+        match: 'MikroTik|winbox',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'MikroTik',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'MikroTik|RouterOS|RouterBOARD',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'MikroTik',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Ubiquiti UniFi
+  // ============================================================
+  {
+    vendor: 'ubiquiti',
+    product: 'UniFi',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/manage/account/login',
+        method: 'GET',
+        match: 'Ubiquiti|UniFi|UI.com',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'UniFi Network|UniFi OS',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'Ubiquiti|UniFi',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Ubiquiti|UniFi|Dream Machine|EdgeRouter',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Ubiquiti|UniFi',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // pfSense
+  // ============================================================
+  {
+    vendor: 'pfsense',
+    product: 'pfSense',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/index.php',
+        method: 'GET',
+        match: 'pfSense|pfsense',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/wizard.php',
+        method: 'GET',
+        match: 'pfSense',
+        weight: 8,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'pfSense|Netgate|FreeBSD',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'pfSense|Netgate',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // OPNsense
+  // ============================================================
+  {
+    vendor: 'opnsense',
+    product: 'OPNsense',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/ui/core/login',
+        method: 'GET',
+        match: 'OPNsense',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/api/core/firmware/status',
+        method: 'GET',
+        match: 'OPNsense|opnsense',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'OPNsense|Deciso',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'OPNsense',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // NETGEAR ProSAFE
+  // ============================================================
+  {
+    vendor: 'netgear',
+    product: 'ProSAFE',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/cgi-bin/login.cgi',
+        method: 'GET',
+        match: 'NETGEAR|ProSAFE|ProSecure',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'NETGEAR',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'NETGEAR|ProSAFE|Orbi',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'NETGEAR',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // TP-Link Omada
+  // ============================================================
+  {
+    vendor: 'tplink',
+    product: 'Omada',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'TP-Link|TP-LINK|Omada',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/webpages/login.html',
+        method: 'GET',
+        match: 'TP-Link|TP-LINK',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'TP-Link|TP-LINK',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'TP-Link|TP-LINK|Omada|SafeStream',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'TP-Link|TP-LINK',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Stormshield (French)
+  // ============================================================
+  {
+    vendor: 'stormshield',
+    product: 'SNS',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/auth/admin.html',
+        method: 'GET',
+        match: 'Stormshield|SNS',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/auth/login.html',
+        method: 'GET',
+        match: 'Stormshield|Network Security',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'Stormshield',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Stormshield|Arkoon|Netasq',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Stormshield',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // LANCOM (German)
+  // ============================================================
+  {
+    vendor: 'lancom',
+    product: 'LANCOM',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/config/',
+        method: 'GET',
+        match: 'LANCOM|lancom',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'LANCOM',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'LANCOM Systems|LANCOM VPN',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'LANCOM',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Kerio Control
+  // ============================================================
+  {
+    vendor: 'kerio',
+    product: 'Kerio Control',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/internal/admin/',
+        method: 'GET',
+        match: 'Kerio|kerio',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/nonauth/login.php',
+        method: 'GET',
+        match: 'Kerio Control|GFI',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Kerio Control|Kerio VPN|GFI Software',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Kerio|GFI',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Untangle / Arista Edge Threat Management
+  // ============================================================
+  {
+    vendor: 'untangle',
+    product: 'NG Firewall',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/auth/login',
+        method: 'GET',
+        match: 'Untangle|Arista|Edge Threat',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/admin/index.do',
+        method: 'GET',
+        match: 'Untangle|NG Firewall',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Untangle|Arista Edge|NG Firewall',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Untangle|Arista',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Endian UTM (Italian)
+  // ============================================================
+  {
+    vendor: 'endian',
+    product: 'Endian UTM',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/cgi-bin/index.cgi',
+        method: 'GET',
+        match: 'Endian|endian',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/login/',
+        method: 'GET',
+        match: 'Endian Firewall|Endian UTM',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Endian|Endian Firewall|Endian UTM',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Endian',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Ruijie (China)
+  // ============================================================
+  {
+    vendor: 'ruijie',
+    product: 'RG Series',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login.htm',
+        method: 'GET',
+        match: 'Ruijie|锐捷',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/cgi-bin/login.cgi',
+        method: 'GET',
+        match: 'Ruijie|RG-',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'Ruijie',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Ruijie Networks|锐捷网络',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Ruijie',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // NSFOCUS (China)
+  // ============================================================
+  {
+    vendor: 'nsfocus',
+    product: 'NSFOCUS',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login/',
+        method: 'GET',
+        match: 'NSFOCUS|绿盟',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'NSFOCUS',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'NSFOCUS|绿盟科技|NF',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'NSFOCUS',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Venustech (China)
+  // ============================================================
+  {
+    vendor: 'venustech',
+    product: 'Venusense',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/webui/',
+        method: 'GET',
+        match: 'Venustech|启明星辰|Venusense',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Venustech|启明星辰|Venus',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Venustech|Venus',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // TopSec (China)
+  // ============================================================
+  {
+    vendor: 'topsec',
+    product: 'TopSec',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/id/login.php',
+        method: 'GET',
+        match: 'TopSec|天融信',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'TopSec|天融信|TOPSEC',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'TopSec|天融信',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // DPtech (China)
+  // ============================================================
+  {
+    vendor: 'dptech',
+    product: 'DPtech',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login/',
+        method: 'GET',
+        match: 'DPtech|迪普',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'DPtech|迪普科技|DP',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'DPtech',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // AhnLab (Korea)
+  // ============================================================
+  {
+    vendor: 'ahnlab',
+    product: 'TrusGuard',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/webui/login',
+        method: 'GET',
+        match: 'AhnLab|TrusGuard|안랩',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'AhnLab|TrusGuard|안랩',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'AhnLab',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // SECUI (Korea)
+  // ============================================================
+  {
+    vendor: 'secui',
+    product: 'MF2',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login.html',
+        method: 'GET',
+        match: 'SECUI|시큐아이',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'SECUI|MF2|시큐아이',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'SECUI',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Cisco Meraki
+  // ============================================================
+  {
+    vendor: 'meraki',
+    product: 'MX',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login/login',
+        method: 'GET',
+        match: 'Meraki|meraki',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'Meraki',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Meraki|Cisco Meraki|Dashboard',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Meraki',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Aruba (HPE)
+  // ============================================================
+  {
+    vendor: 'aruba',
+    product: 'ClearPass',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/tips/tipsLogin.action',
+        method: 'GET',
+        match: 'Aruba|ClearPass',
+        weight: 10,
+      },
+      {
+        type: 'endpoint',
+        path: '/guest/captive_portal.php',
+        method: 'GET',
+        match: 'Aruba|VIA',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'Aruba',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Aruba Networks|ClearPass|Aruba VIA|HPE Aruba',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Aruba|HPE',
+        weight: 7,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Zscaler (Cloud but has detectable endpoints)
+  // ============================================================
+  {
+    vendor: 'zscaler',
+    product: 'ZPA',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/signin',
+        method: 'GET',
+        match: 'Zscaler|zscaler',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'Zscaler',
+        weight: 10,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Zscaler|ZPA|ZIA',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Zscaler',
+        weight: 8,
+      },
+    ],
+  },
+
+  // ============================================================
+  // Cloudflare Access
+  // ============================================================
+  {
+    vendor: 'cloudflare',
+    product: 'Access',
+    patterns: [
+      {
+        type: 'header',
+        match: 'CF-Access|cloudflare',
+        weight: 10,
+      },
+      {
+        type: 'header',
+        match: 'cf-ray',
+        weight: 6,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Cloudflare Access|cloudflareaccess',
+        weight: 9,
+      },
+      {
+        type: 'certificate',
+        match: 'Cloudflare',
+        weight: 7,
+      },
+    ],
+  },
 ];
 
 export function getFingerprintsByVendor(vendor: string): Fingerprint[] {

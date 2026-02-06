@@ -1,6 +1,6 @@
 {
   "name": "vpnvet",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "VPN device detection and vulnerability scanner for ASM",
   "type": "module",
   "main": "dist/index.js",
