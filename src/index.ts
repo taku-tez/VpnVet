@@ -4,9 +4,31 @@
  * @packageDocumentation
  */
 
+// Core scanner
 export { VpnScanner, scan, scanMultiple } from './scanner.js';
+
+// Fingerprints database
 export { fingerprints, getFingerprintsByVendor, getAllVendors } from './fingerprints/index.js';
-export { vulnerabilities, getVulnerabilitiesByVendor, getCriticalVulnerabilities, getKevVulnerabilities } from './vulnerabilities.js';
+
+// Vulnerability database
+export { 
+  vulnerabilities, 
+  getVulnerabilitiesByVendor, 
+  getCriticalVulnerabilities, 
+  getKevVulnerabilities 
+} from './vulnerabilities.js';
+
+// Utilities
+export {
+  normalizeUrl,
+  compareVersions,
+  isVersionAffected,
+  formatVendorName,
+  calculateConfidence,
+  isHighPriority,
+} from './utils.js';
+
+// Types
 export type {
   VpnDevice,
   VpnVendor,
