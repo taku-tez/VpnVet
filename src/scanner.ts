@@ -10,8 +10,9 @@ import * as tls from 'node:tls';
 import * as net from 'node:net';
 import * as dns from 'node:dns/promises';
 import { URL } from 'node:url';
-import { fingerprints } from './fingerprints/index.js';
+import { fingerprints, getAllVendors } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
+import { resolveVendor } from './vendor.js';
 import {
   normalizeUrl,
   normalizeProduct,
@@ -57,6 +58,15 @@ export class VpnScanner {
 
   constructor(options: ScanOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
+
+    // Normalize vendor via shared resolver (#3)
+    if (this.options.vendor) {
+      const resolved = resolveVendor(this.options.vendor, getAllVendors());
+      if (!resolved) {
+        throw new Error(`Unknown vendor: "${this.options.vendor}". Known vendors: ${getAllVendors().join(', ')}`);
+      }
+      this.options.vendor = resolved;
+    }
 
     // Validate and normalize concurrency (#3)
     const c = this.options.concurrency;
@@ -437,8 +447,30 @@ export class VpnScanner {
 
   /**
    * Check if an IP address is unsafe (internal, special-use, or reserved).
-   * Covers RFC1918, RFC5737, RFC6598 (CGN), loopback, link-local,
-   * benchmarking, multicast, and IPv4-mapped IPv6 addresses.
+   *
+   * Fail-closed blocked ranges (IPv4):
+   *   - 0.0.0.0/8        — "This" network (RFC1122)
+   *   - 10.0.0.0/8       — Private-Use (RFC1918)
+   *   - 100.64.0.0/10    — Shared Address / CGN (RFC6598)
+   *   - 127.0.0.0/8      — Loopback (RFC1122)
+   *   - 169.254.0.0/16   — Link-Local (RFC3927)
+   *   - 172.16.0.0/12    — Private-Use (RFC1918)
+   *   - 192.0.0.0/24     — IETF Protocol Assignments (RFC6890)
+   *   - 192.0.2.0/24     — TEST-NET-1 / Documentation (RFC5737)
+   *   - 192.88.99.0/24   — 6to4 Relay Anycast (RFC7526, deprecated)
+   *   - 192.168.0.0/16   — Private-Use (RFC1918)
+   *   - 198.18.0.0/15    — Benchmarking (RFC2544)
+   *   - 198.51.100.0/24  — TEST-NET-2 / Documentation (RFC5737)
+   *   - 203.0.113.0/24   — TEST-NET-3 / Documentation (RFC5737)
+   *   - 224.0.0.0/4      — Multicast (RFC3171)
+   *   - 240.0.0.0/4+     — Reserved / Future Use + Broadcast
+   *
+   * Fail-closed blocked ranges (IPv6):
+   *   - ::1               — Loopback
+   *   - ::                — Unspecified
+   *   - fc00::/7          — Unique Local Address (ULA)
+   *   - fe80::/10         — Link-Local
+   *   - ::ffff:0:0/96    — IPv4-mapped (delegated to IPv4 check)
    */
   static isUnsafeIP(ip: string): boolean {
     // Normalize and extract IPv4-mapped IPv6 (::ffff:x.x.x.x or 0:0:0:0:0:ffff:x.x.x.x)
@@ -459,8 +491,13 @@ export class VpnScanner {
         parts[0] === 127 ||                                         // 127.0.0.0/8
         (parts[0] === 169 && parts[1] === 254) ||                  // 169.254.0.0/16 (link-local)
         (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||  // 172.16.0.0/12
+        (parts[0] === 192 && parts[1] === 0 && parts[2] === 0) ||  // 192.0.0.0/24 (IETF Protocol Assignments)
+        (parts[0] === 192 && parts[1] === 0 && parts[2] === 2) ||  // 192.0.2.0/24 (TEST-NET-1 / RFC5737)
+        (parts[0] === 192 && parts[1] === 88 && parts[2] === 99) ||// 192.88.99.0/24 (6to4 Relay Anycast)
         (parts[0] === 192 && parts[1] === 168) ||                  // 192.168.0.0/16
         (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) || // 198.18.0.0/15 (benchmarking)
+        (parts[0] === 198 && parts[1] === 51 && parts[2] === 100) || // 198.51.100.0/24 (TEST-NET-2 / RFC5737)
+        (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) || // 203.0.113.0/24 (TEST-NET-3 / RFC5737)
         parts[0] >= 224                                             // 224.0.0.0/4 (multicast) + 240+ (reserved)
       );
     }
@@ -479,7 +516,7 @@ export class VpnScanner {
 
   /**
    * Extract embedded IPv4 from IPv4-mapped IPv6 addresses.
-   * Handles ::ffff:x.x.x.x and 0:0:0:0:0:ffff:x.x.x.x forms.
+   * Handles dotted form (::ffff:1.2.3.4) and hex form (::ffff:c0a8:0101).
    */
   private static extractIPv4Mapped(ip: string): string | null {
     // Dotted form: ::ffff:1.2.3.4 or 0:0:0:0:0:ffff:1.2.3.4
@@ -488,6 +525,20 @@ export class VpnScanner {
     if (dottedMatch && net.isIPv4(dottedMatch[1])) {
       return dottedMatch[1];
     }
+
+    // Hex form: ::ffff:c0a8:0101 or 0:0:0:0:0:ffff:c0a8:0101
+    const hexMatch = ip.match(/::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i) ||
+                     ip.match(/^0{0,4}(?::0{0,4}){4}:ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+    if (hexMatch) {
+      const hi = parseInt(hexMatch[1], 16);
+      const lo = parseInt(hexMatch[2], 16);
+      if (hi > 0xffff || lo > 0xffff) return null;
+      const v4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+      if (net.isIPv4(v4)) {
+        return v4;
+      }
+    }
+
     return null;
   }
 

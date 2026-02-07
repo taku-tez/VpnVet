@@ -109,6 +109,46 @@ describe('Expanded unsafe IP ranges (#1)', () => {
     expect(isUnsafeIP(ip)).toBe(expected);
   });
 
+  // New special-use ranges (Agent P / #1)
+  it.each([
+    ['192.0.0.1', true, '192.0.0.0/24 (IETF Protocol Assignments)'],
+    ['192.0.0.254', true, '192.0.0.0/24 (IETF Protocol Assignments)'],
+    ['192.0.2.1', true, '192.0.2.0/24 (TEST-NET-1)'],
+    ['192.0.2.254', true, '192.0.2.0/24 (TEST-NET-1)'],
+    ['192.88.99.0', true, '192.88.99.0/24 (6to4 Relay)'],
+    ['192.88.99.255', true, '192.88.99.0/24 (6to4 Relay)'],
+    ['198.51.100.1', true, '198.51.100.0/24 (TEST-NET-2)'],
+    ['198.51.100.254', true, '198.51.100.0/24 (TEST-NET-2)'],
+    ['203.0.113.1', true, '203.0.113.0/24 (TEST-NET-3)'],
+    ['203.0.113.254', true, '203.0.113.0/24 (TEST-NET-3)'],
+    // Boundary: just outside new ranges should be safe
+    ['192.0.1.0', false, 'just above 192.0.0.0/24'],
+    ['192.0.3.0', false, 'just above 192.0.2.0/24'],
+    ['192.88.98.255', false, 'just below 192.88.99.0/24'],
+    ['192.88.100.0', false, 'just above 192.88.99.0/24'],
+    ['198.51.99.255', false, 'just below 198.51.100.0/24'],
+    ['198.51.101.0', false, 'just above 198.51.100.0/24'],
+    ['203.0.112.255', false, 'just below 203.0.113.0/24'],
+    ['203.0.114.0', false, 'just above 203.0.113.0/24'],
+  ])('should handle %s → unsafe=%s (%s)', (ip, expected) => {
+    expect(isUnsafeIP(ip)).toBe(expected);
+  });
+
+  // IPv4-mapped IPv6 hex form (Agent P / #2)
+  it.each([
+    ['::ffff:c0a8:0101', true, '192.168.1.1'],
+    ['::ffff:0a00:0001', true, '10.0.0.1'],
+    ['::ffff:7f00:0001', true, '127.0.0.1'],
+    ['::ffff:6440:0001', true, '100.64.0.1 (CGN)'],
+    ['::ffff:c000:0201', true, '192.0.2.1 (TEST-NET-1)'],
+    ['::ffff:c633:6401', true, '198.51.100.1 (TEST-NET-2)'],
+    ['::ffff:0808:0808', false, '8.8.8.8'],
+    ['::ffff:5db8:d822', false, '93.184.216.34'],
+    ['0:0:0:0:0:ffff:c0a8:0101', true, 'expanded form 192.168.1.1'],
+  ])('should handle hex IPv4-mapped %s → unsafe=%s (%s)', (ip, expected) => {
+    expect(isUnsafeIP(ip)).toBe(expected);
+  });
+
   // fe80::/10 full range (#1)
   it.each([
     ['fe80::1', true],
