@@ -27,38 +27,63 @@ export type VpnVendor =
 
 ### 2. Add Fingerprint
 
-Edit `src/fingerprints/index.ts`:
+Fingerprints are organized into **category files** under `src/fingerprints/`:
+
+| Category File | Vendors | Description |
+|---------------|---------|-------------|
+| `tier1-enterprise.ts` | Fortinet, Palo Alto, Cisco, Pulse/Ivanti, Citrix | Top-tier enterprise vendors (16 KEV) |
+| `tier2-enterprise.ts` | SonicWall, Check Point, F5, Juniper, etc. | Other enterprise vendors (10 KEV) |
+| `asia.ts` | Sangfor, Huawei, H3C, and regional vendors | Asia-Pacific regional vendors |
+| `smb-soho.ts` | DrayTek, MikroTik, pfSense, etc. | Small business / SOHO solutions |
+| `cloud-ztna.ts` | Meraki, Aruba, Zscaler, Cloudflare | Cloud-native and ZTNA solutions |
+
+> **Note:** `src/fingerprints/index.ts` aggregates all category files into a single `fingerprints` array. You should **not** edit `index.ts` directly — add your fingerprint to the appropriate category file.
+
+#### Choosing the right category
+
+- Enterprise vendor with CISA KEV CVEs → `tier1-enterprise.ts` or `tier2-enterprise.ts`
+- Asia-Pacific regional vendor → `asia.ts`
+- Small business / home office product → `smb-soho.ts`
+- Cloud-native, SaaS, or ZTNA product → `cloud-ztna.ts`
+
+#### Example: adding to a category file
+
+Edit the appropriate category file (e.g., `src/fingerprints/smb-soho.ts`) and append to the exported array:
 
 ```typescript
-{
-  vendor: 'newvendor',
-  product: 'Product Name',
-  patterns: [
-    {
-      type: 'endpoint',
-      path: '/login',
-      method: 'GET',
-      match: 'NewVendor|newvendor',
-      weight: 10,  // 1-10, higher = more confident
-    },
-    {
-      type: 'header',
-      match: 'X-NewVendor-Cookie',
-      weight: 9,
-    },
-    {
-      type: 'body',
-      path: '/',
-      match: 'NewVendor VPN|Copyright NewVendor',
-      weight: 8,
-    },
-    {
-      type: 'certificate',
-      match: 'NewVendor Inc',
-      weight: 7,
-    },
-  ],
-},
+// In src/fingerprints/smb-soho.ts
+export const smbsohoFingerprints: Fingerprint[] = [
+  // ... existing entries ...
+  {
+    vendor: 'newvendor',
+    product: 'Product Name',
+    patterns: [
+      {
+        type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'NewVendor|newvendor',
+        weight: 10,  // 1-10, higher = more confident
+      },
+      {
+        type: 'header',
+        match: 'X-NewVendor-Cookie',
+        weight: 9,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'NewVendor VPN|Copyright NewVendor',
+        weight: 8,
+      },
+      {
+        type: 'certificate',
+        match: 'NewVendor Inc',
+        weight: 7,
+      },
+    ],
+  },
+];
 ```
 
 ### Pattern Types
