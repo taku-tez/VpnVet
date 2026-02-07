@@ -143,6 +143,12 @@ export class VpnScanner {
   }
 
   private async detectDeviceForUrl(baseUrl: string): Promise<VpnDevice | undefined> {
+    // SSRF: block private/internal targets at the detection level
+    const parsedBase = new URL(baseUrl);
+    if (!(await VpnScanner.isHostSafe(parsedBase.hostname))) {
+      return undefined;
+    }
+
     const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string }> = new Map();
 
     // Filter fingerprints if vendor specified
