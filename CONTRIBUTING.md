@@ -173,6 +173,57 @@ node scripts/count-stats.mjs
 
 Update README.md and CHANGELOG.md if the counts have changed.
 
+## Test Guidelines
+
+### Principles
+
+- **Network-independent**: Tests must not depend on real network connectivity. All HTTP/TLS calls should be mocked.
+- **Deterministic**: Every test must produce the same result on every run, in any environment.
+- **No `it.skip` without reason**: If a test is skipped, it must have a comment explaining why and what would be needed to enable it.
+
+### Mocking Network Calls
+
+VpnScanner has three private methods that perform I/O. Mock all of them to isolate tests from the network:
+
+```typescript
+import { VpnScanner } from '../src/scanner.js';
+
+const scanner = new VpnScanner({ timeout: 1000 });
+
+// Mock all network I/O
+jest.spyOn(scanner as any, 'httpRequest').mockResolvedValue(null);
+jest.spyOn(scanner as any, 'httpRequestBinary').mockResolvedValue(null);
+jest.spyOn(scanner as any, 'getCertificateInfo').mockResolvedValue(null);
+
+// Simulate a specific HTTP response:
+jest.spyOn(scanner as any, 'httpRequest').mockResolvedValue({
+  statusCode: 200,
+  headers: { 'content-type': 'text/html' },
+  body: '<html>mock</html>',
+});
+
+// Always restore mocks:
+afterEach(() => jest.restoreAllMocks());
+```
+
+### Test File Organization
+
+| File | Scope |
+|------|-------|
+| `scanner.test.ts` | Constructor, options, URL normalization, scan result structure, multi-port, redirects |
+| `errors.test.ts` | Error handling: invalid targets, network errors (mocked), timeouts |
+| `detection.test.ts` | Fingerprint matching against mock HTTP responses |
+| `ssrf-sni.test.ts` | SSRF redirect protection and TLS SNI (security regression tests) |
+| `cli-validation.test.ts` | CLI argument parsing and validation |
+| `vulnerabilities.test.ts` | Vulnerability data integrity |
+| `fingerprints.test.ts` | Fingerprint data integrity |
+
+Avoid duplicating the same assertion across multiple files. Each test should live in exactly one place.
+
+### CLI Integration Tests
+
+Tests in `cli-validation.test.ts` spawn a child process (`npx tsx src/cli.ts ...`). These are acceptable because they test CLI argument parsing, not network behavior.
+
 ## Questions?
 
 Open an issue or discussion on GitHub!
