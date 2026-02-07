@@ -15,6 +15,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'DrayTek|Vigor',
         weight: 10,
+        versionExtract: /(?:Vigor|Build|Firmware)[:\s]*(\d+\.\d+(?:\.\d+)?(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -51,6 +52,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'MikroTik|RouterOS|webfig',
         weight: 10,
+        versionExtract: /RouterOS\s+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -69,6 +71,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         path: '/',
         match: 'MikroTik|RouterOS|RouterBOARD',
         weight: 9,
+        versionExtract: /RouterOS\s+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'certificate',
@@ -87,6 +90,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Ubiquiti|UniFi|UI.com',
         weight: 10,
+        versionExtract: /(?:UniFi|version)[:\s"]+v?(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -123,6 +127,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'pfSense|pfsense',
         weight: 10,
+        versionExtract: /pfSense[^0-9]*(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -154,6 +159,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'OPNsense',
         weight: 10,
+        versionExtract: /OPNsense[^0-9]*(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -161,6 +167,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'OPNsense|opnsense',
         weight: 9,
+        versionExtract: /"product_version"\s*:\s*"(\d+\.\d+(?:\.\d+)?)"/,
       },
       {
         type: 'body',
@@ -185,6 +192,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'NETGEAR|ProSAFE|ProSecure',
         weight: 10,
+        versionExtract: /(?:Firmware|Version)[:\s]+v?(\d+\.\d+(?:\.\d+)?(?:\.\d+)?)/i,
       },
       {
         type: 'header',
@@ -214,6 +222,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'TP-Link|TP-LINK|Omada',
         weight: 10,
+        versionExtract: /(?:Omada|Version|firmware)[:\s]+v?(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -250,6 +259,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Stormshield|SNS',
         weight: 10,
+        versionExtract: /(?:SNS|Version)[:\s]+v?(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -315,6 +325,7 @@ export const smbsohoFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Kerio|kerio',
         weight: 10,
+        versionExtract: /Kerio Control\s+(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',

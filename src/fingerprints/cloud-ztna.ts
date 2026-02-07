@@ -15,6 +15,7 @@ export const cloudztnaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Meraki|meraki',
         weight: 10,
+        versionExtract: /(?:firmware|version)['":\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'header',
@@ -44,6 +45,7 @@ export const cloudztnaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Aruba|ClearPass',
         weight: 10,
+        versionExtract: /ClearPass[^0-9]*(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'endpoint',
@@ -80,6 +82,7 @@ export const cloudztnaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Zscaler|zscaler',
         weight: 10,
+        versionExtract: /(?:version|build)['":\s]+v?(\d+\.\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'header',
@@ -118,6 +121,7 @@ export const cloudztnaFingerprints: Fingerprint[] = [
         path: '/',
         match: 'Cloudflare Access|cloudflareaccess',
         weight: 9,
+        versionExtract: /cf-ray:\s*[0-9a-f]+-\w+|cloudflare[^0-9]*(\d+\.\d+\.\d+)/i,
       },
       {
         type: 'certificate',

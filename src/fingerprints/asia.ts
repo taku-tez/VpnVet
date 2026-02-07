@@ -15,6 +15,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Sangfor|SANGFOR|SSL VPN',
         weight: 10,
+        versionExtract: /version['":\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -40,6 +41,7 @@ export const asiaFingerprints: Fingerprint[] = [
         path: '/',
         match: 'SANGFOR|Sangfor|深信服',
         weight: 9,
+        versionExtract: /(?:SSLVPN|SSL\s*VPN|version)[_\s:'"]*v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'certificate',
@@ -58,6 +60,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Array Networks|ArrayOS',
         weight: 10,
+        versionExtract: /ArrayOS[_ ]AG[_ ]v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -94,6 +97,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'NetMotion|Mobility',
         weight: 10,
+        versionExtract: /(?:Mobility|NetMotion|version)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -137,6 +141,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Hillstone|山石网科',
         weight: 10,
+        versionExtract: /(?:Version|StoneOS)[:\s]+v?(\d+\.\d+(?:\.\d+)?(?:-\w+)?)/i,
       },
       {
         type: 'header',
@@ -166,6 +171,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Huawei|HUAWEI|USG|SecoManager',
         weight: 10,
+        versionExtract: /(?:USG|Version|V)\s*(\d{3,}(?:\.\d+)?(?:R\d+C\d+(?:SPC\d+)?))/i,
       },
       {
         type: 'endpoint',
@@ -202,6 +208,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'H3C|SecPath',
         weight: 10,
+        versionExtract: /(?:Version|SecPath)[:\s]+v?(\d+\.\d+(?:\.\d+)?(?:\.\d+)?)/i,
       },
       {
         type: 'endpoint',
@@ -238,6 +245,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Ruijie|锐捷',
         weight: 10,
+        versionExtract: /(?:RG-|Version|ver)[:\s_]*v?(\d+\.\d+(?:\.\d+)?(?:\(\d+\))?)/i,
       },
       {
         type: 'endpoint',
@@ -274,6 +282,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'NSFOCUS|绿盟',
         weight: 10,
+        versionExtract: /(?:Version|NF|NSFOCUS)[:\s_]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'header',
@@ -303,6 +312,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Venustech|启明星辰|Venusense',
         weight: 10,
+        versionExtract: /(?:Venusense|Version|ver)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'body',
@@ -327,6 +337,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'TopSec|天融信',
         weight: 10,
+        versionExtract: /(?:TopSec|TOS|Version)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'body',
@@ -351,6 +362,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'DPtech|迪普',
         weight: 10,
+        versionExtract: /(?:DPtech|Version|ver)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'body',
@@ -375,6 +387,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'AhnLab|TrusGuard|안랩',
         weight: 10,
+        versionExtract: /(?:TrusGuard|Version|firmware)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'body',
@@ -399,6 +412,7 @@ export const asiaFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'SECUI|시큐아이',
         weight: 10,
+        versionExtract: /(?:MF2|Version|firmware)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
       {
         type: 'body',
