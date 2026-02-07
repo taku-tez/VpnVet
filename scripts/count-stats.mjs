@@ -23,3 +23,26 @@ for (const f of fpFiles) {
 }
 
 console.log(`Vendors: ${vendorCount}, Fingerprints: ${fpFiles.length} files, CVEs: ${cveCount}, CISA KEV: ${kevCount}`);
+
+// Cross-check with README.md
+const readme = readFileSync(join(root, 'README.md'), 'utf8');
+const checks = [
+  { label: 'Vendors', actual: vendorCount, pattern: /(\d+)\s*VPN Vendors/ },
+  { label: 'CVEs', actual: cveCount, pattern: /(\d+)\s*Critical CVEs/ },
+  { label: 'CISA KEV', actual: kevCount, pattern: /(\d+)\s*in CISA KEV/ },
+];
+
+let mismatch = false;
+for (const { label, actual, pattern } of checks) {
+  const m = readme.match(pattern);
+  if (m) {
+    const readmeVal = parseInt(m[1], 10);
+    if (readmeVal !== actual) {
+      console.warn(`⚠️  WARNING: README says ${label}=${readmeVal}, actual=${actual}`);
+      mismatch = true;
+    }
+  }
+}
+if (!mismatch) {
+  console.log('✅ README stats match actual data.');
+}

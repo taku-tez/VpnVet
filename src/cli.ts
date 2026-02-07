@@ -284,6 +284,31 @@ function formatOutput(results: ScanResult[], format: string): string {
   }
 }
 
+// Known options sets for validation
+const KNOWN_FLAGS = new Set([
+  '-t', '--targets', '-o', '--output', '-f', '--format',
+  '--timeout', '--ports', '--vendor', '--severity',
+  '--skip-vuln', '--skip-version', '--fast',
+  '-q', '--quiet', '-v', '--verbose',
+  '-h', '--help', '--version',
+]);
+
+const VALID_FORMATS = ['json', 'sarif', 'csv', 'table'] as const;
+const VALID_SEVERITIES = ['critical', 'high', 'medium', 'low'] as const;
+
+/**
+ * Require the next argument as a value for the given option.
+ * Exits with error if missing or looks like another flag.
+ */
+function requireArg(args: string[], i: number, optionName: string): string {
+  const next = args[i + 1];
+  if (next === undefined || next.startsWith('-')) {
+    logError(`Option ${optionName} requires a value.`);
+    process.exit(1);
+  }
+  return next;
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   
@@ -305,8 +330,16 @@ async function main(): Promise<void> {
       listVendors();
     } else if (subCommand === 'vulns') {
       const severityIdx = args.indexOf('--severity');
-      const severity = severityIdx !== -1 ? args[severityIdx + 1] : undefined;
-      listVulnerabilities(severity);
+      if (severityIdx !== -1) {
+        const severity = requireArg(args, severityIdx, '--severity');
+        if (!(VALID_SEVERITIES as readonly string[]).includes(severity)) {
+          logError(`Invalid --severity value: "${severity}". Must be one of: ${VALID_SEVERITIES.join(', ')}`);
+          process.exit(1);
+        }
+        listVulnerabilities(severity);
+      } else {
+        listVulnerabilities();
+      }
     } else {
       console.error('Unknown list command. Use: list vendors | list vulns');
       process.exit(1);
@@ -328,19 +361,29 @@ async function main(): Promise<void> {
       const arg = args[i];
       
       if (arg === '-t' || arg === '--targets') {
-        const file = args[++i];
-        if (!file || !fs.existsSync(file)) {
+        const file = requireArg(args, i, arg);
+        i++;
+        if (!fs.existsSync(file)) {
           console.error(`Targets file not found: ${file}`);
           process.exit(1);
         }
         const content = fs.readFileSync(file, 'utf-8');
         targets = content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
       } else if (arg === '-o' || arg === '--output') {
-        options.output = args[++i];
+        options.output = requireArg(args, i, arg);
+        i++;
       } else if (arg === '-f' || arg === '--format') {
-        options.format = args[++i] as CliOptions['format'];
+        const fmt = requireArg(args, i, arg);
+        i++;
+        if (!(VALID_FORMATS as readonly string[]).includes(fmt)) {
+          logError(`Invalid --format value: "${fmt}". Must be one of: ${VALID_FORMATS.join(', ')}`);
+          process.exit(1);
+        }
+        options.format = fmt as CliOptions['format'];
       } else if (arg === '--timeout') {
-        const timeoutVal = parseInt(args[++i], 10);
+        const raw = requireArg(args, i, arg);
+        i++;
+        const timeoutVal = parseInt(raw, 10);
         if (isNaN(timeoutVal) || timeoutVal <= 0) {
           logError('Invalid --timeout value. Must be a positive number (in milliseconds).');
           process.exit(1);
@@ -351,7 +394,9 @@ async function main(): Promise<void> {
         }
         options.timeout = timeoutVal;
       } else if (arg === '--ports') {
-        const rawPorts = args[++i].split(',').map(p => parseInt(p, 10));
+        const raw = requireArg(args, i, arg);
+        i++;
+        const rawPorts = raw.split(',').map(p => parseInt(p, 10));
         const validPorts = [...new Set(rawPorts)].filter(p => !isNaN(p) && p >= 1 && p <= 65535);
         if (validPorts.length === 0) {
           logError('Invalid --ports value. Ports must be numbers between 1-65535.');
@@ -367,10 +412,14 @@ async function main(): Promise<void> {
       } else if (arg === '-v' || arg === '--verbose') {
         options.verbose = true;
       } else if (arg === '--vendor') {
-        options.vendor = args[++i];
+        options.vendor = requireArg(args, i, arg);
+        i++;
       } else if (arg === '--fast') {
         options.fast = true;
-      } else if (!arg.startsWith('-')) {
+      } else if (arg.startsWith('-')) {
+        logError(`Unknown option: "${arg}". Run vpnvet --help for usage.`);
+        process.exit(1);
+      } else {
         targets.push(arg);
       }
     }

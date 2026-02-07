@@ -8,6 +8,7 @@ import * as https from 'node:https';
 import * as http from 'node:http';
 import * as tls from 'node:tls';
 import * as net from 'node:net';
+import * as dns from 'node:dns/promises';
 import { URL } from 'node:url';
 import { fingerprints } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
@@ -376,14 +377,27 @@ export class VpnScanner {
           const redirectUrl = new URL(locationStr, currentUrl);
           const redirectHost = redirectUrl.hostname;
 
+          // Block cross-host redirects unless explicitly allowed (check first)
+          if (redirectHost !== originalHost && !this.options.allowCrossHostRedirects) {
+            return null;
+          }
+
           // Always block redirects to private/internal IPs
           if (VpnScanner.isPrivateIP(redirectHost)) {
             return null;
           }
 
-          // Block cross-host redirects unless explicitly allowed
-          if (redirectHost !== originalHost && !this.options.allowCrossHostRedirects) {
-            return null;
+          // If redirectHost is a hostname (not an IP), resolve it and check
+          if (!net.isIP(redirectHost)) {
+            try {
+              const { address } = await dns.lookup(redirectHost);
+              if (VpnScanner.isPrivateIP(address)) {
+                return null;
+              }
+            } catch {
+              // DNS resolution failed — block to be safe
+              return null;
+            }
           }
 
           currentUrl = redirectUrl.toString();

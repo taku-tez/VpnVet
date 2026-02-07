@@ -118,6 +118,116 @@ describe('--timeout validation (#2)', () => {
   });
 });
 
+describe('Missing argument value (#2 - requireArg)', () => {
+  const optionsWithValues = [
+    ['--ports'],
+    ['--format'],
+    ['--output'],
+    ['--targets'],
+    ['--vendor'],
+    ['--timeout'],
+  ];
+
+  it.each(optionsWithValues)('should error when %s has no value', async (opt) => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync(`npx tsx src/cli.ts scan example.com ${opt}`, {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('requires a value');
+    }
+  });
+
+  it.each(optionsWithValues)('should error when %s is followed by another flag', async (opt) => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync(`npx tsx src/cli.ts scan example.com ${opt} --verbose`, {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('requires a value');
+    }
+  });
+});
+
+describe('--format validation (#3)', () => {
+  it('should reject invalid format', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --format xml', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Invalid --format');
+      expect(e.stderr).toContain('json');
+      expect(e.stderr).toContain('table');
+    }
+  });
+});
+
+describe('--severity validation (#3)', () => {
+  it('should reject invalid severity', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts list vulns --severity extreme', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Invalid --severity');
+      expect(e.stderr).toContain('critical');
+    }
+  });
+});
+
+describe('Unknown option detection (#4)', () => {
+  it('should reject typo options like --timout', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --timout 5000', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Unknown option');
+    }
+  });
+
+  it('should reject completely unknown flags', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --foobar', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Unknown option');
+    }
+  });
+});
+
 describe('--vendor validation (#3)', () => {
   it('should accept known vendor (fortinet)', async () => {
     const vendors = getAllVendors();

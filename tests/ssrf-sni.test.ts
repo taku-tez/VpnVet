@@ -5,6 +5,11 @@
 import * as http from 'node:http';
 import { VpnScanner } from '../src/scanner.js';
 
+const mockLookup = jest.fn();
+jest.mock('node:dns/promises', () => ({
+  lookup: (...args: any[]) => mockLookup(...args),
+}));
+
 describe('SSRF Redirect Protection', () => {
   let server: http.Server;
   let serverPort: number;
@@ -128,6 +133,84 @@ describe('SSRF Redirect Protection', () => {
   it('should accept allowCrossHostRedirects option', () => {
     const scanner = new VpnScanner({ allowCrossHostRedirects: true });
     expect(scanner).toBeDefined();
+  });
+
+  it('should block redirects to hostnames resolving to private IPs', async () => {
+    mockLookup.mockResolvedValue({ address: '127.0.0.1', family: 4 });
+
+    const port = await createRedirectServer('http://metadata.internal/latest/');
+
+    const scanner = new VpnScanner({
+      timeout: 3000,
+      ports: [port],
+      followRedirects: true,
+      allowCrossHostRedirects: true,
+    });
+
+    const result = await scanner.scan(`http://127.0.0.1:${port}`);
+    expect(result).toBeDefined();
+    expect(result.device).toBeUndefined();
+    expect(mockLookup).toHaveBeenCalledWith('metadata.internal');
+
+    mockLookup.mockReset();
+  });
+
+  it('should block redirects to hostnames resolving to 10.x private IPs', async () => {
+    mockLookup.mockResolvedValue({ address: '10.0.0.1', family: 4 });
+
+    const port = await createRedirectServer('http://internal.corp/secret');
+
+    const scanner = new VpnScanner({
+      timeout: 3000,
+      ports: [port],
+      followRedirects: true,
+      allowCrossHostRedirects: true,
+    });
+
+    const result = await scanner.scan(`http://127.0.0.1:${port}`);
+    expect(result).toBeDefined();
+    expect(result.device).toBeUndefined();
+
+    mockLookup.mockReset();
+  });
+
+  it('should allow redirects to hostnames resolving to public IPs', async () => {
+    mockLookup.mockResolvedValue({ address: '93.184.216.34', family: 4 });
+
+    const port = await createRedirectServer('http://example.com/page');
+
+    const scanner = new VpnScanner({
+      timeout: 500,
+      ports: [port],
+      followRedirects: true,
+      allowCrossHostRedirects: true,
+      fast: true,
+    });
+
+    // Redirect is allowed (public IP), follow-up to example.com will timeout — that's expected
+    await scanner.scan(`http://127.0.0.1:${port}`);
+    expect(mockLookup).toHaveBeenCalledWith('example.com');
+
+    mockLookup.mockReset();
+  }, 30000);
+
+  it('should block redirects when DNS resolution fails', async () => {
+    mockLookup.mockRejectedValue(new Error('ENOTFOUND'));
+
+    const port = await createRedirectServer('http://nonexistent.invalid/path');
+
+    const scanner = new VpnScanner({
+      timeout: 3000,
+      ports: [port],
+      followRedirects: true,
+      allowCrossHostRedirects: true,
+    });
+
+    const result = await scanner.scan(`http://127.0.0.1:${port}`);
+    expect(result).toBeDefined();
+    expect(result.device).toBeUndefined();
+
+    mockLookup.mockReset();
   });
 });
 
