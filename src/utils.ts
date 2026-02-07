@@ -59,6 +59,14 @@ function parseSegmentParts(seg: string): Array<{ type: 'num' | 'str'; numVal: nu
 }
 
 /**
+ * Normalize a product name for comparison.
+ * Lowercases, trims, and collapses whitespace.
+ */
+export function normalizeProduct(product: string): string {
+  return product.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+/**
  * Compare semantic versions
  * Returns: -1 if a < b, 0 if equal, 1 if a > b
  * 
@@ -66,6 +74,8 @@ function parseSegmentParts(seg: string): Array<{ type: 'num' | 'str'; numVal: nu
  * - 13.1-49.14 (nested/hyphenated)
  * - 10.2.0.5-d-29sv (alpha suffixes)
  * - R81.20 (letter prefixes)
+ * 
+ * Trailing zeros are treated as equal: 13.1 == 13.1.0 == 13.1.0.0
  */
 export function compareVersions(a: string, b: string): number {
   // Split on . and - but keep both as delimiters
@@ -87,9 +97,17 @@ export function compareVersions(a: string, b: string): number {
       const pA = partsA[j];
       const pB = partsB[j];
       
-      // Missing part: segment with fewer sub-parts is "less"
-      if (!pA && pB) return -1;
-      if (pA && !pB) return 1;
+      // Missing part: treat as zero for trailing-zero equivalence
+      if (!pA && pB) {
+        // pA is missing — if pB is numeric zero, they're equal; otherwise pA < pB
+        if (pB.type === 'num' && pB.numVal === 0) continue;
+        return -1;
+      }
+      if (pA && !pB) {
+        // pB is missing — if pA is numeric zero, they're equal; otherwise pA > pB
+        if (pA.type === 'num' && pA.numVal === 0) continue;
+        return 1;
+      }
       if (!pA || !pB) continue;
       
       // Both numeric

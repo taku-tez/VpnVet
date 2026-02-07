@@ -14,6 +14,7 @@ import { fingerprints } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
 import {
   normalizeUrl,
+  normalizeProduct,
   compareVersions,
   isVersionAffected,
   hasVersionConstraints,
@@ -89,8 +90,12 @@ export class VpnScanner {
           result.vulnerabilities = await this.checkVulnerabilities(device, baseUrl);
 
           // Check if any CVE definitions exist for this vendor/product
+          const deviceProductNorm = normalizeProduct(device.product);
           const hasCveMappings = vulnerabilities.some(v =>
-            v.affected.some(a => a.vendor === device.vendor)
+            v.affected.some(a =>
+              a.vendor === device.vendor &&
+              (!a.product || normalizeProduct(a.product) === deviceProductNorm)
+            )
           );
           if (!hasCveMappings) {
             result.coverageWarning = `No CVE mappings currently available for ${device.vendor} ${device.product}. Detection coverage and vulnerability coverage are independent — a detected product with zero CVEs does not imply it is secure.`;
@@ -799,25 +804,43 @@ export class VpnScanner {
   }
 
   private async getCertificateInfo(url: string): Promise<string | null> {
+    const parsedUrl = new URL(url);
+
+    if (parsedUrl.protocol !== 'https:') {
+      return null;
+    }
+
+    const hostname = parsedUrl.hostname;
+    const port = Number(parsedUrl.port) || 443;
+
+    // Resolve safe addresses to prevent DNS rebinding
+    const safeAddresses = await VpnScanner.resolveSafeAddresses(hostname);
+    if (safeAddresses.length === 0) {
+      return null;
+    }
+
+    // Try each pinned IP with fallback
+    for (const ip of safeAddresses) {
+      const result = await this.getCertificateInfoSingle(ip, port, hostname);
+      if (result !== null) return result;
+    }
+
+    return null;
+  }
+
+  private getCertificateInfoSingle(ip: string, port: number, hostname: string): Promise<string | null> {
     return new Promise((resolve) => {
       try {
-        const parsedUrl = new URL(url);
-        
-        if (parsedUrl.protocol !== 'https:') {
-          resolve(null);
-          return;
-        }
-
         const tlsOptions: tls.ConnectionOptions = {
-          host: parsedUrl.hostname,
-          port: Number(parsedUrl.port) || 443,
+          host: ip,
+          port,
           rejectUnauthorized: false,
           timeout: this.options.timeout,
         };
 
-        // Set SNI servername for virtual host environments (skip for IP addresses)
-        if (!net.isIP(parsedUrl.hostname)) {
-          tlsOptions.servername = parsedUrl.hostname;
+        // Set SNI servername to original hostname (skip for IP-literal targets)
+        if (!net.isIP(hostname)) {
+          tlsOptions.servername = hostname;
         }
 
         const socket = tls.connect(
