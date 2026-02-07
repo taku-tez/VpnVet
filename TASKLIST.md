@@ -31,6 +31,11 @@
 
 ## 2. 検知ロジック（Fingerprint）
 
+> **コードパス:** `src/fingerprints/` (tier1-enterprise.ts, tier2-enterprise.ts, smb-soho.ts, cloud-ztna.ts, asia.ts)
+> **エントリ:** `src/fingerprints/index.ts` → `fingerprints[]`, `getAllVendors()`, `getFingerprintsByVendor()`
+> **検知実行:** `src/scanner.ts` → `VpnScanner.detectDeviceForUrl()` → `testPattern()`
+> **型定義:** `src/types.ts` → `Fingerprint`, `FingerprintPattern`, `DetectionMethod`
+
 ### 2-1. カバレッジ確認
 - [ ] 各 vendor の fingerprint が `endpoint/header/body/certificate/favicon` のどれで判定しているか棚卸し
 - [ ] 「単一シグネチャ依存」になっている vendor を抽出
@@ -49,6 +54,11 @@
 ---
 
 ## 3. 脆弱性データ（CVE/KEV）
+
+> **コードパス:** `src/vulnerabilities.ts` → `vulnerabilities[]`
+> **判定ロジック:** `src/scanner.ts` → `VpnScanner.checkVulnerabilities()`
+> **バージョン比較:** `src/utils.ts` → `compareVersions()`, `isVersionAffected()`, `hasVersionConstraints()`
+> **型定義:** `src/types.ts` → `Vulnerability`, `AffectedVersion`, `VulnerabilityMatch`
 
 ### 3-1. データ整合性
 - [ ] `src/vulnerabilities.ts` の CVE 書式（`CVE-YYYY-NNNN...`）を検証
@@ -69,6 +79,11 @@
 
 ## 4. スキャナ実行品質
 
+> **コードパス:** `src/scanner.ts` → `VpnScanner`
+> **HTTP:** `httpRequestCore()`, `httpRequestSingle()`, `httpRequestBinarySingle()`
+> **SSRF防御:** `resolveSafeAddresses()`, `isUnsafeIP()`, `extractIPv4Mapped()`, `buildPinnedLookup()`
+> **並列実行:** `scanMultiple()` (concurrency制御)
+
 ### 4-1. ネットワーク挙動
 - [ ] タイムアウト時のリトライ方針を確認
 - [ ] DNS 失敗/接続拒否/TLS 失敗のエラーメッセージを分類
@@ -87,6 +102,12 @@
 ---
 
 ## 5. CLI / 出力フォーマット
+
+> **コードパス:** `src/cli.ts` → `main()`
+> **出力フォーマッタ:** `formatSarif()`, `formatJson()`, `formatCsv()`, `formatTable()`
+> **SARIF URI正規化:** `normalizeTargetUri()` (SHA-256ハッシュによるinvalid target識別)
+> **vendor正規化:** `src/vendor.ts` → `resolveVendor()`, `VENDOR_ALIASES`
+> **ログ:** `src/utils.ts` → `logError()`, `logInfo()`, `logProgress()`
 
 ### 5-1. CLI UX
 - [ ] `scan`, `list vendors`, `list vulns`, `version` の主要動線を手動検証

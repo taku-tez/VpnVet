@@ -5,6 +5,7 @@
  * VPN device detection and vulnerability scanner for ASM.
  */
 
+import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,7 @@ import { VpnScanner } from './scanner.js';
 import { fingerprints, getAllVendors } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
 import { setVerbose, logProgress, logError, logInfo, formatVendorName } from './utils.js';
+import { resolveVendor, VENDOR_ALIASES } from './vendor.js';
 import type { ScanResult, ScanOptions } from './types.js';
 
 // Get version from package.json
@@ -190,7 +192,8 @@ function normalizeTargetUri(target: string): { uri: string; originalTarget?: str
       new URL(trimmed);
       return { uri: trimmed };
     } catch {
-      return { uri: `https://unknown-host`, originalTarget: trimmed };
+      const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
+      return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
     }
   }
   // No scheme – prepend https://
@@ -199,7 +202,8 @@ function normalizeTargetUri(target: string): { uri: string; originalTarget?: str
     new URL(candidate);
     return { uri: candidate };
   } catch {
-    return { uri: `https://unknown-host`, originalTarget: trimmed };
+    const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
+    return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
   }
 }
 
@@ -334,32 +338,7 @@ const LIST_VULNS_FLAGS = new Set(['--severity']);
 const VALID_FORMATS = ['json', 'sarif', 'csv', 'table'] as const;
 const VALID_SEVERITIES = ['critical', 'high', 'medium', 'low'] as const;
 
-/** Vendor alias map: common alternative spellings → canonical vendor id */
-const VENDOR_ALIASES: Record<string, string> = {
-  'palo-alto': 'paloalto',
-  'palo_alto': 'paloalto',
-  'paloaltonetworks': 'paloalto',
-  'sonic-wall': 'sonicwall',
-  'sonic_wall': 'sonicwall',
-  'check-point': 'checkpoint',
-  'check_point': 'checkpoint',
-  'pulse-secure': 'pulse',
-  'pulsesecure': 'pulse',
-};
-
-/**
- * Resolve a user-provided vendor string to its canonical vendor id.
- * Returns the canonical id or null if not found.
- */
-function resolveVendor(input: string, knownVendors: string[]): string | null {
-  const normalized = input.trim().toLowerCase();
-  // Direct match
-  if (knownVendors.includes(normalized)) return normalized;
-  // Alias match
-  const aliased = VENDOR_ALIASES[normalized];
-  if (aliased && knownVendors.includes(aliased)) return aliased;
-  return null;
-}
+// VENDOR_ALIASES and resolveVendor imported from ./vendor.js
 
 /**
  * Require the next argument as a value for the given option.
@@ -416,7 +395,7 @@ async function main(): Promise<void> {
         listVulnerabilities();
       }
     } else {
-      console.error('Unknown list command. Use: list vendors | list vulns');
+      logError('Unknown list command. Use: list vendors | list vulns');
       process.exit(1);
     }
     process.exit(0);
@@ -439,7 +418,7 @@ async function main(): Promise<void> {
         const file = requireArg(args, i, arg);
         i++;
         if (!fs.existsSync(file)) {
-          console.error(`Targets file not found: ${file}`);
+          logError(`Targets file not found: ${file}`);
           process.exit(1);
         }
         const content = fs.readFileSync(file, 'utf-8');
@@ -603,12 +582,12 @@ async function main(): Promise<void> {
     process.exit(0);
   }
   
-  console.error(`Unknown command: ${command}`);
+  logError(`Unknown command: "${command}". Run vpnvet --help for usage.`);
   printHelp();
   process.exit(1);
 }
 
 main().catch(err => {
-  console.error('Fatal error:', err);
+  logError(`Fatal error: ${err}`);
   process.exit(1);
 });

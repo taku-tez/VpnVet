@@ -30,6 +30,9 @@ export {
   faviconHash,
 } from './utils.js';
 
+// Vendor normalization
+export { resolveVendor, VENDOR_ALIASES } from './vendor.js';
+
 // Types
 export type {
   VpnDevice,

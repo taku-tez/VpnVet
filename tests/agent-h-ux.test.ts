@@ -11,11 +11,19 @@ describe('SARIF URI normalization (#3)', () => {
     const trimmed = target.trim();
     if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
       try { new URL(trimmed); return { uri: trimmed }; }
-      catch { return { uri: 'https://unknown-host', originalTarget: trimmed }; }
+      catch {
+        const crypto = require('node:crypto');
+        const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
+        return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
+      }
     }
     const candidate = `https://${trimmed}`;
     try { new URL(candidate); return { uri: candidate }; }
-    catch { return { uri: 'https://unknown-host', originalTarget: trimmed }; }
+    catch {
+      const crypto = require('node:crypto');
+      const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
+      return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
+    }
   }
 
   it('should prepend https:// to bare hostname', () => {
