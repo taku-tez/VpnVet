@@ -108,6 +108,7 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Check Point|checkpoint',
         weight: 10,
+        versionExtract: /Check\s*Point.*?(?:R|Version\s*)(\d+(?:\.\d+)*)/i,
       },
       {
         type: 'endpoint',
@@ -115,6 +116,7 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'SNX|Check Point',
         weight: 9,
+        versionExtract: /SNX\s+(?:build\s+)?(\d+)/i,
       },
       {
         type: 'header',
@@ -145,6 +147,7 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'OpenVPN Access Server',
         weight: 9,
+        versionExtract: /Access\s+Server\s+(\d+\.\d+(?:\.\d+)*)/i,
       },
       {
         type: 'header',
@@ -225,13 +228,23 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: 'agent|F5',
         weight: 8,
       },
-      // TMUI (CVE-2020-5902 target)
+      // TMUI (CVE-2020-5902 target) - version in page title or body
       {
         type: 'endpoint',
         path: '/tmui/login.jsp',
         method: 'GET',
         match: 'tmui|BIG-IP|Configuration Utility',
         weight: 10,
+        versionExtract: /BIG-IP\s*(?:APM)?\s*(\d+\.\d+\.\d+(?:\.\d+)?)/i,
+      },
+      // iControl REST version endpoint
+      {
+        type: 'endpoint',
+        path: '/mgmt/tm/sys/version',
+        method: 'GET',
+        match: 'Version|Build',
+        weight: 9,
+        versionExtract: /"version"\s*:\s*"(\d+\.\d+\.\d+(?:\.\d+)?)"/,
       },
       // iControl REST (CVE-2022-1388 target)
       {
@@ -277,6 +290,23 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         path: '/',
         match: 'Log In - Juniper Web Device Manager|Juniper Web Device Manager',
         weight: 10,
+      },
+      // Junos version from login page or J-Web
+      {
+        type: 'body',
+        path: '/',
+        match: 'Junos|JUNOS',
+        weight: 9,
+        versionExtract: /JUNOS?\s+(\d+\.\d+[A-Z]?\d*(?:\.\d+)?)/i,
+      },
+      // Version from J-Web API
+      {
+        type: 'endpoint',
+        path: '/api/v1/configuration/system/information',
+        method: 'GET',
+        match: 'version|junos',
+        weight: 8,
+        versionExtract: /"version"\s*:\s*"(\d+\.\d+[A-Z]?\d*(?:\.\d+)?)"/i,
       },
       // Dynamic VPN portal
       {
@@ -472,6 +502,23 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: 'Without JavaScript support web console will not work',
         weight: 10,
       },
+      // Version from login page JS
+      {
+        type: 'body',
+        path: '/',
+        match: 'Sophos.*Firmware|SFOS',
+        weight: 9,
+        versionExtract: /(?:Firmware|SFOS)\s*(?:Version\s*)?v?(\d+\.\d+(?:\.\d+)*)/i,
+      },
+      // WebAdmin version endpoint
+      {
+        type: 'endpoint',
+        path: '/webconsole/APIController?reqXML=<Request><Login><Username></Username><Password></Password></Login></Request>',
+        method: 'GET',
+        match: 'Sophos|Response|Status',
+        weight: 8,
+        versionExtract: /Firmware[Vv]ersion.*?(\d+\.\d+(?:\.\d+)*)/i,
+      },
       // User Portal endpoints
       {
         type: 'endpoint',
@@ -553,6 +600,7 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'WatchGuard|Firebox|SSL VPN',
         weight: 10,
+        versionExtract: /Fireware\s*(?:XTM\s*)?v?(\d+\.\d+(?:\.\d+)*)/i,
       },
       {
         type: 'endpoint',
@@ -578,6 +626,7 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         path: '/',
         match: 'WatchGuard|Firebox|XTM|Fireware',
         weight: 9,
+        versionExtract: /Fireware\s*(?:XTM\s*)?v?(\d+\.\d+(?:\.\d+)*)/i,
       },
       {
         type: 'certificate',
