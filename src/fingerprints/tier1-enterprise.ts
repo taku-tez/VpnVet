@@ -56,13 +56,14 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
 
       // === TIER 2: SSL VPN Endpoints (pre-auth) ===
 
-      // SSL VPN login page
+      // SSL VPN login page (may contain version in hidden fields or JS)
       {
         type: 'endpoint',
         path: '/remote/login',
         method: 'GET',
         match: 'FortiToken|fortinet|fgt_lang|sslvpn|realm',
         weight: 10,
+        versionExtract: /FortiOS\s+v?(\d+\.\d+\.\d+)/i,
       },
       // SSL VPN auth check (CVE-2023-27997 XORtigate target)
       {
@@ -81,12 +82,14 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         weight: 8,
       },
       // Language file (CVE-2018-13379 path traversal target)
+      // May contain version hints in JSON metadata
       {
         type: 'endpoint',
         path: '/remote/fgt_lang?lang=en',
         method: 'GET',
         match: '"msg"\\s*:',
         weight: 9,
+        versionExtract: /"build"\s*:\s*"(\d+)"/,
       },
       // Language file JS variant
       {
@@ -342,13 +345,14 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         weight: 10,
         versionExtract: /<version who="sg">([^<]+)<\/version>/,
       },
-      // Login endpoints
+      // Login endpoints (may contain version in page content)
       {
         type: 'endpoint',
         path: '/+CSCOE+/logon.html',
         method: 'GET',
         match: 'webvpn|anyconnect|AnyConnect|csco_',
         weight: 10,
+        versionExtract: /Version\s+(\d+\.\d+(?:\.\d+)?(?:\(\d+\))?)/,
       },
       {
         type: 'endpoint',
@@ -394,11 +398,12 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'webvpn_as',
         weight: 9,
       },
-      // Protocol headers
+      // Protocol headers (X-Transcend-Version contains ASA version)
       {
         type: 'header',
         match: 'X-Transcend-Version',
         weight: 10,
+        versionExtract: /X-Transcend-Version:\s*(\d+)/,
       },
       {
         type: 'header',
@@ -661,6 +666,7 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Citrix|logon/LogonPoint',
         weight: 10,
+        versionExtract: /\?v=([a-f0-9]{32})/,
       },
       // Plugin version info
       {
@@ -671,13 +677,14 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         weight: 9,
         versionExtract: /version="([^"]+)"/,
       },
-      // EPA endpoints
+      // EPA endpoints (version in Content-Disposition or Last-Modified)
       {
         type: 'endpoint',
         path: '/epa/scripts/win/nsepa_setup.exe',
         method: 'HEAD',
         match: '.*',
         weight: 8,
+        versionExtract: /nsepa_setup[_-]?(\d+\.\d+\.\d+\.\d+)/,
       },
       {
         type: 'endpoint',
@@ -686,12 +693,14 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'epa|Citrix',
         weight: 8,
       },
-      // HTML patterns (includes version hash)
+      // HTML patterns (includes version hash - MD5 of build timestamp)
+      // Fox-IT/citrix-netscaler-triage maps these hashes to specific versions
       {
         type: 'body',
         path: '/vpn/index.html',
         match: '\\?v=[a-f0-9]{32}',
         weight: 9,
+        versionExtract: /\?v=([a-f0-9]{32})/,
       },
       {
         type: 'body',
