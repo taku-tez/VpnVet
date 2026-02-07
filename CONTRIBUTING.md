@@ -158,6 +158,16 @@ npm test
 - Use `type` imports for types-only
 - Keep functions small and focused
 
+### Linting
+
+Run ESLint before submitting a PR:
+
+```bash
+npm run lint
+```
+
+The project uses ESLint v9 flat config (`eslint.config.js`) with `@typescript-eslint`. All files under `src/**/*.ts` are checked. Warnings are acceptable but errors must be zero.
+
 ## Commit Messages
 
 Use conventional commits:
