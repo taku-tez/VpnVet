@@ -7,6 +7,7 @@
  */
 
 import { compareVersions, isVersionAffected, hasVersionConstraints } from '../src/utils.js';
+import { VpnScanner } from '../src/scanner.js';
 
 describe('compareVersions (improved)', () => {
   it('should compare simple versions', () => {
@@ -77,12 +78,98 @@ describe('Version-undefined CVE handling', () => {
   });
 });
 
+describe('isVersionAffected partial bounds (#5)', () => {
+  it('versionStart only: version >= start → true', () => {
+    expect(isVersionAffected('7.0.5', { versionStart: '7.0.0' })).toBe(true);
+    expect(isVersionAffected('7.0.0', { versionStart: '7.0.0' })).toBe(true);
+    expect(isVersionAffected('6.9.9', { versionStart: '7.0.0' })).toBe(false);
+  });
+
+  it('versionEnd only: version <= end → true', () => {
+    expect(isVersionAffected('7.0.5', { versionEnd: '7.0.13' })).toBe(true);
+    expect(isVersionAffected('7.0.13', { versionEnd: '7.0.13' })).toBe(true);
+    expect(isVersionAffected('7.0.14', { versionEnd: '7.0.13' })).toBe(false);
+  });
+
+  it('versionExact still takes priority over partial bounds', () => {
+    expect(isVersionAffected('7.0.1', { versionExact: '7.0.1', versionStart: '8.0.0' })).toBe(true);
+    expect(isVersionAffected('8.0.0', { versionExact: '7.0.1', versionStart: '8.0.0' })).toBe(false);
+  });
+
+  it('no version constraints → false', () => {
+    expect(isVersionAffected('7.0.1', {})).toBe(false);
+  });
+});
+
 describe('skipVersionDetection', () => {
-  // Integration test: scanner with skipVersionDetection should not extract versions
-  // (Tested via mock in scanner context, here we validate the option exists)
   it('should be a valid ScanOptions field', async () => {
-    const { VpnScanner } = await import('../src/scanner.js');
     const scanner = new VpnScanner({ skipVersionDetection: true, timeout: 1000 });
     expect(scanner).toBeDefined();
+  });
+});
+
+describe('header HEAD→GET fallback (#4)', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it('should fall back to GET when HEAD returns null', async () => {
+    const scanner = new VpnScanner({ timeout: 1000 });
+
+    // Mock httpRequest: HEAD → null, GET → response with headers
+    const spy = jest.spyOn(scanner as any, 'httpRequest').mockImplementation(
+      (_url: string, method: string) => {
+        if (method === 'HEAD') return Promise.resolve(null);
+        if (method === 'GET') {
+          return Promise.resolve({
+            statusCode: 200,
+            headers: { server: 'SonicWALL SSL-VPN Web Server' },
+            body: '<html>ignored</html>',
+          });
+        }
+        return Promise.resolve(null);
+      }
+    );
+    jest.spyOn(scanner as any, 'httpRequestBinary').mockResolvedValue(null);
+    jest.spyOn(scanner as any, 'getCertificateInfo').mockResolvedValue(null);
+
+    // Call testPattern with a header pattern
+    const result = await (scanner as any).testPattern('https://example.com', {
+      type: 'header',
+      match: 'sonicwall',
+      weight: 5,
+    });
+
+    expect(result.success).toBe(true);
+    // HEAD was called first, then GET as fallback
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'https://example.com', 'HEAD');
+    expect(spy).toHaveBeenNthCalledWith(2, 'https://example.com', 'GET');
+  });
+
+  it('should use HEAD response when HEAD succeeds (no GET fallback)', async () => {
+    const scanner = new VpnScanner({ timeout: 1000 });
+
+    const spy = jest.spyOn(scanner as any, 'httpRequest').mockImplementation(
+      (_url: string, method: string) => {
+        if (method === 'HEAD') {
+          return Promise.resolve({
+            statusCode: 200,
+            headers: { server: 'SonicWALL SSL-VPN Web Server' },
+            body: '',
+          });
+        }
+        return Promise.resolve(null);
+      }
+    );
+
+    const result = await (scanner as any).testPattern('https://example.com', {
+      type: 'header',
+      match: 'sonicwall',
+      weight: 5,
+    });
+
+    expect(result.success).toBe(true);
+    // Only HEAD was called
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith('https://example.com', 'HEAD');
   });
 });

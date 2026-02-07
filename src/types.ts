@@ -91,6 +91,16 @@ export interface Vulnerability {
   cisaKev: boolean; // CISA Known Exploited Vulnerabilities
 }
 
+/**
+ * Affected version range for a vulnerability.
+ *
+ * Comparison rules (evaluated in order):
+ * 1. versionExact set        → version === versionExact
+ * 2. versionStart & versionEnd → versionStart <= version <= versionEnd
+ * 3. versionStart only       → version >= versionStart  (no upper bound)
+ * 4. versionEnd only         → version <= versionEnd    (no lower bound)
+ * 5. None set                → no version constraint (isVersionAffected returns false)
+ */
 export interface AffectedVersion {
   vendor: VpnVendor;
   product: string;
@@ -124,6 +134,7 @@ export interface ScanOptions {
   fast?: boolean; // Stop on first match
   vendor?: string; // Test specific vendor only
   allowCrossHostRedirects?: boolean; // Allow redirects to different hosts (default: false)
+  concurrency?: number; // Max concurrent scans in scanMultiple (default: 5)
 }
 
 export interface Fingerprint {
@@ -143,6 +154,8 @@ export interface FingerprintPattern {
   match: string | RegExp;
   weight: number; // 1-10, used for confidence calculation
   versionExtract?: RegExp;
+  /** Allowed HTTP status codes. Defaults to 2xx (200-299) when omitted. */
+  status?: number[];
 }
 
 export interface ReportOptions {

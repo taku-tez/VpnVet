@@ -49,6 +49,7 @@ SCAN OPTIONS:
   -q, --quiet              Suppress progress output
   -v, --verbose            Verbose output
   --vendor <name>          Test specific vendor only (faster)
+  --concurrency <n>        Max concurrent scans (default: 5, max: 100)
 
 EXAMPLES:
   vpnvet scan vpn.example.com
@@ -288,7 +289,7 @@ function formatOutput(results: ScanResult[], format: string): string {
 const KNOWN_FLAGS = new Set([
   '-t', '--targets', '-o', '--output', '-f', '--format',
   '--timeout', '--ports', '--vendor', '--severity',
-  '--skip-vuln', '--skip-version', '--fast',
+  '--skip-vuln', '--skip-version', '--fast', '--concurrency',
   '-q', '--quiet', '-v', '--verbose',
   '-h', '--help', '--version',
 ]);
@@ -427,6 +428,19 @@ async function main(): Promise<void> {
         i++;
       } else if (arg === '--fast') {
         options.fast = true;
+      } else if (arg === '--concurrency') {
+        const raw = requireArg(args, i, arg);
+        i++;
+        const concurrencyVal = parseInt(raw, 10);
+        if (isNaN(concurrencyVal) || concurrencyVal < 1 || !Number.isInteger(concurrencyVal)) {
+          logError('Invalid --concurrency value. Must be a positive integer.');
+          process.exit(1);
+        }
+        if (concurrencyVal > 100) {
+          logError('Invalid --concurrency value. Maximum allowed is 100.');
+          process.exit(1);
+        }
+        options.concurrency = concurrencyVal;
       } else if (arg.startsWith('-')) {
         logError(`Unknown option: "${arg}". Run vpnvet --help for usage.`);
         process.exit(1);

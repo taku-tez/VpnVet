@@ -42,6 +42,7 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   fast: false,
   vendor: '',
   allowCrossHostRedirects: false,
+  concurrency: 5,
 };
 
 interface HttpResponse {
@@ -88,13 +89,18 @@ export class VpnScanner {
   }
 
   async scanMultiple(targets: string[]): Promise<ScanResult[]> {
-    const results: ScanResult[] = [];
-    
-    for (const target of targets) {
-      const result = await this.scan(target);
-      results.push(result);
-    }
-    
+    const results: ScanResult[] = new Array(targets.length);
+    const concurrency = this.options.concurrency || 5;
+    let index = 0;
+
+    const worker = async () => {
+      while (index < targets.length) {
+        const i = index++;
+        results[i] = await this.scan(targets[i]);
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(concurrency, targets.length) }, () => worker()));
     return results;
   }
 
@@ -248,6 +254,13 @@ export class VpnScanner {
         
         if (!response) return { success: false };
 
+        // Status code validation
+        if (pattern.status) {
+          if (!pattern.status.includes(response.statusCode)) return { success: false };
+        } else {
+          if (response.statusCode < 200 || response.statusCode >= 300) return { success: false };
+        }
+
         const matchPattern = typeof pattern.match === 'string' 
           ? new RegExp(pattern.match, 'i')
           : pattern.match;
@@ -265,7 +278,11 @@ export class VpnScanner {
           return { success: true, version };
         }
       } else if (pattern.type === 'header') {
-        const response = await this.httpRequest(baseUrl, 'HEAD');
+        // Try HEAD first; fall back to GET if HEAD returns null (connection failure, 405, etc.)
+        let response = await this.httpRequest(baseUrl, 'HEAD');
+        if (!response) {
+          response = await this.httpRequest(baseUrl, 'GET');
+        }
         
         if (!response) return { success: false };
 
@@ -342,6 +359,22 @@ export class VpnScanner {
     return { success: false };
   }
 
+  /**
+   * Check if a hostname is safe to connect to (not private/internal).
+   * Resolves FQDNs via DNS. Returns false on DNS failure (fail-closed).
+   */
+  private static async isHostSafe(hostname: string): Promise<boolean> {
+    if (net.isIP(hostname)) {
+      return !VpnScanner.isPrivateIP(hostname);
+    }
+    try {
+      const { address } = await dns.lookup(hostname);
+      return !VpnScanner.isPrivateIP(address);
+    } catch {
+      return false; // DNS failure → fail-closed
+    }
+  }
+
   private static isPrivateIP(hostname: string): boolean {
     // Check if hostname resolves to a private/internal IP
     if (net.isIPv4(hostname)) {
@@ -375,6 +408,11 @@ export class VpnScanner {
     let currentUrl = url;
     const originalHost = new URL(url).hostname;
 
+    // SSRF: check initial target before sending any request
+    if (!(await VpnScanner.isHostSafe(originalHost))) {
+      return null;
+    }
+
     for (let i = 0; i <= maxRedirects; i++) {
       if (visited.has(currentUrl)) return null; // Loop detected
       visited.add(currentUrl);
@@ -398,21 +436,8 @@ export class VpnScanner {
           }
 
           // Always block redirects to private/internal IPs
-          if (VpnScanner.isPrivateIP(redirectHost)) {
+          if (!(await VpnScanner.isHostSafe(redirectHost))) {
             return null;
-          }
-
-          // If redirectHost is a hostname (not an IP), resolve it and check
-          if (!net.isIP(redirectHost)) {
-            try {
-              const { address } = await dns.lookup(redirectHost);
-              if (VpnScanner.isPrivateIP(address)) {
-                return null;
-              }
-            } catch {
-              // DNS resolution failed — block to be safe
-              return null;
-            }
           }
 
           currentUrl = redirectUrl.toString();
@@ -489,6 +514,52 @@ export class VpnScanner {
    * Used for favicon hash computation.
    */
   private async httpRequestBinary(url: string): Promise<Buffer | null> {
+    const maxRedirects = this.options.followRedirects ? 5 : 0;
+    const visited = new Set<string>();
+    let currentUrl = url;
+    const originalHost = new URL(url).hostname;
+
+    // SSRF: check initial target
+    if (!(await VpnScanner.isHostSafe(originalHost))) {
+      return null;
+    }
+
+    for (let i = 0; i <= maxRedirects; i++) {
+      if (visited.has(currentUrl)) return null;
+      visited.add(currentUrl);
+
+      const result = await this.httpRequestBinarySingle(currentUrl);
+      if (!result) return null;
+
+      const isRedirect = result.statusCode >= 300 && result.statusCode < 400;
+      if (isRedirect && i < maxRedirects) {
+        const location = result.headers['location'];
+        const locationStr = Array.isArray(location) ? location[0] : location;
+        if (locationStr) {
+          const redirectUrl = new URL(locationStr, currentUrl);
+          const redirectHost = redirectUrl.hostname;
+
+          if (redirectHost !== originalHost && !this.options.allowCrossHostRedirects) {
+            return null;
+          }
+          if (!(await VpnScanner.isHostSafe(redirectHost))) {
+            return null;
+          }
+
+          currentUrl = redirectUrl.toString();
+          continue;
+        }
+      }
+
+      return result.body;
+    }
+
+    return null;
+  }
+
+  private async httpRequestBinarySingle(
+    url: string
+  ): Promise<{ statusCode: number; headers: Record<string, string | string[]>; body: Buffer } | null> {
     return new Promise((resolve) => {
       try {
         const parsedUrl = new URL(url);
@@ -513,7 +584,6 @@ export class VpnScanner {
           const chunks: Buffer[] = [];
           let totalLen = 0;
 
-          // Do NOT set encoding — keep as Buffer
           res.on('data', (chunk: Buffer) => {
             totalLen += chunk.length;
             if (totalLen > 1_000_000) {
@@ -524,7 +594,11 @@ export class VpnScanner {
           });
 
           res.on('end', () => {
-            resolve(Buffer.concat(chunks));
+            resolve({
+              statusCode: res.statusCode || 0,
+              headers: res.headers as Record<string, string | string[]>,
+              body: Buffer.concat(chunks),
+            });
           });
         });
 

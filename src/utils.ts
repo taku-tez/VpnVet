@@ -132,6 +132,16 @@ export function isVersionAffected(
            compareVersions(version, affected.versionEnd) <= 0;
   }
 
+  // Partial bounds: only start means "version >= start"
+  if (affected.versionStart) {
+    return compareVersions(version, affected.versionStart) >= 0;
+  }
+
+  // Partial bounds: only end means "version <= end"
+  if (affected.versionEnd) {
+    return compareVersions(version, affected.versionEnd) <= 0;
+  }
+
   return false;
 }
 
