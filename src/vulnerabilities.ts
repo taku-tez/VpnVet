@@ -116,6 +116,25 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
 
+  {
+    cve: 'CVE-2024-47575',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'FortiManager missing authentication for critical function (FortiJump) allowing RCE',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.0' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.4' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.7' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.12' },
+    ],
+    references: [
+      'https://www.fortiguard.com/psirt/FG-IR-24-423',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-47575',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
   // ============================================================
   // Palo Alto GlobalProtect / PAN-OS
   // ============================================================
@@ -149,6 +168,44 @@ export const vulnerabilities: Vulnerability[] = [
     references: [
       'https://security.paloaltonetworks.com/CVE-2020-2021',
       'https://nvd.nist.gov/vuln/detail/CVE-2020-2021',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  {
+    cve: 'CVE-2024-0012',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'PAN-OS management web interface authentication bypass allowing admin access',
+    affected: [
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.5-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.6-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.12-h2' },
+    ],
+    references: [
+      'https://security.paloaltonetworks.com/CVE-2024-0012',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-0012',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2024-9474',
+    severity: 'high',
+    cvss: 7.2,
+    description: 'PAN-OS privilege escalation in management web interface allowing root access',
+    affected: [
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.5-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.6-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.12-h2' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h6' },
+    ],
+    references: [
+      'https://security.paloaltonetworks.com/CVE-2024-9474',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-9474',
     ],
     exploitAvailable: true,
     cisaKev: true,
@@ -241,6 +298,38 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
   {
+    cve: 'CVE-2025-0282',
+    severity: 'critical',
+    cvss: 9.0,
+    description: 'Ivanti Connect Secure stack-based buffer overflow allowing unauthenticated RCE',
+    affected: [
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.4' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Connect-Secure-Policy-Secure-ZTA-Gateways-CVE-2025-0282-CVE-2025-0283',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-0282',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-22457',
+    severity: 'critical',
+    cvss: 9.0,
+    description: 'Ivanti Connect Secure stack-based buffer overflow allowing RCE (TRAILBLAZE/BRUSHFIRE)',
+    affected: [
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.5' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/April-Security-Advisory-Ivanti-Connect-Secure-Policy-Secure-ZTA-Gateways-CVE-2025-22457',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-22457',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
     cve: 'CVE-2019-11510',
     severity: 'critical',
     cvss: 10.0,
@@ -260,8 +349,57 @@ export const vulnerabilities: Vulnerability[] = [
   },
 
   // ============================================================
+  // Check Point
+  // ============================================================
+  {
+    cve: 'CVE-2024-24919',
+    severity: 'high',
+    cvss: 8.6,
+    description: 'Check Point Security Gateway information disclosure allowing credential theft via VPN',
+    affected: [
+      { vendor: 'checkpoint', product: 'Mobile Access' },
+    ],
+    references: [
+      'https://support.checkpoint.com/results/sk/sk182336',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-24919',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
   // SonicWall
   // ============================================================
+  {
+    cve: 'CVE-2024-40766',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'SonicWall SonicOS improper access control in management and SSLVPN',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2024-0015',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-40766',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2024-53704',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'SonicWall SonicOS SSL VPN authentication bypass allowing session hijacking',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0003',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-53704',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
   {
     cve: 'CVE-2021-20016',
     severity: 'critical',
@@ -413,6 +551,21 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
   {
+    cve: 'CVE-2023-36845',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Juniper Junos OS J-Web PHP environment variable manipulation enabling RCE (chained with CVE-2023-36844)',
+    affected: [
+      { vendor: 'juniper', product: 'SRX SSL VPN' },
+    ],
+    references: [
+      'https://supportportal.juniper.net/JSA72300',
+      'https://nvd.nist.gov/vuln/detail/CVE-2023-36845',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
     cve: 'CVE-2024-21591',
     severity: 'critical',
     cvss: 9.8,
@@ -462,9 +615,55 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
 
+  {
+    cve: 'CVE-2024-11667',
+    severity: 'high',
+    cvss: 7.5,
+    description: 'Zyxel firewall directory traversal vulnerability exploited in ransomware attacks',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL' },
+    ],
+    references: [
+      'https://www.zyxel.com/global/en/support/security-advisories/zyxel-security-advisory-for-multiple-vulnerabilities-in-firewalls-11-27-2024',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-11667',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2024-40891',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Zyxel CPE Series telnet command injection (zero-day actively exploited)',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL' },
+    ],
+    references: [
+      'https://www.greynoise.io/blog/active-exploitation-of-zero-day-zyxel-cpe-vulnerability-cve-2024-40891',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-40891',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
   // ============================================================
   // Sophos
   // ============================================================
+  {
+    cve: 'CVE-2020-15069',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Sophos XG Firewall buffer overflow in User Portal allowing RCE',
+    affected: [
+      { vendor: 'sophos', product: 'XG Firewall' },
+    ],
+    references: [
+      'https://www.sophos.com/en-us/security-advisories/sophos-sa-20200625-xg-user-portal-rce',
+      'https://nvd.nist.gov/vuln/detail/CVE-2020-15069',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
   {
     cve: 'CVE-2022-3236',
     severity: 'critical',
@@ -491,6 +690,40 @@ export const vulnerabilities: Vulnerability[] = [
     references: [
       'https://www.sophos.com/en-us/security-advisories/sophos-sa-20200421-asnarok',
       'https://nvd.nist.gov/vuln/detail/CVE-2020-12271',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+
+  // ============================================================
+  // WatchGuard
+  // ============================================================
+  {
+    cve: 'CVE-2025-14733',
+    severity: 'critical',
+    cvss: 9.3,
+    description: 'WatchGuard Fireware OS IKEv2 VPN out-of-bounds write allowing unauthenticated RCE',
+    affected: [
+      { vendor: 'watchguard', product: 'Firebox' },
+    ],
+    references: [
+      'https://www.watchguard.com/wgrd-psirt/advisory/wgsa-2025-00027',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-14733',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2022-23176',
+    severity: 'critical',
+    cvss: 8.8,
+    description: 'WatchGuard Firebox/XTM privilege escalation allowing management access via exposed endpoint',
+    affected: [
+      { vendor: 'watchguard', product: 'Firebox' },
+    ],
+    references: [
+      'https://www.watchguard.com/wgrd-psirt/advisory/wgsa-2022-00002',
+      'https://nvd.nist.gov/vuln/detail/CVE-2022-23176',
     ],
     exploitAvailable: true,
     cisaKev: true,
