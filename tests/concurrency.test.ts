@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from 'vitest';
 import { VpnScanner } from '../src/scanner.js';
 
 describe('scanMultiple concurrency', () => {
@@ -9,7 +8,7 @@ describe('scanMultiple concurrency', () => {
     // Mock scan to return results with varying delays
     const originalScan = scanner.scan.bind(scanner);
     const delays = [50, 10, 40, 5, 30]; // Different delays to shuffle completion order
-    vi.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
+    jest.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
       const idx = targets.indexOf(target);
       await new Promise(r => setTimeout(r, delays[idx]));
       return {
@@ -35,7 +34,7 @@ describe('scanMultiple concurrency', () => {
     let running = 0;
     let maxRunning = 0;
 
-    vi.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
+    jest.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
       running++;
       maxRunning = Math.max(maxRunning, running);
       await new Promise(r => setTimeout(r, 20));
@@ -63,7 +62,7 @@ describe('scanMultiple concurrency', () => {
   it('isolates errors per target', async () => {
     const scanner = new VpnScanner({ concurrency: 3, timeout: 1000 });
 
-    vi.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
+    jest.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
       if (target === 'bad-target') {
         return {
           target,
