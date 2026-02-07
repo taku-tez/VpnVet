@@ -131,10 +131,11 @@ if (result.device) {
   }
 }
 
-// With options
+// With options (vendor filtering)
 const scanner = new VpnScanner({
   timeout: 15000,
   skipVulnCheck: false,
+  vendor: 'fortinet', // Filter to specific vendor (see VpnVendor type)
 });
 
 const results = await scanner.scanMultiple([

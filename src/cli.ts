@@ -139,7 +139,7 @@ function formatTable(results: ScanResult[]): string {
     if (result.device) {
       const d = result.device;
       lines.push(`\nDevice Detected:`);
-      lines.push(`  Vendor: ${d.vendor}`);
+      lines.push(`  Vendor: ${formatVendorName(d.vendor)}`);
       lines.push(`  Product: ${d.product}`);
       if (d.version) lines.push(`  Version: ${d.version}`);
       lines.push(`  Confidence: ${d.confidence}%`);

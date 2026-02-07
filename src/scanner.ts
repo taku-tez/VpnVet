@@ -518,10 +518,15 @@ export class VpnScanner {
     return VpnScanner.isUnsafeIP(ip);
   }
 
-  private async httpRequest(
+  /**
+   * Core request logic shared by text and binary fetches.
+   * Handles SSRF-safe DNS resolution, redirect tracking, cross-host control,
+   * and loop detection. The `singleFetch` callback performs the actual I/O.
+   */
+  private async httpRequestCore<T extends { statusCode: number; headers: Record<string, string | string[]> }>(
     url: string,
-    method: string = 'GET'
-  ): Promise<HttpResponse | null> {
+    singleFetch: (currentUrl: string, pinnedAddresses: string[]) => Promise<T | null>,
+  ): Promise<T | null> {
     const maxRedirects = this.options.followRedirects ? 5 : 0;
     const visited = new Set<string>();
     let currentUrl = url;
@@ -536,11 +541,10 @@ export class VpnScanner {
       visited.add(currentUrl);
 
       // Try with fallback across pinned addresses (up to 3 attempts)
-      let response: HttpResponse | null = null;
+      let response: T | null = null;
       const maxAttempts = Math.min(pinnedAddresses.length, 3);
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        // buildPinnedLookup rotates through addresses on each call
-        response = await this.httpRequestSingle(currentUrl, method, pinnedAddresses.slice(attempt));
+        response = await singleFetch(currentUrl, pinnedAddresses.slice(attempt));
         if (response) break;
       }
       if (!response) return null;
@@ -573,6 +577,16 @@ export class VpnScanner {
     }
 
     return null;
+  }
+
+  private async httpRequest(
+    url: string,
+    method: string = 'GET'
+  ): Promise<HttpResponse | null> {
+    return this.httpRequestCore<HttpResponse>(
+      url,
+      (currentUrl, pinnedAddresses) => this.httpRequestSingle(currentUrl, method, pinnedAddresses),
+    );
   }
 
   /**
@@ -684,56 +698,15 @@ export class VpnScanner {
    * Used for favicon hash computation.
    */
   private async httpRequestBinary(url: string): Promise<{ buffer: Buffer; statusCode: number; contentType: string } | null> {
-    const maxRedirects = this.options.followRedirects ? 5 : 0;
-    const visited = new Set<string>();
-    let currentUrl = url;
-    const originalHost = new URL(url).hostname;
+    const result = await this.httpRequestCore<{ statusCode: number; headers: Record<string, string | string[]>; body: Buffer }>(
+      url,
+      (currentUrl, pinnedAddresses) => this.httpRequestBinarySingle(currentUrl, pinnedAddresses),
+    );
+    if (!result) return null;
 
-    // SSRF: resolve and pin DNS for initial target
-    let pinnedAddresses = await VpnScanner.resolveSafeAddresses(originalHost);
-    if (pinnedAddresses.length === 0) return null;
-
-    for (let i = 0; i <= maxRedirects; i++) {
-      if (visited.has(currentUrl)) return null;
-      visited.add(currentUrl);
-
-      // Try with fallback across pinned addresses (up to 3 attempts)
-      let result: { statusCode: number; headers: Record<string, string | string[]>; body: Buffer } | null = null;
-      const maxAttempts = Math.min(pinnedAddresses.length, 3);
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        result = await this.httpRequestBinarySingle(currentUrl, pinnedAddresses.slice(attempt));
-        if (result) break;
-      }
-      if (!result) return null;
-
-      const isRedirect = result.statusCode >= 300 && result.statusCode < 400;
-      if (isRedirect && i < maxRedirects) {
-        const location = result.headers['location'];
-        const locationStr = Array.isArray(location) ? location[0] : location;
-        if (locationStr) {
-          const redirectUrl = new URL(locationStr, currentUrl);
-          const redirectHost = redirectUrl.hostname;
-
-          if (redirectHost !== originalHost && !this.options.allowCrossHostRedirects) {
-            return null;
-          }
-
-          // Re-resolve and pin DNS for redirect target
-          pinnedAddresses = await VpnScanner.resolveSafeAddresses(redirectHost);
-          if (pinnedAddresses.length === 0) return null;
-
-          currentUrl = redirectUrl.toString();
-          continue;
-        }
-      }
-
-      const contentTypeRaw = result.headers['content-type'];
-      const contentType = (Array.isArray(contentTypeRaw) ? contentTypeRaw[0] : contentTypeRaw) || '';
-
-      return { buffer: result.body, statusCode: result.statusCode, contentType };
-    }
-
-    return null;
+    const contentTypeRaw = result.headers['content-type'];
+    const contentType = (Array.isArray(contentTypeRaw) ? contentTypeRaw[0] : contentTypeRaw) || '';
+    return { buffer: result.body, statusCode: result.statusCode, contentType };
   }
 
   private async httpRequestBinarySingle(
@@ -892,7 +865,7 @@ export class VpnScanner {
       // Check if product matches
       const productMatch = vuln.affected.some(
         a => a.vendor === device.vendor && 
-            (a.product === device.product || !a.product)
+            (!a.product || normalizeProduct(a.product) === normalizeProduct(device.product))
       );
 
       if (productMatch) {
@@ -904,7 +877,7 @@ export class VpnScanner {
         if (device.version && !this.options.skipVersionDetection) {
           // Check if any affected entry for this vendor has version constraints
           const matchingAffected = vuln.affected.filter(
-            a => a.vendor === device.vendor && (a.product === device.product || !a.product)
+            a => a.vendor === device.vendor && (!a.product || normalizeProduct(a.product) === normalizeProduct(device.product))
           );
           
           const affectedWithVersion = matchingAffected.find(

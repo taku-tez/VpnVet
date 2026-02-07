@@ -133,7 +133,7 @@ export interface ScanOptions {
   followRedirects?: boolean;
   headers?: Record<string, string>;
   fast?: boolean; // Stop on first match
-  vendor?: string; // Test specific vendor only
+  vendor?: VpnVendor | string; // Test specific vendor only (VpnVendor recommended)
   allowCrossHostRedirects?: boolean; // Allow redirects to different hosts (default: false)
   concurrency?: number; // Max concurrent scans in scanMultiple (default: 5)
 }
