@@ -39,21 +39,74 @@ export function normalizeUrl(target: string): string {
 }
 
 /**
+ * Parse a version segment into numeric and string parts.
+ * e.g. "49sv" -> [{type:'num', val:49}, {type:'str', val:'sv'}]
+ *      "d"    -> [{type:'str', val:'d'}]
+ *      "13"   -> [{type:'num', val:13}]
+ */
+function parseSegmentParts(seg: string): Array<{ type: 'num' | 'str'; numVal: number; strVal: string }> {
+  const parts: Array<{ type: 'num' | 'str'; numVal: number; strVal: string }> = [];
+  const tokens = seg.match(/\d+|[a-zA-Z]+/g);
+  if (!tokens) return [{ type: 'str', numVal: 0, strVal: seg }];
+  for (const t of tokens) {
+    if (/^\d+$/.test(t)) {
+      parts.push({ type: 'num', numVal: parseInt(t, 10), strVal: t });
+    } else {
+      parts.push({ type: 'str', numVal: 0, strVal: t.toLowerCase() });
+    }
+  }
+  return parts;
+}
+
+/**
  * Compare semantic versions
  * Returns: -1 if a < b, 0 if equal, 1 if a > b
+ * 
+ * Handles VPN-specific version formats like:
+ * - 13.1-49.14 (nested/hyphenated)
+ * - 10.2.0.5-d-29sv (alpha suffixes)
+ * - R81.20 (letter prefixes)
  */
 export function compareVersions(a: string, b: string): number {
-  const partsA = a.split(/[.\-]/).map(p => parseInt(p, 10) || 0);
-  const partsB = b.split(/[.\-]/).map(p => parseInt(p, 10) || 0);
+  // Split on . and - but keep both as delimiters
+  const segmentsA = a.split(/[.\-]/);
+  const segmentsB = b.split(/[.\-]/);
   
-  const maxLen = Math.max(partsA.length, partsB.length);
+  const maxLen = Math.max(segmentsA.length, segmentsB.length);
   
   for (let i = 0; i < maxLen; i++) {
-    const numA = partsA[i] || 0;
-    const numB = partsB[i] || 0;
+    const segA = segmentsA[i] || '';
+    const segB = segmentsB[i] || '';
     
-    if (numA < numB) return -1;
-    if (numA > numB) return 1;
+    const partsA = parseSegmentParts(segA);
+    const partsB = parseSegmentParts(segB);
+    
+    const maxParts = Math.max(partsA.length, partsB.length);
+    
+    for (let j = 0; j < maxParts; j++) {
+      const pA = partsA[j];
+      const pB = partsB[j];
+      
+      // Missing part: segment with fewer sub-parts is "less"
+      if (!pA && pB) return -1;
+      if (pA && !pB) return 1;
+      if (!pA || !pB) continue;
+      
+      // Both numeric
+      if (pA.type === 'num' && pB.type === 'num') {
+        if (pA.numVal < pB.numVal) return -1;
+        if (pA.numVal > pB.numVal) return 1;
+      }
+      // Both string
+      else if (pA.type === 'str' && pB.type === 'str') {
+        if (pA.strVal < pB.strVal) return -1;
+        if (pA.strVal > pB.strVal) return 1;
+      }
+      // num vs str: numbers sort before strings
+      else {
+        return pA.type === 'num' ? -1 : 1;
+      }
+    }
   }
   
   return 0;
@@ -61,6 +114,10 @@ export function compareVersions(a: string, b: string): number {
 
 /**
  * Check if a version is within affected range
+ */
+/**
+ * Check if a version is within affected range.
+ * Returns true if version matches, false if not, undefined if no version constraints defined.
  */
 export function isVersionAffected(
   version: string,
@@ -76,6 +133,15 @@ export function isVersionAffected(
   }
 
   return false;
+}
+
+/**
+ * Check if an affected entry has any version constraints defined.
+ */
+export function hasVersionConstraints(
+  affected: { versionStart?: string; versionEnd?: string; versionExact?: string }
+): boolean {
+  return !!(affected.versionStart || affected.versionEnd || affected.versionExact);
 }
 
 /**

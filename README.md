@@ -10,7 +10,7 @@ VpnVet detects VPN appliances exposed on the internet and checks them against kn
 ## Features
 
 - 🔍 **44 VPN Vendors** - Comprehensive global coverage
-- 🛡️ **41+ Critical CVEs** - CISA KEV prioritized
+- 🛡️ **38 Critical CVEs** - CISA KEV prioritized
 - 📊 **Multiple Formats** - JSON, SARIF, CSV, Table
 - 🚀 **Fast & Lightweight** - No heavy dependencies
 - 🔧 **CI/CD Ready** - Exit codes based on severity

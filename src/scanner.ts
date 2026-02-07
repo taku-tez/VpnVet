@@ -14,6 +14,7 @@ import {
   normalizeUrl,
   compareVersions,
   isVersionAffected,
+  hasVersionConstraints,
   getSeverityWeight,
   getConfidenceWeight,
 } from './utils.js';
@@ -94,6 +95,44 @@ export class VpnScanner {
   }
 
   private async detectDevice(baseUrl: string): Promise<VpnDevice | undefined> {
+    // Determine URLs to try based on ports option
+    const urlsToTry = this.buildPortUrls(baseUrl);
+
+    for (const url of urlsToTry) {
+      const result = await this.detectDeviceForUrl(url);
+      if (result) return result;
+    }
+
+    return undefined;
+  }
+
+  private buildPortUrls(baseUrl: string): string[] {
+    const parsedUrl = new URL(baseUrl);
+
+    // If explicit port in URL, only use that
+    if (parsedUrl.port) {
+      return [baseUrl];
+    }
+
+    // Otherwise, try each port from options
+    const urls: string[] = [];
+    for (const port of this.options.ports) {
+      const isDefaultPort = (parsedUrl.protocol === 'https:' && port === 443) ||
+                            (parsedUrl.protocol === 'http:' && port === 80);
+      if (isDefaultPort) {
+        urls.push(baseUrl);
+      } else {
+        const u = new URL(baseUrl);
+        u.port = String(port);
+        urls.push(u.toString().replace(/\/$/, ''));
+      }
+    }
+
+    // Deduplicate while preserving order
+    return [...new Set(urls)];
+  }
+
+  private async detectDeviceForUrl(baseUrl: string): Promise<VpnDevice | undefined> {
     const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string }> = new Map();
 
     // Filter fingerprints if vendor specified
@@ -263,6 +302,39 @@ export class VpnScanner {
   }
 
   private async httpRequest(
+    url: string,
+    method: string = 'GET'
+  ): Promise<HttpResponse | null> {
+    const maxRedirects = this.options.followRedirects ? 5 : 0;
+    const visited = new Set<string>();
+    let currentUrl = url;
+
+    for (let i = 0; i <= maxRedirects; i++) {
+      if (visited.has(currentUrl)) return null; // Loop detected
+      visited.add(currentUrl);
+
+      const response = await this.httpRequestSingle(currentUrl, method);
+      if (!response) return null;
+
+      // Follow redirect?
+      const isRedirect = response.statusCode >= 300 && response.statusCode < 400;
+      if (isRedirect && i < maxRedirects) {
+        const location = response.headers['location'];
+        const locationStr = Array.isArray(location) ? location[0] : location;
+        if (locationStr) {
+          // Resolve relative/absolute URL
+          currentUrl = new URL(locationStr, currentUrl).toString();
+          continue;
+        }
+      }
+
+      return response;
+    }
+
+    return null;
+  }
+
+  private async httpRequestSingle(
     url: string,
     method: string = 'GET'
   ): Promise<HttpResponse | null> {

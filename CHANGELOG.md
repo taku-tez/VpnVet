@@ -29,7 +29,7 @@ Major accuracy improvements for FortiGate/FortiOS detection based on deep resear
 - FortiOS version-specific patterns (6.x vs 7.x)
 
 ### Stats
-- 44 vendors, **42 CVEs (29 CISA KEV)**
+- 44 vendors, **38 CVEs (34 CISA KEV)**
 - FortiGate: **6 critical CVEs** tracked
 - 122 tests (115 passed, 7 skipped)
 
@@ -78,7 +78,7 @@ Major fingerprint improvements for 5 additional vendors (10 CISA KEV CVEs total)
 
 ### Stats
 - 44 vendors with official documentation-based fingerprints
-- 41 CVEs (28 CISA KEV)
+- 38 CVEs (34 CISA KEV)
 - Top 10 vendors now research-backed
 - 122 tests (115 passed, 7 skipped)
 
@@ -121,7 +121,7 @@ Major fingerprint accuracy improvements based on official vendor documentation r
 
 ### Stats
 - 44 vendors
-- 41 CVEs (28 CISA KEV)
+- 38 CVEs (34 CISA KEV)
 - 122 tests (115 passed, 7 skipped)
 
 ## [0.3.0] - 2026-02-06
@@ -143,7 +143,7 @@ Major fingerprint accuracy improvements based on official vendor documentation r
 
 ### Stats
 - 44 vendors (was 19)
-- 41 CVEs (was 29)
+- 38 CVEs (was 29)
 
 ## [0.2.0] - 2026-02-06
 

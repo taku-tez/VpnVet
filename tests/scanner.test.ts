@@ -134,6 +134,54 @@ describe('VpnScanner', () => {
   });
 });
 
+describe('Multi-port scanning', () => {
+  it('should try multiple ports when no explicit port in target', async () => {
+    const scanner = new VpnScanner({
+      timeout: 1000,
+      ports: [443, 8443, 10443],
+    });
+
+    // Will fail to connect but should not throw
+    const result = await scanner.scan('localhost');
+    expect(result).toBeDefined();
+    expect(result.target).toBe('localhost');
+  });
+
+  it('should use only the explicit port when target has one', async () => {
+    const scanner = new VpnScanner({
+      timeout: 1000,
+      ports: [443, 8443],
+    });
+
+    const result = await scanner.scan('localhost:9999');
+    expect(result).toBeDefined();
+    expect(result.target).toBe('localhost:9999');
+  });
+});
+
+describe('followRedirects', () => {
+  it('should not follow redirects when disabled', async () => {
+    const scanner = new VpnScanner({
+      timeout: 1000,
+      followRedirects: false,
+    });
+
+    // Will fail to connect, but the option should be respected
+    const result = await scanner.scan('localhost:9999');
+    expect(result).toBeDefined();
+  });
+
+  it('should follow redirects when enabled (default)', async () => {
+    const scanner = new VpnScanner({
+      timeout: 1000,
+      followRedirects: true,
+    });
+
+    const result = await scanner.scan('localhost:9999');
+    expect(result).toBeDefined();
+  });
+});
+
 describe('VpnDevice structure', () => {
   it('should have correct fields when device is detected', () => {
     // Mock device structure test

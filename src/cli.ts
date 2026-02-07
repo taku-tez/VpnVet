@@ -335,7 +335,13 @@ async function main(): Promise<void> {
       } else if (arg === '--timeout') {
         options.timeout = parseInt(args[++i], 10);
       } else if (arg === '--ports') {
-        options.ports = args[++i].split(',').map(p => parseInt(p, 10));
+        const rawPorts = args[++i].split(',').map(p => parseInt(p, 10));
+        const validPorts = [...new Set(rawPorts)].filter(p => !isNaN(p) && p >= 1 && p <= 65535);
+        if (validPorts.length === 0) {
+          logError('Invalid --ports value. Ports must be numbers between 1-65535.');
+          process.exit(1);
+        }
+        options.ports = validPorts;
       } else if (arg === '--skip-vuln') {
         options.skipVulnCheck = true;
       } else if (arg === '--skip-version') {
