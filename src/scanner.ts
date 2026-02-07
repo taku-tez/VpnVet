@@ -488,20 +488,35 @@ export class VpnScanner {
         let confidence: 'confirmed' | 'likely' | 'potential' = 'potential';
         let evidence = `Device detected as ${device.vendor} ${device.product}`;
 
-        if (device.version) {
-          const affectedVersion = vuln.affected.find(
-            a => a.vendor === device.vendor && isVersionAffected(device.version!, a)
+        if (device.version && !this.options.skipVersionDetection) {
+          // Check if any affected entry for this vendor has version constraints
+          const matchingAffected = vuln.affected.filter(
+            a => a.vendor === device.vendor && (a.product === device.product || !a.product)
           );
+          
+          const affectedWithVersion = matchingAffected.find(
+            a => hasVersionConstraints(a) && isVersionAffected(device.version!, a)
+          );
+          
+          // Check if there are entries WITHOUT version constraints (vendor/product only)
+          const hasNoVersionEntries = matchingAffected.some(a => !hasVersionConstraints(a));
 
-          if (affectedVersion) {
+          if (affectedWithVersion) {
             confidence = 'confirmed';
             evidence = `Version ${device.version} is in affected range`;
+          } else if (hasNoVersionEntries) {
+            // CVE has no version range defined - keep as potential (or likely if KEV)
+            confidence = vuln.cisaKev ? 'likely' : 'potential';
+            evidence += '. No version range defined for this CVE.';
+            if (vuln.cisaKev) {
+              evidence += ' This CVE is in CISA Known Exploited Vulnerabilities catalog.';
+            }
           } else {
-            // Version detected but not in affected range - skip
+            // Version detected but not in any affected range - skip
             continue;
           }
         } else {
-          // No version info - mark as potential if CISA KEV
+          // No version info or skipVersionDetection - mark as potential if CISA KEV
           if (vuln.cisaKev) {
             confidence = 'likely';
             evidence += '. This CVE is in CISA Known Exploited Vulnerabilities catalog.';

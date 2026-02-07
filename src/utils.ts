@@ -78,8 +78,8 @@ export function compareVersions(a: string, b: string): number {
     const segA = segmentsA[i] || '';
     const segB = segmentsB[i] || '';
     
-    const partsA = parseSegmentParts(segA);
-    const partsB = parseSegmentParts(segB);
+    const partsA = segA ? parseSegmentParts(segA) : [];
+    const partsB = segB ? parseSegmentParts(segB) : [];
     
     const maxParts = Math.max(partsA.length, partsB.length);
     
