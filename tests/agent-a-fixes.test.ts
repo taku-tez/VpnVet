@@ -56,11 +56,11 @@ describe('#1 Initial Request SSRF Protection', () => {
   });
 
   it('should block FQDN resolving to private IP', async () => {
-    mockLookup.mockResolvedValue({ address: '10.0.0.1', family: 4 });
+    mockLookup.mockResolvedValue([{ address: '10.0.0.1', family: 4 }] as any);
     const scanner = new VpnScanner({ timeout: 500, ports: [443] });
     const result = await scanner.scan('https://internal.corp');
     expect(result.device).toBeUndefined();
-    expect(mockLookup).toHaveBeenCalledWith('internal.corp');
+    expect(mockLookup).toHaveBeenCalledWith('internal.corp', { all: true });
   });
 
   it('should block when DNS resolution fails (fail-closed)', async () => {

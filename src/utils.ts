@@ -117,7 +117,7 @@ export function compareVersions(a: string, b: string): number {
  */
 /**
  * Check if a version is within affected range.
- * Returns true if version matches, false if not, undefined if no version constraints defined.
+ * Returns boolean: true if version matches the affected range, false otherwise (including when no version constraints are defined).
  */
 export function isVersionAffected(
   version: string,

@@ -8,6 +8,7 @@ import {
   getCriticalVulnerabilities,
   getKevVulnerabilities,
 } from '../src/vulnerabilities.js';
+import { isVersionAffected } from '../src/utils.js';
 
 describe('Vulnerabilities', () => {
   describe('vulnerability database', () => {
@@ -140,6 +141,10 @@ describe('Vulnerabilities', () => {
       expect(cve).toBeDefined();
       expect(cve?.severity).toBe('critical');
       expect(cve?.cisaKev).toBe(true);
+    });
+
+    it('isVersionAffected returns false when no version constraints defined', () => {
+      expect(isVersionAffected('1.0.0', {})).toBe(false);
     });
 
     it('CVE-2022-42475 (FortiOS heap overflow) should have affected versions', () => {
