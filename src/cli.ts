@@ -9,7 +9,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VpnScanner } from './scanner.js';
-import { fingerprints } from './fingerprints/index.js';
+import { fingerprints, getAllVendors } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
 import { setVerbose, logProgress, logError, logInfo, formatVendorName } from './utils.js';
 import type { ScanResult, ScanOptions } from './types.js';
@@ -225,6 +225,13 @@ function formatSarif(results: ScanResult[]): string {
   return JSON.stringify(sarif, null, 2);
 }
 
+function escapeCsvCell(value: string): string {
+  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
 function formatCsv(results: ScanResult[]): string {
   const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev'];
   
@@ -243,7 +250,7 @@ function formatCsv(results: ScanResult[]): string {
             String(vuln.vulnerability.cvss),
             vuln.confidence,
             String(vuln.vulnerability.cisaKev),
-          ].join(','));
+          ].map(escapeCsvCell).join(','));
         }
       } else {
         lines.push([
@@ -253,10 +260,10 @@ function formatCsv(results: ScanResult[]): string {
           result.device.version || '',
           String(result.device.confidence),
           '', '', '', '', '',
-        ].join(','));
+        ].map(escapeCsvCell).join(','));
       }
     } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', ''].join(','));
+      lines.push([result.target, '', '', '', '', '', '', '', '', ''].map(escapeCsvCell).join(','));
     }
   }
   
@@ -333,7 +340,16 @@ async function main(): Promise<void> {
       } else if (arg === '-f' || arg === '--format') {
         options.format = args[++i] as CliOptions['format'];
       } else if (arg === '--timeout') {
-        options.timeout = parseInt(args[++i], 10);
+        const timeoutVal = parseInt(args[++i], 10);
+        if (isNaN(timeoutVal) || timeoutVal <= 0) {
+          logError('Invalid --timeout value. Must be a positive number (in milliseconds).');
+          process.exit(1);
+        }
+        if (timeoutVal > 120000) {
+          logError('Invalid --timeout value. Maximum allowed is 120000ms (2 minutes).');
+          process.exit(1);
+        }
+        options.timeout = timeoutVal;
       } else if (arg === '--ports') {
         const rawPorts = args[++i].split(',').map(p => parseInt(p, 10));
         const validPorts = [...new Set(rawPorts)].filter(p => !isNaN(p) && p >= 1 && p <= 65535);
@@ -359,6 +375,15 @@ async function main(): Promise<void> {
       }
     }
     
+    // Validate --vendor
+    if (options.vendor) {
+      const knownVendors = getAllVendors();
+      if (!knownVendors.includes(options.vendor)) {
+        logError(`Unknown vendor: "${options.vendor}". Known vendors: ${knownVendors.join(', ')}`);
+        process.exit(1);
+      }
+    }
+
     if (targets.length === 0) {
       logError('No targets specified. Provide a target or use --targets <file>');
       process.exit(1);

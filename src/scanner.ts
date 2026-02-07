@@ -7,6 +7,7 @@
 import * as https from 'node:https';
 import * as http from 'node:http';
 import * as tls from 'node:tls';
+import * as net from 'node:net';
 import { URL } from 'node:url';
 import { fingerprints } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
@@ -38,6 +39,7 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   headers: {},
   fast: false,
   vendor: '',
+  allowCrossHostRedirects: false,
 };
 
 interface HttpResponse {
@@ -324,6 +326,30 @@ export class VpnScanner {
     return { success: false };
   }
 
+  private static isPrivateIP(hostname: string): boolean {
+    // Check if hostname resolves to a private/internal IP
+    if (net.isIPv4(hostname)) {
+      const parts = hostname.split('.').map(Number);
+      return (
+        parts[0] === 10 ||                                          // 10.0.0.0/8
+        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
+        (parts[0] === 192 && parts[1] === 168) ||                  // 192.168.0.0/16
+        parts[0] === 127 ||                                         // 127.0.0.0/8
+        (parts[0] === 169 && parts[1] === 254)                     // 169.254.0.0/16
+      );
+    }
+    if (net.isIPv6(hostname)) {
+      const normalized = hostname.toLowerCase();
+      return (
+        normalized === '::1' ||
+        normalized.startsWith('fc') ||
+        normalized.startsWith('fd') ||
+        normalized.startsWith('fe80')
+      );
+    }
+    return false;
+  }
+
   private async httpRequest(
     url: string,
     method: string = 'GET'
@@ -331,6 +357,7 @@ export class VpnScanner {
     const maxRedirects = this.options.followRedirects ? 5 : 0;
     const visited = new Set<string>();
     let currentUrl = url;
+    const originalHost = new URL(url).hostname;
 
     for (let i = 0; i <= maxRedirects; i++) {
       if (visited.has(currentUrl)) return null; // Loop detected
@@ -346,7 +373,20 @@ export class VpnScanner {
         const locationStr = Array.isArray(location) ? location[0] : location;
         if (locationStr) {
           // Resolve relative/absolute URL
-          currentUrl = new URL(locationStr, currentUrl).toString();
+          const redirectUrl = new URL(locationStr, currentUrl);
+          const redirectHost = redirectUrl.hostname;
+
+          // Always block redirects to private/internal IPs
+          if (VpnScanner.isPrivateIP(redirectHost)) {
+            return null;
+          }
+
+          // Block cross-host redirects unless explicitly allowed
+          if (redirectHost !== originalHost && !this.options.allowCrossHostRedirects) {
+            return null;
+          }
+
+          currentUrl = redirectUrl.toString();
           continue;
         }
       }
@@ -425,13 +465,20 @@ export class VpnScanner {
           return;
         }
 
+        const tlsOptions: tls.ConnectionOptions = {
+          host: parsedUrl.hostname,
+          port: Number(parsedUrl.port) || 443,
+          rejectUnauthorized: false,
+          timeout: this.options.timeout,
+        };
+
+        // Set SNI servername for virtual host environments (skip for IP addresses)
+        if (!net.isIP(parsedUrl.hostname)) {
+          tlsOptions.servername = parsedUrl.hostname;
+        }
+
         const socket = tls.connect(
-          {
-            host: parsedUrl.hostname,
-            port: Number(parsedUrl.port) || 443,
-            rejectUnauthorized: false,
-            timeout: this.options.timeout,
-          },
+          tlsOptions,
           () => {
             const cert = socket.getPeerCertificate();
             socket.end();

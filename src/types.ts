@@ -123,6 +123,7 @@ export interface ScanOptions {
   headers?: Record<string, string>;
   fast?: boolean; // Stop on first match
   vendor?: string; // Test specific vendor only
+  allowCrossHostRedirects?: boolean; // Allow redirects to different hosts (default: false)
 }
 
 export interface Fingerprint {
