@@ -473,25 +473,17 @@ async function main(): Promise<void> {
     }
     
     const scanner = new VpnScanner(options);
-    const results: ScanResult[] = [];
+    const results = await scanner.scanMultiple(targets);
     
-    for (let i = 0; i < targets.length; i++) {
-      const target = targets[i];
-      
-      if (!options.quiet) {
-        process.stdout.write(`[${i + 1}/${targets.length}] Scanning ${target}...`);
-      }
-      
-      const result = await scanner.scan(target);
-      results.push(result);
-      
-      if (!options.quiet) {
+    if (!options.quiet) {
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
         if (result.device) {
-          console.log(` ✓ ${result.device.vendor} ${result.device.product} (${result.device.confidence}%)`);
+          console.log(`[${i + 1}/${targets.length}] ${result.target} ✓ ${result.device.vendor} ${result.device.product} (${result.device.confidence}%)`);
         } else if (result.errors.length > 0) {
-          console.log(` ✗ Error: ${result.errors[0]}`);
+          console.log(`[${i + 1}/${targets.length}] ${result.target} ✗ Error: ${result.errors[0]}`);
         } else {
-          console.log(' - No VPN detected');
+          console.log(`[${i + 1}/${targets.length}] ${result.target} - No VPN detected`);
         }
       }
     }

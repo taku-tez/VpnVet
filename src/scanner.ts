@@ -284,28 +284,15 @@ export class VpnScanner {
           return { success: true, version };
         }
       } else if (pattern.type === 'header') {
-        // Try HEAD first; fall back to GET if HEAD returns null (connection failure, 405, etc.)
+        // Try HEAD first; fall back to GET if HEAD returns null or 405/501
         let response = await this.httpRequest(baseUrl, 'HEAD');
-        if (!response) {
+        if (!response || response.statusCode === 405 || response.statusCode === 501) {
           response = await this.httpRequest(baseUrl, 'GET');
         }
         
         if (!response) return { success: false };
 
-        const matchPattern = typeof pattern.match === 'string'
-          ? pattern.match.toLowerCase()
-          : pattern.match;
-
-        const headerStr = Object.entries(response.headers)
-          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
-          .join('\n')
-          .toLowerCase();
-
-        if (typeof matchPattern === 'string') {
-          if (new RegExp(matchPattern, 'i').test(headerStr)) {
-            return { success: true };
-          }
-        } else if (matchPattern.test(headerStr)) {
+        if (this.matchHeaders(response.headers, pattern.match)) {
           return { success: true };
         }
       } else if (pattern.type === 'favicon') {
@@ -366,6 +353,19 @@ export class VpnScanner {
   }
 
   /**
+   * Check if response headers match a pattern (string or RegExp).
+   */
+  private matchHeaders(headers: Record<string, string | string[]>, match: string | RegExp): boolean {
+    const headerStr = Object.entries(headers)
+      .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+      .join('\n')
+      .toLowerCase();
+
+    const regex = typeof match === 'string' ? new RegExp(match, 'i') : match;
+    return regex.test(headerStr);
+  }
+
+  /**
    * Check if a hostname is safe to connect to (not private/internal).
    * Resolves FQDNs via DNS. Returns false on DNS failure (fail-closed).
    */
@@ -374,8 +374,8 @@ export class VpnScanner {
       return !VpnScanner.isPrivateIP(hostname);
     }
     try {
-      const { address } = await dns.lookup(hostname);
-      return !VpnScanner.isPrivateIP(address);
+      const addresses = await dns.lookup(hostname, { all: true });
+      return !addresses.some(({ address }) => VpnScanner.isPrivateIP(address));
     } catch {
       return false; // DNS failure → fail-closed
     }

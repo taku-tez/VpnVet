@@ -229,6 +229,69 @@ describe('Unknown option detection (#4)', () => {
   });
 });
 
+describe('--concurrency validation', () => {
+  it('should reject non-integer concurrency', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --concurrency abc', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Invalid --concurrency');
+    }
+  });
+
+  it('should reject concurrency of 0', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --concurrency 0', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Invalid --concurrency');
+    }
+  });
+
+  it('should reject concurrency exceeding 100', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --concurrency 200', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      fail('Should have exited with error');
+    } catch (e: any) {
+      expect(e.status).toBe(1);
+      expect(e.stderr).toContain('Invalid --concurrency');
+    }
+  });
+
+  it('should accept valid concurrency value', async () => {
+    const { execSync } = await import('node:child_process');
+    // This will fail on DNS but should NOT fail on concurrency validation
+    try {
+      execSync('npx tsx src/cli.ts scan example.com --concurrency 10 --timeout 1000', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 15000,
+      });
+    } catch (e: any) {
+      // Should not fail with "Invalid --concurrency"
+      expect(e.stderr || '').not.toContain('Invalid --concurrency');
+    }
+  });
+});
+
 describe('--vendor validation (#3)', () => {
   it('should accept known vendor (fortinet)', async () => {
     const vendors = getAllVendors();
