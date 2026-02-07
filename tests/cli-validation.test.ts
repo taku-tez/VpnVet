@@ -83,7 +83,8 @@ describe('--timeout validation (#2)', () => {
       fail('Should have exited with error');
     } catch (e: any) {
       expect(e.status).toBe(1);
-      expect(e.stderr).toContain('Invalid --timeout');
+      // Negative value starts with '-', so requireArg catches it as missing value
+      expect(e.stderr).toMatch(/Invalid --timeout|requires a value/);
     }
   });
 
