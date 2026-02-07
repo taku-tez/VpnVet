@@ -100,6 +100,21 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: true,
     cisaKev: true,
   },
+  {
+    cve: 'CVE-2024-55591',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'FortiOS Node.js WebSocket authentication bypass allowing super-admin access',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.16' },
+    ],
+    references: [
+      'https://www.fortiguard.com/psirt/FG-IR-24-535',
+      'https://nvd.nist.gov/vuln/detail/CVE-2024-55591',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
 
   // ============================================================
   // Palo Alto GlobalProtect / PAN-OS

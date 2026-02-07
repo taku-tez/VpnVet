@@ -5,17 +5,25 @@
 import type { Fingerprint } from '../types.js';
 
 export const tier1enterpriseFingerprints: Fingerprint[] = [
+  // ============================================================
+  // Fortinet FortiGate (5 CISA KEV CVEs)
+  // Deep research: Bishop Fox, Shadowserver, Nuclei templates
+  // Detection: ~490K SSL VPN interfaces on Shodan
+  // Version: ETag/Last-Modified timestamp, CSS/JS hash mapping
+  // ============================================================
   {
     vendor: 'fortinet',
     product: 'FortiGate',
     patterns: [
-      // Most reliable: Server header (Shodan: ~490,000 devices)
+      // === TIER 1: Highest Confidence ===
+
+      // Server header - FortiOS unique masked pattern (most reliable)
       {
         type: 'header',
         match: 'Server: xxxxxxxx-xxxxx',
         weight: 10,
       },
-      // SSL VPN cookies (definitive)
+      // SSL VPN session cookies (definitive proof of FortiOS SSL VPN)
       {
         type: 'header',
         match: 'SVPNCOOKIE',
@@ -31,14 +39,32 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'SVPNTMPCOOKIE',
         weight: 9,
       },
-      // SSL VPN login endpoints
+      // JS redirect to SSL VPN login (Bishop Fox primary detection)
+      {
+        type: 'body',
+        path: '/',
+        match: 'top\\.location="/remote/login"',
+        weight: 10,
+      },
+      // JS redirect to admin login
+      {
+        type: 'body',
+        path: '/',
+        match: 'top\\.location="/login"',
+        weight: 9,
+      },
+
+      // === TIER 2: SSL VPN Endpoints (pre-auth) ===
+
+      // SSL VPN login page
       {
         type: 'endpoint',
         path: '/remote/login',
         method: 'GET',
-        match: 'FortiToken|fortinet|fgt_lang|sslvpn',
+        match: 'FortiToken|fortinet|fgt_lang|sslvpn|realm',
         weight: 10,
       },
+      // SSL VPN auth check (CVE-2023-27997 XORtigate target)
       {
         type: 'endpoint',
         path: '/remote/logincheck',
@@ -46,14 +72,15 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'remote|login',
         weight: 8,
       },
+      // Host check validation (CVE-2023-27997, CVE-2024-21762 target)
       {
         type: 'endpoint',
-        path: '/login',
+        path: '/remote/hostcheck_validate',
         method: 'GET',
-        match: 'fgt_lang|ftnt-fortinet|NEUTRINO_THEME',
-        weight: 10,
+        match: 'hostcheck|validate',
+        weight: 8,
       },
-      // Language file (CVE-2018-13379 target)
+      // Language file (CVE-2018-13379 path traversal target)
       {
         type: 'endpoint',
         path: '/remote/fgt_lang?lang=en',
@@ -61,33 +88,131 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: '"msg"\\s*:',
         weight: 9,
       },
-      // JS redirect pattern
+      // Language file JS variant
       {
-        type: 'body',
-        path: '/',
-        match: 'top\\.location="/remote/login"',
+        type: 'endpoint',
+        path: '/remote/fgt_lang.js',
+        method: 'GET',
+        match: 'msg|lang',
+        weight: 8,
+      },
+      // SSL VPN error page
+      {
+        type: 'endpoint',
+        path: '/remote/error',
+        method: 'GET',
+        match: 'remote|error|FortiGate',
+        weight: 7,
+      },
+      // SAML SSO (FortiOS 7.x only)
+      {
+        type: 'endpoint',
+        path: '/remote/saml/start',
+        method: 'GET',
+        match: 'saml|redirect',
+        weight: 8,
+      },
+
+      // === TIER 3: Admin Interface Endpoints (pre-auth) ===
+
+      // Admin login page
+      {
+        type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'fgt_lang|ftnt-fortinet|NEUTRINO_THEME',
         weight: 10,
       },
+      // Angular/Vue SPA (FortiOS 7.x admin UI)
       {
-        type: 'body',
-        path: '/',
-        match: 'top\\.location="/login"',
-        weight: 9,
+        type: 'endpoint',
+        path: '/ng/',
+        method: 'GET',
+        match: 'ng|angular|app',
+        weight: 7,
       },
-      // HTML body patterns
+      // WebSocket CLI (CVE-2024-55591 target - FortiOS 7.x)
+      {
+        type: 'endpoint',
+        path: '/ws/cli',
+        method: 'GET',
+        match: 'websocket|upgrade|cli',
+        weight: 7,
+      },
+
+      // === TIER 4: Static Resources & Fingerprinting ===
+
+      // SSL VPN CSS (pre-auth accessible)
+      {
+        type: 'endpoint',
+        path: '/remote/css/sslvpn.css',
+        method: 'GET',
+        match: 'sslvpn|vpn|fortigate',
+        weight: 7,
+      },
+      // SSL VPN JavaScript (pre-auth accessible)
+      {
+        type: 'endpoint',
+        path: '/remote/js/sslvpn.js',
+        method: 'GET',
+        match: 'sslvpn|vpn|fortigate',
+        weight: 7,
+      },
+      // Login CSS (version-specific hash for fingerprinting)
+      {
+        type: 'endpoint',
+        path: '/css/login.css',
+        method: 'GET',
+        match: '.*',
+        weight: 5,
+      },
+      // Favicon (Shodan mmh3: 945408572, -76600061)
+      {
+        type: 'favicon',
+        path: '/favicon.ico',
+        match: '945408572|-76600061',
+        weight: 8,
+      },
+
+      // === TIER 5: HTML Body Patterns ===
+
+      // SSL VPN login body patterns
       {
         type: 'body',
         path: '/remote/login',
-        match: 'fgt_lang|fortigate|fgd_icon',
+        match: 'fgt_lang|fortigate|fgd_icon|sslvpn/js/webvpn',
         weight: 9,
       },
+      // Admin login body patterns
       {
         type: 'body',
         path: '/login',
         match: 'fgt_lang|ftnt-fortinet',
         weight: 9,
       },
-      // Version detection via API (requires auth usually)
+      // Security headers (FortiOS 7.x adds these)
+      {
+        type: 'header',
+        match: 'X-Frame-Options: SAMEORIGIN',
+        weight: 3,
+      },
+      {
+        type: 'header',
+        match: 'Content-Security-Policy: frame-ancestors',
+        weight: 3,
+      },
+
+      // === TIER 6: Version Detection ===
+
+      // ETag header (FG-IR-23-224: version info leak)
+      // Last 8 hex chars = Unix timestamp of firmware build date
+      // Affected: FortiOS 7.4.0-7.4.1, 7.2.0-7.2.5, 7.0.x, 6.4.x
+      {
+        type: 'header',
+        match: 'ETag',
+        weight: 2,
+      },
+      // REST API firmware version (requires auth usually)
       {
         type: 'endpoint',
         path: '/api/v2/monitor/system/firmware',
@@ -96,11 +221,23 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         weight: 8,
         versionExtract: /"version"\s*:\s*"v?(\d+\.\d+\.\d+)"/,
       },
-      // Certificate
+      // REST API admin endpoint (CVE-2022-40684 target)
+      {
+        type: 'endpoint',
+        path: '/api/v2/cmdb/system/admin/admin',
+        method: 'GET',
+        match: 'results|status|http_status',
+        weight: 7,
+      },
+
+      // === TIER 7: Certificate ===
+
+      // Default self-signed cert: O=Fortinet, OU=FortiGate, CN=FGT-<serial>
+      // Serial number in CN reveals model: FGT60F=60F, FG100F=100F, FGVM64=VM
       {
         type: 'certificate',
-        match: 'FortiGate|Fortinet',
-        weight: 7,
+        match: 'FortiGate|Fortinet|FGT-|FGT\\d',
+        weight: 8,
       },
     ],
   },

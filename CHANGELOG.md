@@ -2,6 +2,37 @@
 
 All notable changes to VpnVet will be documented in this file.
 
+## [0.8.0] - 2026-02-07
+
+### Added - FortiGate Deep Fingerprint Research
+Major accuracy improvements for FortiGate/FortiOS detection based on deep research
+(Bishop Fox, Shadowserver, Nuclei templates, CVE PoCs).
+
+#### New Detection Patterns
+- **Favicon hash**: Shodan mmh3 `945408572`, `-76600061`
+- **ETag header**: Unix timestamp extraction for firmware build date (FG-IR-23-224)
+- **SSL certificate**: `O=Fortinet, OU=FortiGate, CN=FGT-<serial>` (model detection)
+- **Security headers**: `X-Frame-Options`, `Content-Security-Policy` (FortiOS 7.x)
+- **SAML SSO**: `/remote/saml/start` (FortiOS 7.x only)
+- **WebSocket CLI**: `/ws/cli` (CVE-2024-55591 target)
+- **Angular SPA**: `/ng/` (FortiOS 7.x admin UI)
+- **Static resources**: `/remote/css/sslvpn.css`, `/remote/js/sslvpn.js`, `/css/login.css`
+- **Host check**: `/remote/hostcheck_validate` (CVE-2023-27997, CVE-2024-21762)
+- **REST API admin**: `/api/v2/cmdb/system/admin/admin` (CVE-2022-40684)
+
+#### New CVE
+- **CVE-2024-55591** (CVSS 9.8, CISA KEV): Node.js WebSocket auth bypass → super-admin
+
+#### Pattern Organization
+- 7-tier confidence hierarchy (most reliable → supplementary)
+- CVE target endpoints documented
+- FortiOS version-specific patterns (6.x vs 7.x)
+
+### Stats
+- 44 vendors, **42 CVEs (29 CISA KEV)**
+- FortiGate: **6 critical CVEs** tracked
+- 122 tests (115 passed, 7 skipped)
+
 ## [0.7.0] - 2026-02-06
 
 ### Added - Second Wave Official Documentation Research
