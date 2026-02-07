@@ -443,7 +443,8 @@ async function main(): Promise<void> {
           process.exit(1);
         }
         const content = fs.readFileSync(file, 'utf-8');
-        targets = content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+        const parsedTargets = content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+        targets.push(...parsedTargets);
       } else if (arg === '-o' || arg === '--output') {
         options.output = requireArg(args, i, arg);
         i++;
@@ -458,9 +459,13 @@ async function main(): Promise<void> {
       } else if (arg === '--timeout') {
         const raw = requireArg(args, i, arg);
         i++;
-        const timeoutVal = parseInt(raw, 10);
-        if (isNaN(timeoutVal) || timeoutVal <= 0) {
-          logError('Invalid --timeout value. Must be a positive number (in milliseconds).');
+        if (!/^\d+$/.test(raw)) {
+          logError('Invalid --timeout value. Must be a positive integer (in milliseconds).');
+          process.exit(1);
+        }
+        const timeoutVal = Number(raw);
+        if (timeoutVal <= 0) {
+          logError('Invalid --timeout value. Must be a positive integer (in milliseconds).');
           process.exit(1);
         }
         if (timeoutVal > 120000) {
@@ -471,13 +476,21 @@ async function main(): Promise<void> {
       } else if (arg === '--ports') {
         const raw = requireArg(args, i, arg);
         i++;
-        const rawPorts = raw.split(',').map(p => parseInt(p, 10));
-        const validPorts = [...new Set(rawPorts)].filter(p => !isNaN(p) && p >= 1 && p <= 65535);
-        if (validPorts.length === 0) {
-          logError('Invalid --ports value. Ports must be numbers between 1-65535.');
-          process.exit(1);
+        const parts = raw.split(',');
+        for (const part of parts) {
+          const trimmed = part.trim();
+          if (trimmed === '' || !/^\d+$/.test(trimmed)) {
+            logError(`Invalid --ports value: "${part.trim() || '(empty)'}". Each port must be a positive integer.`);
+            process.exit(1);
+          }
+          const portNum = Number(trimmed);
+          if (portNum < 1 || portNum > 65535) {
+            logError(`Invalid --ports value: ${portNum}. Ports must be between 1-65535.`);
+            process.exit(1);
+          }
         }
-        options.ports = validPorts;
+        const parsedPorts = [...new Set(parts.map(p => Number(p.trim())))];
+        options.ports = parsedPorts;
       } else if (arg === '--skip-vuln') {
         options.skipVulnCheck = true;
       } else if (arg === '--skip-version') {
@@ -494,18 +507,23 @@ async function main(): Promise<void> {
       } else if (arg === '--concurrency') {
         const raw = requireArg(args, i, arg);
         i++;
-        const concurrencyVal = parseInt(raw, 10);
-        if (isNaN(concurrencyVal) || concurrencyVal < 1 || !Number.isInteger(concurrencyVal)) {
-          logError('Invalid --concurrency value. Must be a positive integer.');
+        if (!/^\d+$/.test(raw)) {
+          logError('Invalid --concurrency value. Must be a positive integer (1-100).');
           process.exit(1);
         }
-        if (concurrencyVal > 100) {
-          logError('Invalid --concurrency value. Maximum allowed is 100.');
+        const concurrencyVal = Number(raw);
+        if (concurrencyVal < 1 || concurrencyVal > 100) {
+          logError('Invalid --concurrency value. Must be a positive integer (1-100).');
           process.exit(1);
         }
         options.concurrency = concurrencyVal;
       } else if (arg.startsWith('-')) {
-        logError(`Unknown option: "${arg}". Run vpnvet --help for usage.`);
+        if (!SCAN_FLAGS.has(arg)) {
+          logError(`Unknown option: "${arg}". Run vpnvet --help for usage.`);
+          process.exit(1);
+        }
+        // Known flag but not handled above — should not happen
+        logError(`Unhandled option: "${arg}". Run vpnvet --help for usage.`);
         process.exit(1);
       } else {
         targets.push(arg);
@@ -522,6 +540,9 @@ async function main(): Promise<void> {
       }
       options.vendor = resolved;
     }
+
+    // Trim and deduplicate targets
+    targets = [...new Set(targets.map(t => t.trim()).filter(t => t))];
 
     if (targets.length === 0) {
       logError('No targets specified. Provide a target or use --targets <file>');
