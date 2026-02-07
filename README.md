@@ -4,6 +4,7 @@
 
 VpnVet detects VPN appliances exposed on the internet and checks them against known critical vulnerabilities, with a focus on CISA Known Exploited Vulnerabilities (KEV).
 
+[![CI](https://github.com/taku-tez/VpnVet/actions/workflows/ci.yml/badge.svg)](https://github.com/taku-tez/VpnVet/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/vpnvet.svg)](https://www.npmjs.com/package/vpnvet)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

@@ -9,6 +9,7 @@ import {
   getKevVulnerabilities,
 } from '../src/vulnerabilities.js';
 import { isVersionAffected } from '../src/utils.js';
+import { fingerprints } from '../src/fingerprints/index.js';
 
 describe('Vulnerabilities', () => {
   describe('vulnerability database', () => {
@@ -123,6 +124,89 @@ describe('Vulnerabilities', () => {
       for (const vuln of critical) {
         // Critical severity typically has CVSS >= 8.0
         expect(vuln.cvss).toBeGreaterThanOrEqual(8.0);
+      }
+    });
+  });
+
+  describe('no duplicate CVE-IDs', () => {
+    it('should not have the same CVE-ID more than once', () => {
+      const seen = new Set<string>();
+      const duplicates: string[] = [];
+      for (const v of vulnerabilities) {
+        if (seen.has(v.cve)) duplicates.push(v.cve);
+        seen.add(v.cve);
+      }
+      expect(duplicates).toEqual([]);
+    });
+  });
+
+  describe('cross-reference integrity with fingerprints', () => {
+    it('affected vendor+product should exist in fingerprints', () => {
+      const fpKeys = new Set(fingerprints.map(f => `${f.vendor}:${f.product}`));
+      const missing: string[] = [];
+      for (const v of vulnerabilities) {
+        for (const a of v.affected) {
+          const key = `${a.vendor}:${a.product}`;
+          if (!fpKeys.has(key)) missing.push(`${v.cve} -> ${key}`);
+        }
+      }
+      expect(missing).toEqual([]);
+    });
+  });
+
+  describe('references URL validity', () => {
+    it('all references should start with http:// or https://', () => {
+      const invalid: string[] = [];
+      for (const v of vulnerabilities) {
+        for (const ref of v.references) {
+          if (!/^https?:\/\//.test(ref)) {
+            invalid.push(`${v.cve}: ${ref}`);
+          }
+        }
+      }
+      expect(invalid).toEqual([]);
+    });
+  });
+
+  describe('required fields strict check', () => {
+    it('every vulnerability should have non-empty description', () => {
+      for (const v of vulnerabilities) {
+        expect(v.description.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('every affected entry should have vendor and product', () => {
+      for (const v of vulnerabilities) {
+        for (const a of v.affected) {
+          expect(a.vendor.length).toBeGreaterThan(0);
+          expect(a.product.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('every vulnerability should have at least one reference', () => {
+      for (const v of vulnerabilities) {
+        expect(v.references.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('KEV critical CVE fixed set', () => {
+    it('should contain major known-exploited VPN CVEs', () => {
+      const allCves = vulnerabilities.map(v => v.cve);
+      const requiredCves = [
+        'CVE-2024-21762',  // FortiOS RCE
+        'CVE-2023-46805',  // Ivanti Connect Secure auth bypass
+        'CVE-2024-3400',   // PAN-OS command injection
+        'CVE-2023-4966',   // Citrix Bleed
+        'CVE-2019-11510',  // Pulse Secure file read
+        'CVE-2018-13379',  // FortiGate path traversal
+        'CVE-2019-19781',  // Citrix Shitrix
+        'CVE-2022-42475',  // FortiOS heap overflow
+        'CVE-2023-27997',  // FortiOS heap buffer overflow
+      ];
+      for (const cve of requiredCves) {
+        expect(allCves).toContain(cve);
       }
     });
   });

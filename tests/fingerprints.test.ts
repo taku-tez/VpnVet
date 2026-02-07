@@ -163,6 +163,39 @@ describe('Fingerprints', () => {
     });
   });
 
+  describe('no duplicate vendor+product combinations', () => {
+    it('should not have duplicate vendor+product pairs', () => {
+      const seen = new Set<string>();
+      const duplicates: string[] = [];
+      for (const fp of fingerprints) {
+        const key = `${fp.vendor}:${fp.product}`;
+        if (seen.has(key)) {
+          duplicates.push(key);
+        }
+        seen.add(key);
+      }
+      expect(duplicates).toEqual([]);
+    });
+  });
+
+  describe('required fields', () => {
+    it('should have non-empty vendor and product strings', () => {
+      for (const fp of fingerprints) {
+        expect(fp.vendor.length).toBeGreaterThan(0);
+        expect(fp.product.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('every pattern should have a valid type', () => {
+      const validTypes = ['endpoint', 'header', 'body', 'title', 'certificate', 'favicon'];
+      for (const fp of fingerprints) {
+        for (const p of fp.patterns) {
+          expect(validTypes).toContain(p.type);
+        }
+      }
+    });
+  });
+
   describe('Sangfor patterns', () => {
     it('should have SSL VPN patterns', () => {
       const sangfor = getFingerprintsByVendor('sangfor')[0];
