@@ -5,7 +5,7 @@
  */
 
 // Core scanner
-export { VpnScanner, scan, scanMultiple } from './scanner.js';
+export { VpnScanner, scan, scanMultiple, classifyError, errorKindLabel } from './scanner.js';
 
 // Fingerprints database
 export { fingerprints, getFingerprintsByVendor, getAllVendors } from './fingerprints/index.js';
@@ -33,6 +33,9 @@ export {
 // Vendor normalization
 export { resolveVendor, VENDOR_ALIASES } from './vendor.js';
 
+// Product alias resolution
+export { resolveProductAlias, resolveProductAndVendor, PRODUCT_ALIASES } from './product.js';
+
 // Types
 export type {
   VpnDevice,
@@ -46,4 +49,6 @@ export type {
   Fingerprint,
   FingerprintPattern,
   ReportOptions,
+  ScanError,
+  ScanErrorKind,
 } from './types.js';

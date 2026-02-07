@@ -29,13 +29,28 @@ export function logInfo(message: string): void {
 }
 
 /**
- * Normalize a target URL
+ * Normalize a target URL.
+ * Trims whitespace, rejects empty strings, prepends https:// if no scheme,
+ * and validates via the URL constructor.
  */
 export function normalizeUrl(target: string): string {
-  if (!target.startsWith('http://') && !target.startsWith('https://')) {
-    return `https://${target}`;
+  const trimmed = target.trim();
+  if (!trimmed) {
+    throw new Error('Invalid URL: empty target');
   }
-  return target;
+
+  const withScheme = (!trimmed.startsWith('http://') && !trimmed.startsWith('https://'))
+    ? `https://${trimmed}`
+    : trimmed;
+
+  // Validate via URL constructor — throws on malformed URLs
+  try {
+    new URL(withScheme);
+  } catch {
+    throw new Error(`Invalid URL: "${target}"`);
+  }
+
+  return withScheme;
 }
 
 /**

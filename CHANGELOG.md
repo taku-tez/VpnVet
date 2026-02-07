@@ -2,6 +2,21 @@
 
 All notable changes to VpnVet will be documented in this file.
 
+## [0.9.0] - 2026-02-07
+
+### Added
+- **Product alias dictionary** (`src/product.ts`) — resolves legacy/rebranded product names to canonical forms (#2)
+  - Pulse Connect Secure → Ivanti Connect Secure
+  - NetScaler Gateway → Citrix Gateway
+  - FortiOS → FortiGate, Cyberoam → Sophos XG, and 20+ more aliases
+- Alias resolution integrated into `checkVulnerabilities()` and coverage warning logic
+- New exports: `resolveProductAlias`, `resolveProductAndVendor`, `PRODUCT_ALIASES`
+
+### Improved
+- **README documentation** — added JSON/SARIF output examples with `coverageWarning` field (#8)
+- Explained detection coverage vs vulnerability coverage distinction
+- Product alias resolution table in README
+
 ## [0.8.0] - 2026-02-07
 
 ### Added - FortiGate Deep Fingerprint Research

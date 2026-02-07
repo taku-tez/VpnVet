@@ -12,8 +12,8 @@ import { fileURLToPath } from 'node:url';
 import { VpnScanner } from './scanner.js';
 import { fingerprints, getAllVendors } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
-import { setVerbose, logProgress, logError, logInfo, formatVendorName } from './utils.js';
-import { resolveVendor, VENDOR_ALIASES } from './vendor.js';
+import { setVerbose, logError, logInfo, formatVendorName } from './utils.js';
+import { resolveVendor } from './vendor.js';
 import type { ScanResult, ScanOptions } from './types.js';
 
 // Get version from package.json
@@ -79,7 +79,8 @@ function listVendors(): void {
     vendorProducts.set(fp.vendor, existing);
   }
   
-  for (const [vendor, products] of vendorProducts) {
+  const sortedVendors = [...vendorProducts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [vendor, products] of sortedVendors) {
     const displayName = formatVendorName(vendor as Parameters<typeof formatVendorName>[0]);
     console.log(`  ${displayName} (${vendor})`);
     for (const product of products) {
@@ -111,8 +112,16 @@ function listVulnerabilities(severity?: string): void {
     }
   }
   
-  for (const [vendor, vendorVulns] of byVendor) {
+  const sortedVulnVendors = [...byVendor.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [vendor, vendorVulns] of sortedVulnVendors) {
     console.log(`  ${vendor.toUpperCase()}`);
+    // Sort by severity (critical first) then CVE id
+    const severityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    vendorVulns.sort((a, b) => {
+      const sevDiff = (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4);
+      if (sevDiff !== 0) return sevDiff;
+      return a.cve.localeCompare(b.cve);
+    });
     for (const vuln of vendorVulns) {
       const kev = vuln.cisaKev ? ' [KEV]' : '';
       const exploit = vuln.exploitAvailable ? ' [EXPLOIT]' : '';
@@ -338,8 +347,6 @@ const LIST_VULNS_FLAGS = new Set(['--severity']);
 const VALID_FORMATS = ['json', 'sarif', 'csv', 'table'] as const;
 const VALID_SEVERITIES = ['critical', 'high', 'medium', 'low'] as const;
 
-// VENDOR_ALIASES and resolveVendor imported from ./vendor.js
-
 /**
  * Require the next argument as a value for the given option.
  * Exits with error if missing or looks like another flag.
@@ -555,14 +562,13 @@ async function main(): Promise<void> {
     
     const output = formatOutput(results, options.format);
     
+    // Output: write to file if --output specified, otherwise print to stdout
     if (options.output) {
       const outputPath = path.resolve(options.output);
       fs.writeFileSync(outputPath, output);
       if (!options.quiet) {
         console.log(`\nResults written to: ${outputPath}`);
       }
-    } else if (options.format !== 'table' || options.quiet) {
-      console.log(output);
     } else {
       console.log(output);
     }

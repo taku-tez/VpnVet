@@ -124,6 +124,16 @@ export interface VulnerabilityMatch {
   evidence: string;
 }
 
+/** Classified error kinds for scan failures */
+export type ScanErrorKind = 'timeout' | 'dns' | 'tls' | 'reset' | 'refused' | 'http-status' | 'invalid-url' | 'ssrf-blocked' | 'unknown';
+
+export interface ScanError {
+  kind: ScanErrorKind;
+  message: string;
+  url?: string;
+  statusCode?: number;
+}
+
 export interface ScanOptions {
   timeout?: number;
   ports?: number[];
@@ -136,6 +146,8 @@ export interface ScanOptions {
   vendor?: VpnVendor | string; // Test specific vendor only (VpnVendor recommended)
   allowCrossHostRedirects?: boolean; // Allow redirects to different hosts (default: false)
   concurrency?: number; // Max concurrent scans in scanMultiple (default: 5)
+  adaptiveConcurrency?: boolean; // Reduce concurrency on high failure rate (default: false)
+  maxRetries?: number; // Max retries per target (default: 0)
 }
 
 export interface Fingerprint {

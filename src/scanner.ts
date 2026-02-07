@@ -13,10 +13,10 @@ import { URL } from 'node:url';
 import { fingerprints, getAllVendors } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
 import { resolveVendor } from './vendor.js';
+import { resolveProductAlias } from './product.js';
 import {
   normalizeUrl,
   normalizeProduct,
-  compareVersions,
   isVersionAffected,
   hasVersionConstraints,
   getSeverityWeight,
@@ -26,6 +26,7 @@ import {
 import type {
   ScanResult,
   ScanOptions,
+  ScanErrorKind,
   VpnDevice,
   Fingerprint,
   FingerprintPattern,
@@ -45,7 +46,43 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   vendor: '',
   allowCrossHostRedirects: false,
   concurrency: 5,
+  adaptiveConcurrency: false,
+  maxRetries: 0,
 };
+
+/**
+ * Classify a network/request error into a ScanErrorKind.
+ */
+export function classifyError(err: unknown): ScanErrorKind {
+  if (!(err instanceof Error)) return 'unknown';
+  const msg = err.message.toLowerCase();
+  const code = (err as NodeJS.ErrnoException).code?.toLowerCase() ?? '';
+
+  if (code === 'etimedout' || code === 'esockettimedout' || msg.includes('timeout')) return 'timeout';
+  if (code === 'enotfound' || code === 'eai_again' || msg.includes('getaddrinfo')) return 'dns';
+  if (code === 'econnreset' || msg.includes('socket hang up')) return 'reset';
+  if (code === 'econnrefused') return 'refused';
+  if (msg.includes('tls') || msg.includes('ssl') || msg.includes('certificate') ||
+      code === 'err_tls_cert_altname_invalid' || code === 'unable_to_verify_leaf_signature') return 'tls';
+  if (msg.includes('invalid url')) return 'invalid-url';
+  return 'unknown';
+}
+
+/** Human-readable label for a ScanErrorKind */
+export function errorKindLabel(kind: ScanErrorKind): string {
+  const labels: Record<ScanErrorKind, string> = {
+    'timeout': 'Connection timed out',
+    'dns': 'DNS resolution failed',
+    'tls': 'TLS/SSL error',
+    'reset': 'Connection reset',
+    'refused': 'Connection refused',
+    'http-status': 'HTTP error',
+    'invalid-url': 'Invalid URL',
+    'ssrf-blocked': 'Blocked (internal address)',
+    'unknown': 'Unknown error',
+  };
+  return labels[kind];
+}
 
 interface HttpResponse {
   statusCode: number;
@@ -87,7 +124,14 @@ export class VpnScanner {
 
     try {
       // Normalize target URL
-      const baseUrl = normalizeUrl(target);
+      let baseUrl: string;
+      try {
+        baseUrl = normalizeUrl(target);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : `Invalid URL: "${target}"`;
+        result.errors.push(msg);
+        return result;
+      }
       
       // Try to detect VPN device
       const device = await this.detectDevice(baseUrl);
@@ -100,10 +144,13 @@ export class VpnScanner {
           result.vulnerabilities = await this.checkVulnerabilities(device, baseUrl);
 
           // Check if any CVE definitions exist for this vendor/product
-          const deviceProductNorm = normalizeProduct(device.product);
+          // Resolve product alias so that legacy names (e.g. "Pulse Connect Secure")
+          // match canonical CVE entries (e.g. "Connect Secure" under ivanti).
+          const canonicalProduct = resolveProductAlias(device.product, device.vendor);
+          const deviceProductNorm = normalizeProduct(canonicalProduct);
           const hasCveMappings = vulnerabilities.some(v =>
             v.affected.some(a =>
-              a.vendor === device.vendor &&
+              (a.vendor === device.vendor) &&
               (!a.product || normalizeProduct(a.product) === deviceProductNorm)
             )
           );
@@ -121,17 +168,58 @@ export class VpnScanner {
 
   async scanMultiple(targets: string[]): Promise<ScanResult[]> {
     const results: ScanResult[] = new Array(targets.length);
-    const concurrency = Math.max(1, this.options.concurrency || 5);
+    const initialConcurrency = Math.max(1, this.options.concurrency || 5);
+    const adaptive = this.options.adaptiveConcurrency ?? false;
+    const maxRetries = Math.max(0, this.options.maxRetries ?? 0);
+    let activeConcurrency = initialConcurrency;
     let index = 0;
+
+    // Adaptive tracking
+    let completedCount = 0;
+    let failureCount = 0;
+
+    const scanWithRetry = async (target: string): Promise<ScanResult> => {
+      let lastResult: ScanResult | undefined;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        lastResult = await this.scan(target);
+        // If device detected or no errors, no need to retry
+        if (lastResult.device || lastResult.errors.length === 0) {
+          return lastResult;
+        }
+      }
+      return lastResult!;
+    };
 
     const worker = async () => {
       while (index < targets.length) {
         const i = index++;
-        results[i] = await this.scan(targets[i]);
+        results[i] = await scanWithRetry(targets[i]);
+
+        // Adaptive concurrency adjustment
+        if (adaptive) {
+          completedCount++;
+          if (results[i].errors.length > 0 && !results[i].device) {
+            failureCount++;
+          }
+          // Check failure rate every 5 completions
+          if (completedCount % 5 === 0 && completedCount >= 5) {
+            const recentFailRate = failureCount / completedCount;
+            if (recentFailRate > 0.5 && activeConcurrency > 1) {
+              activeConcurrency = Math.max(1, Math.floor(activeConcurrency / 2));
+            }
+          }
+        }
       }
     };
 
-    await Promise.all(Array.from({ length: Math.min(concurrency, targets.length) }, () => worker()));
+    // Start initial workers
+    const workers: Promise<void>[] = [];
+    const workerCount = Math.min(activeConcurrency, targets.length);
+    for (let i = 0; i < workerCount; i++) {
+      workers.push(worker());
+    }
+
+    await Promise.all(workers);
     return results;
   }
 
@@ -564,11 +652,6 @@ export class VpnScanner {
     return groups.map(g => g.padStart(4, '0')).slice(0, 8).join(':');
   }
 
-  /** @deprecated Use isUnsafeIP instead */
-  private static isPrivateIP(ip: string): boolean {
-    return VpnScanner.isUnsafeIP(ip);
-  }
-
   /**
    * Core request logic shared by text and binary fetches.
    * Handles SSRF-safe DNS resolution, redirect tracking, cross-host control,
@@ -642,13 +725,10 @@ export class VpnScanner {
 
   /**
    * Build a pinned DNS lookup function that returns pre-resolved addresses.
-   * Prevents DNS rebinding by ensuring the connection uses the same IPs
-   * that were validated during the safety check.
-   */
-  /**
-   * Build a pinned DNS lookup function that returns pre-resolved addresses.
    * Supports fallback: rotates through candidates on repeated calls,
    * respecting family hints when available.
+   * Prevents DNS rebinding by ensuring the connection uses the same IPs
+   * that were validated during the safety check.
    */
   private static buildPinnedLookup(pinnedAddresses: string[]): (
     hostname: string,
@@ -907,16 +987,20 @@ export class VpnScanner {
   ): Promise<VulnerabilityMatch[]> {
     const matches: VulnerabilityMatch[] = [];
 
+    // Resolve product alias before matching (e.g. "Pulse Connect Secure" → "Connect Secure")
+    const canonicalProduct = resolveProductAlias(device.product, device.vendor);
+    const canonicalProductNorm = normalizeProduct(canonicalProduct);
+
     // Get vulnerabilities for this vendor
     const vendorVulns = vulnerabilities.filter(v =>
       v.affected.some(a => a.vendor === device.vendor)
     );
 
     for (const vuln of vendorVulns) {
-      // Check if product matches
+      // Check if product matches (using canonical product name)
       const productMatch = vuln.affected.some(
         a => a.vendor === device.vendor && 
-            (!a.product || normalizeProduct(a.product) === normalizeProduct(device.product))
+            (!a.product || normalizeProduct(a.product) === canonicalProductNorm)
       );
 
       if (productMatch) {
@@ -928,7 +1012,7 @@ export class VpnScanner {
         if (device.version && !this.options.skipVersionDetection) {
           // Check if any affected entry for this vendor has version constraints
           const matchingAffected = vuln.affected.filter(
-            a => a.vendor === device.vendor && (!a.product || normalizeProduct(a.product) === normalizeProduct(device.product))
+            a => a.vendor === device.vendor && (!a.product || normalizeProduct(a.product) === canonicalProductNorm)
           );
           
           const affectedWithVersion = matchingAffected.find(

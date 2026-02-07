@@ -144,6 +144,103 @@ const results = await scanner.scanMultiple([
 ]);
 ```
 
+## Output Examples
+
+### JSON Output
+
+```json
+{
+  "target": "vpn.example.com",
+  "timestamp": "2026-02-07T09:00:00.000Z",
+  "device": {
+    "vendor": "fortinet",
+    "product": "FortiGate",
+    "version": "7.0.5",
+    "confidence": 95,
+    "detectionMethod": ["endpoint", "header", "favicon"],
+    "endpoints": ["/remote/login", "/remote/fgt_lang"]
+  },
+  "vulnerabilities": [
+    {
+      "vulnerability": {
+        "cve": "CVE-2024-21762",
+        "severity": "critical",
+        "cvss": 9.8,
+        "cisaKev": true
+      },
+      "confidence": "confirmed",
+      "evidence": "Version 7.0.5 is in affected range"
+    }
+  ],
+  "errors": []
+}
+```
+
+When a detected product has no CVE mappings in the database, a `coverageWarning` field is included:
+
+```json
+{
+  "target": "vpn2.example.com",
+  "timestamp": "2026-02-07T09:00:00.000Z",
+  "device": {
+    "vendor": "watchguard",
+    "product": "Firebox",
+    "confidence": 80,
+    "detectionMethod": ["endpoint", "html"],
+    "endpoints": ["/sslvpn_logon.shtml"]
+  },
+  "vulnerabilities": [],
+  "coverageWarning": "No CVE mappings currently available for watchguard Firebox. Detection coverage and vulnerability coverage are independent — a detected product with zero CVEs does not imply it is secure.",
+  "errors": []
+}
+```
+
+### SARIF Output
+
+SARIF output includes `coverageWarning` as a notification-level result:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [{
+    "tool": { "driver": { "name": "vpnvet" } },
+    "results": [
+      {
+        "ruleId": "coverage-warning",
+        "level": "note",
+        "message": {
+          "text": "No CVE mappings currently available for watchguard Firebox."
+        }
+      }
+    ]
+  }]
+}
+```
+
+### Understanding `coverageWarning`
+
+The `coverageWarning` field appears when VpnVet successfully **detects** a VPN device but has **no CVE mappings** for that vendor/product combination in its vulnerability database. This is important because:
+
+- **Detection coverage ≠ Vulnerability coverage** — VpnVet can detect 44 vendors but CVE data varies per product.
+- **Zero CVEs ≠ Secure** — The absence of CVE matches means the database lacks data, not that the device is safe.
+- **Action required** — Investigate the device manually or supplement with other vulnerability sources.
+
+## Product Alias Resolution
+
+VPN vendors frequently rebrand products through acquisitions. VpnVet automatically resolves legacy product names to their canonical forms so vulnerability lookups work correctly:
+
+| Legacy Name | Canonical Name | Reason |
+|-------------|---------------|--------|
+| Pulse Connect Secure | Ivanti Connect Secure | Ivanti acquired Pulse Secure (2021) |
+| NetScaler Gateway | Citrix Gateway | Citrix rebrand (2018) |
+| FortiOS | FortiGate | Product vs OS naming |
+| Cyberoam | Sophos XG Firewall | Sophos acquired Cyberoam (2014) |
+| PAN-OS | GlobalProtect | OS vs product naming |
+| BIG-IP | BIG-IP APM | Product family disambiguation |
+
+This means scanning a target that reports as "Pulse Connect Secure" will still match CVEs filed under "Ivanti Connect Secure".
+
 ## Detection Methods
 
 VpnVet uses multiple detection techniques:
