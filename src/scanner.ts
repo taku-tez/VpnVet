@@ -251,7 +251,7 @@ export class VpnScanner {
         if (matchPattern.test(response.body)) {
           let version: string | undefined;
           
-          if (pattern.versionExtract) {
+          if (pattern.versionExtract && !this.options.skipVersionDetection) {
             const versionMatch = response.body.match(pattern.versionExtract);
             if (versionMatch?.[1]) {
               version = versionMatch[1];
@@ -280,6 +280,29 @@ export class VpnScanner {
           }
         } else if (matchPattern.test(headerStr)) {
           return { success: true };
+        }
+      } else if (pattern.type === 'favicon') {
+        const faviconPath = pattern.path || '/favicon.ico';
+        const url = `${baseUrl}${faviconPath}`;
+        const response = await this.httpRequest(url, 'GET');
+        
+        if (!response) return { success: false };
+
+        const matchPattern2 = typeof pattern.match === 'string'
+          ? new RegExp(pattern.match, 'i')
+          : pattern.match;
+
+        if (matchPattern2.test(response.body)) {
+          let version: string | undefined;
+          
+          if (pattern.versionExtract && !this.options.skipVersionDetection) {
+            const versionMatch = response.body.match(pattern.versionExtract);
+            if (versionMatch?.[1]) {
+              version = versionMatch[1];
+            }
+          }
+          
+          return { success: true, version };
         }
       } else if (pattern.type === 'certificate') {
         const certInfo = await this.getCertificateInfo(baseUrl);

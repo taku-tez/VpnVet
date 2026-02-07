@@ -163,6 +163,16 @@ Good sources for fingerprint research:
 - CVE details
 - Product login pages
 
+## Pre-release Checklist
+
+Before releasing, verify that documentation statistics match the actual source data:
+
+```bash
+node scripts/count-stats.mjs
+```
+
+Update README.md and CHANGELOG.md if the counts have changed.
+
 ## Questions?
 
 Open an issue or discussion on GitHub!
