@@ -12,6 +12,7 @@ VpnVet detects VPN appliances exposed on the internet and checks them against kn
 
 - 🔍 **44 VPN Vendors** - Comprehensive global coverage
 - 🛡️ **38 Critical CVEs** - CISA KEV prioritized
+- ⚠️ **CVE Coverage Warnings** - Alerts when detected products lack vulnerability mappings
 - 📊 **Multiple Formats** - JSON, SARIF, CSV, Table
 - 🚀 **Fast & Lightweight** - No heavy dependencies
 - 🔧 **CI/CD Ready** - Exit codes based on severity
@@ -180,6 +181,12 @@ vpnvet/
 │   └── scanner.test.ts
 └── dist/                # Compiled output
 ```
+
+## Detection Coverage vs CVE Coverage
+
+VpnVet's **detection coverage** (44 vendors) and **vulnerability coverage** (CVE mappings) are independent. A product may be successfully detected but have zero CVE mappings in the database. This does **not** mean the product is secure — it means VpnVet does not yet have vulnerability data for it.
+
+When a detected product has no CVE mappings, VpnVet displays a coverage warning in all output formats (table, JSON, CSV, SARIF) to prevent false confidence in the results.
 
 ## Contributing
 
