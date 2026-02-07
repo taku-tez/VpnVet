@@ -114,6 +114,7 @@ export interface ScanResult {
   timestamp: string;
   device?: VpnDevice;
   vulnerabilities: VulnerabilityMatch[];
+  coverageWarning?: string;
   errors: string[];
 }
 

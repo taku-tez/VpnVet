@@ -86,3 +86,40 @@ describe('scanMultiple concurrency', () => {
     expect(results[2].errors).toHaveLength(0);
   });
 });
+
+describe('concurrency constructor validation (#3)', () => {
+  it('defaults to 5 when concurrency is undefined', () => {
+    const scanner = new VpnScanner({});
+    expect((scanner as any).options.concurrency).toBe(5);
+  });
+
+  it('defaults to 5 when concurrency is 0', () => {
+    const scanner = new VpnScanner({ concurrency: 0 });
+    expect((scanner as any).options.concurrency).toBe(5);
+  });
+
+  it('defaults to 5 when concurrency is negative', () => {
+    const scanner = new VpnScanner({ concurrency: -1 });
+    expect((scanner as any).options.concurrency).toBe(5);
+  });
+
+  it('defaults to 5 when concurrency is non-integer', () => {
+    const scanner = new VpnScanner({ concurrency: 1.5 });
+    expect((scanner as any).options.concurrency).toBe(5);
+  });
+
+  it('clamps concurrency to 100 when exceeding limit', () => {
+    const scanner = new VpnScanner({ concurrency: 200 });
+    expect((scanner as any).options.concurrency).toBe(100);
+  });
+
+  it('accepts valid concurrency values', () => {
+    const scanner = new VpnScanner({ concurrency: 10 });
+    expect((scanner as any).options.concurrency).toBe(10);
+  });
+
+  it('accepts concurrency of 1', () => {
+    const scanner = new VpnScanner({ concurrency: 1 });
+    expect((scanner as any).options.concurrency).toBe(1);
+  });
+});

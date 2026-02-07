@@ -103,7 +103,19 @@ describe('Expanded unsafe IP ranges (#1)', () => {
     ['::ffff:198.18.0.1', true],
     ['::ffff:8.8.8.8', false],
     ['::ffff:93.184.216.34', false],
+    ['0:0:0:0:0:ffff:127.0.0.1', true],    // Expanded form (#1)
+    ['0000:0000:0000:0000:0000:ffff:10.0.0.1', true],
   ])('should handle IPv4-mapped IPv6 %s → unsafe=%s', (ip, expected) => {
+    expect(isUnsafeIP(ip)).toBe(expected);
+  });
+
+  // fe80::/10 full range (#1)
+  it.each([
+    ['fe80::1', true],
+    ['febf::1', true],
+    ['febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff', true],
+    ['fec0::1', false],  // outside fe80::/10
+  ])('should handle fe80::/10 link-local %s → unsafe=%s', (ip, expected) => {
     expect(isUnsafeIP(ip)).toBe(expected);
   });
 });

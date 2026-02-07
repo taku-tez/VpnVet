@@ -161,6 +161,10 @@ function formatTable(results: ScanResult[]): string {
       } else {
         lines.push(`\nNo known vulnerabilities detected.`);
       }
+
+      if (result.coverageWarning) {
+        lines.push(`\n⚠️  Coverage Warning: ${result.coverageWarning}`);
+      }
     } else {
       lines.push(`\nNo VPN device detected.`);
     }
@@ -244,6 +248,7 @@ function formatSarif(results: ScanResult[]): string {
               confidence: vuln.confidence,
               device: result.device,
               ...(originalTarget ? { originalTarget } : {}),
+              ...(result.coverageWarning ? { coverageWarning: result.coverageWarning } : {}),
             },
           }));
         }),
@@ -262,7 +267,7 @@ function escapeCsvCell(value: string): string {
 }
 
 function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev'];
+  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning'];
   
   for (const result of results) {
     if (result.device) {
@@ -279,6 +284,7 @@ function formatCsv(results: ScanResult[]): string {
             vuln.vulnerability.cvss != null ? String(vuln.vulnerability.cvss) : '',
             vuln.confidence,
             vuln.vulnerability.cisaKev != null ? String(vuln.vulnerability.cisaKev) : '',
+            result.coverageWarning || '',
           ].map(escapeCsvCell).join(','));
         }
       } else {
@@ -289,10 +295,11 @@ function formatCsv(results: ScanResult[]): string {
           result.device.version || '',
           String(result.device.confidence),
           '', '', '', '', '',
+          result.coverageWarning || '',
         ].map(escapeCsvCell).join(','));
       }
     } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', ''].map(escapeCsvCell).join(','));
+      lines.push([result.target, '', '', '', '', '', '', '', '', '', ''].map(escapeCsvCell).join(','));
     }
   }
   

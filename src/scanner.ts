@@ -56,6 +56,14 @@ export class VpnScanner {
 
   constructor(options: ScanOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
+
+    // Validate and normalize concurrency (#3)
+    const c = this.options.concurrency;
+    if (c == null || !Number.isFinite(c) || !Number.isInteger(c) || c <= 0) {
+      this.options.concurrency = DEFAULT_OPTIONS.concurrency;
+    } else if (c > 100) {
+      this.options.concurrency = 100;
+    }
   }
 
   async scan(target: string): Promise<ScanResult> {
@@ -79,6 +87,14 @@ export class VpnScanner {
         // Check for vulnerabilities if device detected
         if (!this.options.skipVulnCheck) {
           result.vulnerabilities = await this.checkVulnerabilities(device, baseUrl);
+
+          // Check if any CVE definitions exist for this vendor/product
+          const hasCveMappings = vulnerabilities.some(v =>
+            v.affected.some(a => a.vendor === device.vendor)
+          );
+          if (!hasCveMappings) {
+            result.coverageWarning = `No CVE mappings currently available for ${device.vendor} ${device.product}. Detection coverage and vulnerability coverage are independent — a detected product with zero CVEs does not imply it is secure.`;
+          }
         }
       }
     } catch (error) {
@@ -90,7 +106,7 @@ export class VpnScanner {
 
   async scanMultiple(targets: string[]): Promise<ScanResult[]> {
     const results: ScanResult[] = new Array(targets.length);
-    const concurrency = this.options.concurrency || 5;
+    const concurrency = Math.max(1, this.options.concurrency || 5);
     let index = 0;
 
     const worker = async () => {
@@ -305,8 +321,26 @@ export class VpnScanner {
 
         if (isHashMatch) {
           // Binary fetch for hash comparison
-          const buf = await this.httpRequestBinary(url);
-          if (!buf || buf.length === 0) return { success: false };
+          const binaryResult = await this.httpRequestBinary(url);
+          if (!binaryResult) return { success: false };
+
+          // Validate HTTP status (must be 2xx)
+          if (binaryResult.statusCode < 200 || binaryResult.statusCode >= 300) {
+            return { success: false };
+          }
+
+          // Validate Content-Type (must be image/* or application/octet-stream)
+          const ct = binaryResult.contentType.toLowerCase().split(';')[0].trim();
+          if (ct && !ct.startsWith('image/') && ct !== 'application/octet-stream') {
+            return { success: false };
+          }
+
+          // Validate size (16 bytes to 1MB)
+          const buf = binaryResult.buffer;
+          if (buf.length < 16 || buf.length > 1_048_576) {
+            return { success: false };
+          }
+
           const hash = faviconHash(buf);
           const hashes = matchStr.split('|').map(Number);
           if (hashes.includes(hash)) {
@@ -402,12 +436,13 @@ export class VpnScanner {
    * benchmarking, multicast, and IPv4-mapped IPv6 addresses.
    */
   static isUnsafeIP(ip: string): boolean {
-    // Handle IPv4-mapped IPv6 (::ffff:x.x.x.x)
-    if (ip.toLowerCase().startsWith('::ffff:')) {
-      const v4part = ip.slice(7);
-      if (net.isIPv4(v4part)) {
-        return VpnScanner.isUnsafeIP(v4part);
-      }
+    // Normalize and extract IPv4-mapped IPv6 (::ffff:x.x.x.x or 0:0:0:0:0:ffff:x.x.x.x)
+    const normalized = ip.toLowerCase().trim();
+
+    // Extract embedded IPv4 from IPv4-mapped IPv6 addresses
+    const v4Mapped = VpnScanner.extractIPv4Mapped(normalized);
+    if (v4Mapped) {
+      return VpnScanner.isUnsafeIP(v4Mapped);
     }
 
     if (net.isIPv4(ip)) {
@@ -425,15 +460,52 @@ export class VpnScanner {
       );
     }
     if (net.isIPv6(ip)) {
-      const normalized = ip.toLowerCase();
+      const expanded = VpnScanner.expandIPv6(normalized);
+      const first16 = parseInt(expanded.slice(0, 4), 16);
       return (
-        normalized === '::1' ||                                     // loopback
-        normalized === '::' ||                                      // unspecified
-        normalized.startsWith('fc') || normalized.startsWith('fd') || // fc00::/7 (ULA)
-        normalized.startsWith('fe80')                               // fe80::/10 (link-local)
+        expanded === '0000:0000:0000:0000:0000:0000:0000:0001' ||   // ::1 loopback
+        expanded === '0000:0000:0000:0000:0000:0000:0000:0000' ||   // :: unspecified
+        (first16 >= 0xfc00 && first16 <= 0xfdff) ||                 // fc00::/7 (ULA)
+        (first16 >= 0xfe80 && first16 <= 0xfebf)                    // fe80::/10 (link-local)
       );
     }
     return false;
+  }
+
+  /**
+   * Extract embedded IPv4 from IPv4-mapped IPv6 addresses.
+   * Handles ::ffff:x.x.x.x and 0:0:0:0:0:ffff:x.x.x.x forms.
+   */
+  private static extractIPv4Mapped(ip: string): string | null {
+    // Dotted form: ::ffff:1.2.3.4 or 0:0:0:0:0:ffff:1.2.3.4
+    const dottedMatch = ip.match(/::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i) ||
+                        ip.match(/^0{0,4}(?::0{0,4}){4}:ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+    if (dottedMatch && net.isIPv4(dottedMatch[1])) {
+      return dottedMatch[1];
+    }
+    return null;
+  }
+
+  /**
+   * Expand an IPv6 address to its full 8-group form (e.g., "::1" → "0000:0000:...0001").
+   */
+  static expandIPv6(ip: string): string {
+    // Remove zone ID if present
+    const noZone = ip.split('%')[0].toLowerCase();
+    let halves = noZone.split('::');
+    if (halves.length > 2) return '0000:0000:0000:0000:0000:0000:0000:0000'; // invalid
+
+    let groups: string[];
+    if (halves.length === 2) {
+      const left = halves[0] ? halves[0].split(':') : [];
+      const right = halves[1] ? halves[1].split(':') : [];
+      const missing = 8 - left.length - right.length;
+      groups = [...left, ...Array(missing).fill('0'), ...right];
+    } else {
+      groups = noZone.split(':');
+    }
+
+    return groups.map(g => g.padStart(4, '0')).slice(0, 8).join(':');
   }
 
   /** @deprecated Use isUnsafeIP instead */
@@ -458,7 +530,14 @@ export class VpnScanner {
       if (visited.has(currentUrl)) return null; // Loop detected
       visited.add(currentUrl);
 
-      const response = await this.httpRequestSingle(currentUrl, method, pinnedAddresses);
+      // Try with fallback across pinned addresses (up to 3 attempts)
+      let response: HttpResponse | null = null;
+      const maxAttempts = Math.min(pinnedAddresses.length, 3);
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // buildPinnedLookup rotates through addresses on each call
+        response = await this.httpRequestSingle(currentUrl, method, pinnedAddresses.slice(attempt));
+        if (response) break;
+      }
       if (!response) return null;
 
       // Follow redirect?
@@ -496,13 +575,32 @@ export class VpnScanner {
    * Prevents DNS rebinding by ensuring the connection uses the same IPs
    * that were validated during the safety check.
    */
+  /**
+   * Build a pinned DNS lookup function that returns pre-resolved addresses.
+   * Supports fallback: rotates through candidates on repeated calls,
+   * respecting family hints when available.
+   */
   private static buildPinnedLookup(pinnedAddresses: string[]): (
     hostname: string,
-    options: object,
+    options: any,
     callback: (err: Error | null, address: string, family: number) => void
   ) => void {
-    return (_hostname, _options, callback) => {
-      const addr = pinnedAddresses[0];
+    let callIndex = 0;
+    return (_hostname, options, callback) => {
+      // Filter by family hint if provided
+      const familyHint = options?.family;
+      const candidates = familyHint
+        ? pinnedAddresses.filter(a => (net.isIPv4(a) ? 4 : 6) === familyHint)
+        : pinnedAddresses;
+      const pool = candidates.length > 0 ? candidates : pinnedAddresses;
+
+      if (pool.length === 0) {
+        callback(new Error('No pinned addresses available'), '', 0);
+        return;
+      }
+
+      const addr = pool[callIndex % pool.length];
+      callIndex++;
       const family = net.isIPv4(addr) ? 4 : 6;
       callback(null, addr, family);
     };
@@ -580,7 +678,7 @@ export class VpnScanner {
    * Fetch a URL and return the raw response body as a Buffer (binary-safe).
    * Used for favicon hash computation.
    */
-  private async httpRequestBinary(url: string): Promise<Buffer | null> {
+  private async httpRequestBinary(url: string): Promise<{ buffer: Buffer; statusCode: number; contentType: string } | null> {
     const maxRedirects = this.options.followRedirects ? 5 : 0;
     const visited = new Set<string>();
     let currentUrl = url;
@@ -594,7 +692,13 @@ export class VpnScanner {
       if (visited.has(currentUrl)) return null;
       visited.add(currentUrl);
 
-      const result = await this.httpRequestBinarySingle(currentUrl, pinnedAddresses);
+      // Try with fallback across pinned addresses (up to 3 attempts)
+      let result: { statusCode: number; headers: Record<string, string | string[]>; body: Buffer } | null = null;
+      const maxAttempts = Math.min(pinnedAddresses.length, 3);
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        result = await this.httpRequestBinarySingle(currentUrl, pinnedAddresses.slice(attempt));
+        if (result) break;
+      }
       if (!result) return null;
 
       const isRedirect = result.statusCode >= 300 && result.statusCode < 400;
@@ -618,7 +722,10 @@ export class VpnScanner {
         }
       }
 
-      return result.body;
+      const contentTypeRaw = result.headers['content-type'];
+      const contentType = (Array.isArray(contentTypeRaw) ? contentTypeRaw[0] : contentTypeRaw) || '';
+
+      return { buffer: result.body, statusCode: result.statusCode, contentType };
     }
 
     return null;
