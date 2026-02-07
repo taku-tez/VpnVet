@@ -19,6 +19,7 @@ import {
   hasVersionConstraints,
   getSeverityWeight,
   getConfidenceWeight,
+  faviconHash,
 } from './utils.js';
 import type {
   ScanResult,
@@ -278,7 +279,7 @@ export class VpnScanner {
           .toLowerCase();
 
         if (typeof matchPattern === 'string') {
-          if (headerStr.includes(matchPattern)) {
+          if (new RegExp(matchPattern, 'i').test(headerStr)) {
             return { success: true };
           }
         } else if (matchPattern.test(headerStr)) {
@@ -287,25 +288,39 @@ export class VpnScanner {
       } else if (pattern.type === 'favicon') {
         const faviconPath = pattern.path || '/favicon.ico';
         const url = `${baseUrl}${faviconPath}`;
-        const response = await this.httpRequest(url, 'GET');
-        
-        if (!response) return { success: false };
 
-        const matchPattern2 = typeof pattern.match === 'string'
-          ? new RegExp(pattern.match, 'i')
-          : pattern.match;
+        const matchStr = typeof pattern.match === 'string' ? pattern.match : null;
+        // If match looks like hash values (digits, optional minus, pipe-separated), use hash comparison
+        const isHashMatch = matchStr && /^-?\d+(\|-?\d+)*$/.test(matchStr);
 
-        if (matchPattern2.test(response.body)) {
-          let version: string | undefined;
-          
-          if (pattern.versionExtract && !this.options.skipVersionDetection) {
-            const versionMatch = response.body.match(pattern.versionExtract);
-            if (versionMatch?.[1]) {
-              version = versionMatch[1];
-            }
+        if (isHashMatch) {
+          // Binary fetch for hash comparison
+          const buf = await this.httpRequestBinary(url);
+          if (!buf || buf.length === 0) return { success: false };
+          const hash = faviconHash(buf);
+          const hashes = matchStr.split('|').map(Number);
+          if (hashes.includes(hash)) {
+            return { success: true };
           }
-          
-          return { success: true, version };
+        } else {
+          // Legacy regex match on body text
+          const response = await this.httpRequest(url, 'GET');
+          if (!response) return { success: false };
+
+          const matchPattern2 = typeof pattern.match === 'string'
+            ? new RegExp(pattern.match, 'i')
+            : pattern.match;
+
+          if (matchPattern2.test(response.body)) {
+            let version: string | undefined;
+            if (pattern.versionExtract && !this.options.skipVersionDetection) {
+              const versionMatch = response.body.match(pattern.versionExtract);
+              if (versionMatch?.[1]) {
+                version = versionMatch[1];
+              }
+            }
+            return { success: true, version };
+          }
         }
       } else if (pattern.type === 'certificate') {
         const certInfo = await this.getCertificateInfo(baseUrl);
@@ -453,6 +468,63 @@ export class VpnScanner {
               headers: res.headers as Record<string, string | string[]>,
               body,
             });
+          });
+        });
+
+        req.on('error', () => resolve(null));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(null);
+        });
+
+        req.end();
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
+  /**
+   * Fetch a URL and return the raw response body as a Buffer (binary-safe).
+   * Used for favicon hash computation.
+   */
+  private async httpRequestBinary(url: string): Promise<Buffer | null> {
+    return new Promise((resolve) => {
+      try {
+        const parsedUrl = new URL(url);
+        const isHttps = parsedUrl.protocol === 'https:';
+        const lib = isHttps ? https : http;
+
+        const options = {
+          hostname: parsedUrl.hostname,
+          port: parsedUrl.port || (isHttps ? 443 : 80),
+          path: parsedUrl.pathname + parsedUrl.search,
+          method: 'GET',
+          headers: {
+            'User-Agent': this.options.userAgent,
+            Accept: '*/*',
+            ...this.options.headers,
+          },
+          timeout: this.options.timeout,
+          rejectUnauthorized: false,
+        };
+
+        const req = lib.request(options, (res) => {
+          const chunks: Buffer[] = [];
+          let totalLen = 0;
+
+          // Do NOT set encoding — keep as Buffer
+          res.on('data', (chunk: Buffer) => {
+            totalLen += chunk.length;
+            if (totalLen > 1_000_000) {
+              req.destroy();
+              return;
+            }
+            chunks.push(chunk);
+          });
+
+          res.on('end', () => {
+            resolve(Buffer.concat(chunks));
           });
         });
 

@@ -26,6 +26,8 @@ export {
   formatVendorName,
   calculateConfidence,
   isHighPriority,
+  murmurhash3_32,
+  faviconHash,
 } from './utils.js';
 
 // Types

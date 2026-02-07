@@ -247,9 +247,9 @@ function formatCsv(results: ScanResult[]): string {
             String(result.device.confidence),
             vuln.vulnerability.cve,
             vuln.vulnerability.severity,
-            String(vuln.vulnerability.cvss),
+            vuln.vulnerability.cvss != null ? String(vuln.vulnerability.cvss) : '',
             vuln.confidence,
-            String(vuln.vulnerability.cisaKev),
+            vuln.vulnerability.cisaKev != null ? String(vuln.vulnerability.cisaKev) : '',
           ].map(escapeCsvCell).join(','));
         }
       } else {
@@ -317,7 +317,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
   
-  if (args.includes('version') || args.includes('--version')) {
+  if (args[0] === 'version' || args[0] === '--version') {
     printVersion();
     process.exit(0);
   }
@@ -327,8 +327,19 @@ async function main(): Promise<void> {
   if (command === 'list') {
     const subCommand = args[1];
     if (subCommand === 'vendors') {
+      const unknownFlags = args.slice(2).filter(a => a.startsWith('-'));
+      if (unknownFlags.length > 0) {
+        logError(`Unknown option: ${unknownFlags[0]}`);
+        process.exit(1);
+      }
       listVendors();
     } else if (subCommand === 'vulns') {
+      const allowedVulnFlags = ['--severity'];
+      const unknownFlags = args.slice(2).filter(a => a.startsWith('-') && !allowedVulnFlags.includes(a));
+      if (unknownFlags.length > 0) {
+        logError(`Unknown option: ${unknownFlags[0]}. Allowed: ${allowedVulnFlags.join(', ')}`);
+        process.exit(1);
+      }
       const severityIdx = args.indexOf('--severity');
       if (severityIdx !== -1) {
         const severity = requireArg(args, severityIdx, '--severity');

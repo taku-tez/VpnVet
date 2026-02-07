@@ -240,3 +240,64 @@ export function calculateConfidence(score: number, maxScore: number): number {
 export function isHighPriority(vuln: Vulnerability): boolean {
   return vuln.severity === 'critical' && vuln.cisaKev && vuln.exploitAvailable;
 }
+
+// ============================================================
+// MurmurHash3 (32-bit) — Shodan-compatible favicon hashing
+// ============================================================
+
+/**
+ * MurmurHash3 32-bit implementation (pure TypeScript, no dependencies).
+ * Operates on a Buffer and returns a signed 32-bit integer.
+ */
+export function murmurhash3_32(data: Buffer, seed: number = 0): number {
+  const c1 = 0xcc9e2d51;
+  const c2 = 0x1b873593;
+  const len = data.length;
+  let h1 = seed;
+  const nblocks = len >>> 2;
+
+  // Body
+  for (let i = 0; i < nblocks; i++) {
+    let k1 = data.readUInt32LE(i * 4);
+    k1 = Math.imul(k1, c1);
+    k1 = (k1 << 15) | (k1 >>> 17);
+    k1 = Math.imul(k1, c2);
+    h1 ^= k1;
+    h1 = (h1 << 13) | (h1 >>> 19);
+    h1 = Math.imul(h1, 5) + 0xe6546b64;
+  }
+
+  // Tail
+  const tail = nblocks * 4;
+  let k1 = 0;
+  switch (len & 3) {
+    case 3: k1 ^= data[tail + 2] << 16; // fallthrough
+    case 2: k1 ^= data[tail + 1] << 8;  // fallthrough
+    case 1:
+      k1 ^= data[tail];
+      k1 = Math.imul(k1, c1);
+      k1 = (k1 << 15) | (k1 >>> 17);
+      k1 = Math.imul(k1, c2);
+      h1 ^= k1;
+  }
+
+  // Finalization
+  h1 ^= len;
+  h1 ^= h1 >>> 16;
+  h1 = Math.imul(h1, 0x85ebca6b);
+  h1 ^= h1 >>> 13;
+  h1 = Math.imul(h1, 0xc2b2ae35);
+  h1 ^= h1 >>> 16;
+
+  // Return as signed 32-bit integer (Shodan convention)
+  return h1 | 0;
+}
+
+/**
+ * Compute Shodan-compatible favicon hash.
+ * Shodan method: base64-encode the raw favicon bytes, then mmh3_32 the base64 string.
+ */
+export function faviconHash(faviconBody: Buffer): number {
+  const b64 = faviconBody.toString('base64');
+  return murmurhash3_32(Buffer.from(b64, 'utf8'));
+}

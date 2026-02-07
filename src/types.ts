@@ -136,6 +136,10 @@ export interface FingerprintPattern {
   type: 'endpoint' | 'header' | 'body' | 'certificate' | 'favicon';
   path?: string;
   method?: 'GET' | 'HEAD' | 'POST';
+  /**
+   * For favicon type: can be pipe-separated mmh3 hash values (e.g. '945408572|-76600061')
+   * for Shodan-compatible hash matching, or a regex pattern for legacy body matching.
+   */
   match: string | RegExp;
   weight: number; // 1-10, used for confidence calculation
   versionExtract?: RegExp;

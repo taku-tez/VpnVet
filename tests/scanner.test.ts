@@ -91,33 +91,8 @@ describe('VpnScanner', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('should handle connection refused gracefully', async () => {
-      const scanner = new VpnScanner({ timeout: 1000 });
-      
-      const result = await scanner.scan('localhost:9999');
-      
-      // Should not have a device detected
-      expect(result.device).toBeUndefined();
-    });
-
-    it('should handle invalid hostnames', async () => {
-      const scanner = new VpnScanner({ timeout: 1000 });
-      
-      const result = await scanner.scan('this-domain-does-not-exist-12345.invalid');
-      
-      expect(result.device).toBeUndefined();
-    });
-
-    // Timeout test is flaky in CI, skip for now
-    it.skip('should handle timeout', async () => {
-      const scanner = new VpnScanner({ timeout: 500 }); // Short timeout
-      
-      const result = await scanner.scan('10.255.255.1'); // Non-routable IP
-      
-      expect(result.device).toBeUndefined();
-    }, 15000);
-  });
+  // NOTE: Error handling tests (connection refused, DNS failure, timeout)
+  // are in errors.test.ts with proper mocks for network independence.
 
   describe('options', () => {
     it('should respect skipVulnCheck option', async () => {
