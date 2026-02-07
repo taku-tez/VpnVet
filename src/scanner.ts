@@ -366,43 +366,79 @@ export class VpnScanner {
   }
 
   /**
-   * Check if a hostname is safe to connect to (not private/internal).
+   * Check if a hostname is safe to connect to (not internal/special-use).
    * Resolves FQDNs via DNS. Returns false on DNS failure (fail-closed).
+   * @deprecated Use resolveSafeAddresses() for DNS-rebinding-resistant requests.
    */
   private static async isHostSafe(hostname: string): Promise<boolean> {
+    const addrs = await VpnScanner.resolveSafeAddresses(hostname);
+    return addrs.length > 0;
+  }
+
+  /**
+   * Resolve hostname to IP addresses, returning only safe (non-internal) ones.
+   * Returns an empty array if the host is unsafe or DNS fails (fail-closed).
+   * The caller should use these resolved IPs directly to prevent DNS rebinding.
+   */
+  static async resolveSafeAddresses(hostname: string): Promise<string[]> {
     if (net.isIP(hostname)) {
-      return !VpnScanner.isPrivateIP(hostname);
+      return VpnScanner.isUnsafeIP(hostname) ? [] : [hostname];
     }
     try {
       const addresses = await dns.lookup(hostname, { all: true });
-      return !addresses.some(({ address }) => VpnScanner.isPrivateIP(address));
+      // If ANY address is unsafe, reject the entire hostname (fail-closed)
+      if (addresses.some(({ address }) => VpnScanner.isUnsafeIP(address))) {
+        return [];
+      }
+      return addresses.map(({ address }) => address);
     } catch {
-      return false; // DNS failure → fail-closed
+      return []; // DNS failure → fail-closed
     }
   }
 
-  private static isPrivateIP(hostname: string): boolean {
-    // Check if hostname resolves to a private/internal IP
-    if (net.isIPv4(hostname)) {
-      const parts = hostname.split('.').map(Number);
+  /**
+   * Check if an IP address is unsafe (internal, special-use, or reserved).
+   * Covers RFC1918, RFC5737, RFC6598 (CGN), loopback, link-local,
+   * benchmarking, multicast, and IPv4-mapped IPv6 addresses.
+   */
+  static isUnsafeIP(ip: string): boolean {
+    // Handle IPv4-mapped IPv6 (::ffff:x.x.x.x)
+    if (ip.toLowerCase().startsWith('::ffff:')) {
+      const v4part = ip.slice(7);
+      if (net.isIPv4(v4part)) {
+        return VpnScanner.isUnsafeIP(v4part);
+      }
+    }
+
+    if (net.isIPv4(ip)) {
+      const parts = ip.split('.').map(Number);
       return (
+        parts[0] === 0 ||                                           // 0.0.0.0/8 (this network)
         parts[0] === 10 ||                                          // 10.0.0.0/8
-        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
-        (parts[0] === 192 && parts[1] === 168) ||                  // 192.168.0.0/16
+        (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) || // 100.64.0.0/10 (CGN / RFC6598)
         parts[0] === 127 ||                                         // 127.0.0.0/8
-        (parts[0] === 169 && parts[1] === 254)                     // 169.254.0.0/16
+        (parts[0] === 169 && parts[1] === 254) ||                  // 169.254.0.0/16 (link-local)
+        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||  // 172.16.0.0/12
+        (parts[0] === 192 && parts[1] === 168) ||                  // 192.168.0.0/16
+        (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) || // 198.18.0.0/15 (benchmarking)
+        parts[0] >= 224                                             // 224.0.0.0/4 (multicast) + 240+ (reserved)
       );
     }
-    if (net.isIPv6(hostname)) {
-      const normalized = hostname.toLowerCase();
+    if (net.isIPv6(ip)) {
+      const normalized = ip.toLowerCase();
       return (
-        normalized === '::1' ||
-        normalized.startsWith('fc') ||
-        normalized.startsWith('fd') ||
-        normalized.startsWith('fe80')
+        normalized === '::1' ||                                     // loopback
+        normalized === '::' ||                                      // unspecified
+        normalized.startsWith('fc') || normalized.startsWith('fd') || // fc00::/7 (ULA)
+        normalized.startsWith('fe80')                               // fe80::/10 (link-local)
       );
     }
     return false;
+  }
+
+  /** @deprecated Use isUnsafeIP instead */
+  private static isPrivateIP(ip: string): boolean {
+    return VpnScanner.isUnsafeIP(ip);
   }
 
   private async httpRequest(
@@ -414,16 +450,15 @@ export class VpnScanner {
     let currentUrl = url;
     const originalHost = new URL(url).hostname;
 
-    // SSRF: check initial target before sending any request
-    if (!(await VpnScanner.isHostSafe(originalHost))) {
-      return null;
-    }
+    // SSRF: resolve and pin DNS for initial target
+    let pinnedAddresses = await VpnScanner.resolveSafeAddresses(originalHost);
+    if (pinnedAddresses.length === 0) return null;
 
     for (let i = 0; i <= maxRedirects; i++) {
       if (visited.has(currentUrl)) return null; // Loop detected
       visited.add(currentUrl);
 
-      const response = await this.httpRequestSingle(currentUrl, method);
+      const response = await this.httpRequestSingle(currentUrl, method, pinnedAddresses);
       if (!response) return null;
 
       // Follow redirect?
@@ -441,10 +476,9 @@ export class VpnScanner {
             return null;
           }
 
-          // Always block redirects to private/internal IPs
-          if (!(await VpnScanner.isHostSafe(redirectHost))) {
-            return null;
-          }
+          // Re-resolve and pin DNS for redirect target
+          pinnedAddresses = await VpnScanner.resolveSafeAddresses(redirectHost);
+          if (pinnedAddresses.length === 0) return null;
 
           currentUrl = redirectUrl.toString();
           continue;
@@ -457,9 +491,27 @@ export class VpnScanner {
     return null;
   }
 
+  /**
+   * Build a pinned DNS lookup function that returns pre-resolved addresses.
+   * Prevents DNS rebinding by ensuring the connection uses the same IPs
+   * that were validated during the safety check.
+   */
+  private static buildPinnedLookup(pinnedAddresses: string[]): (
+    hostname: string,
+    options: object,
+    callback: (err: Error | null, address: string, family: number) => void
+  ) => void {
+    return (_hostname, _options, callback) => {
+      const addr = pinnedAddresses[0];
+      const family = net.isIPv4(addr) ? 4 : 6;
+      callback(null, addr, family);
+    };
+  }
+
   private async httpRequestSingle(
     url: string,
-    method: string = 'GET'
+    method: string = 'GET',
+    pinnedAddresses?: string[]
   ): Promise<HttpResponse | null> {
     return new Promise((resolve) => {
       try {
@@ -467,7 +519,7 @@ export class VpnScanner {
         const isHttps = parsedUrl.protocol === 'https:';
         const lib = isHttps ? https : http;
 
-        const options = {
+        const options: Record<string, any> = {
           hostname: parsedUrl.hostname,
           port: parsedUrl.port || (isHttps ? 443 : 80),
           path: parsedUrl.pathname + parsedUrl.search,
@@ -480,6 +532,15 @@ export class VpnScanner {
           timeout: this.options.timeout,
           rejectUnauthorized: false, // Accept self-signed certs (common for VPN devices)
         };
+
+        // Pin DNS resolution to prevent rebinding attacks
+        if (pinnedAddresses && pinnedAddresses.length > 0) {
+          options.lookup = VpnScanner.buildPinnedLookup(pinnedAddresses);
+          // Set servername for TLS/SNI (must be the original hostname, not the IP)
+          if (isHttps && !net.isIP(parsedUrl.hostname)) {
+            options.servername = parsedUrl.hostname;
+          }
+        }
 
         const req = lib.request(options, (res) => {
           let body = '';
@@ -525,16 +586,15 @@ export class VpnScanner {
     let currentUrl = url;
     const originalHost = new URL(url).hostname;
 
-    // SSRF: check initial target
-    if (!(await VpnScanner.isHostSafe(originalHost))) {
-      return null;
-    }
+    // SSRF: resolve and pin DNS for initial target
+    let pinnedAddresses = await VpnScanner.resolveSafeAddresses(originalHost);
+    if (pinnedAddresses.length === 0) return null;
 
     for (let i = 0; i <= maxRedirects; i++) {
       if (visited.has(currentUrl)) return null;
       visited.add(currentUrl);
 
-      const result = await this.httpRequestBinarySingle(currentUrl);
+      const result = await this.httpRequestBinarySingle(currentUrl, pinnedAddresses);
       if (!result) return null;
 
       const isRedirect = result.statusCode >= 300 && result.statusCode < 400;
@@ -548,9 +608,10 @@ export class VpnScanner {
           if (redirectHost !== originalHost && !this.options.allowCrossHostRedirects) {
             return null;
           }
-          if (!(await VpnScanner.isHostSafe(redirectHost))) {
-            return null;
-          }
+
+          // Re-resolve and pin DNS for redirect target
+          pinnedAddresses = await VpnScanner.resolveSafeAddresses(redirectHost);
+          if (pinnedAddresses.length === 0) return null;
 
           currentUrl = redirectUrl.toString();
           continue;
@@ -564,7 +625,8 @@ export class VpnScanner {
   }
 
   private async httpRequestBinarySingle(
-    url: string
+    url: string,
+    pinnedAddresses?: string[]
   ): Promise<{ statusCode: number; headers: Record<string, string | string[]>; body: Buffer } | null> {
     return new Promise((resolve) => {
       try {
@@ -572,7 +634,7 @@ export class VpnScanner {
         const isHttps = parsedUrl.protocol === 'https:';
         const lib = isHttps ? https : http;
 
-        const options = {
+        const options: Record<string, any> = {
           hostname: parsedUrl.hostname,
           port: parsedUrl.port || (isHttps ? 443 : 80),
           path: parsedUrl.pathname + parsedUrl.search,
@@ -585,6 +647,14 @@ export class VpnScanner {
           timeout: this.options.timeout,
           rejectUnauthorized: false,
         };
+
+        // Pin DNS resolution to prevent rebinding attacks
+        if (pinnedAddresses && pinnedAddresses.length > 0) {
+          options.lookup = VpnScanner.buildPinnedLookup(pinnedAddresses);
+          if (isHttps && !net.isIP(parsedUrl.hostname)) {
+            options.servername = parsedUrl.hostname;
+          }
+        }
 
         const req = lib.request(options, (res) => {
           const chunks: Buffer[] = [];

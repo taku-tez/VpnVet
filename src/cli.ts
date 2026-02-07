@@ -173,6 +173,32 @@ function formatJson(results: ScanResult[]): string {
   return JSON.stringify(results, null, 2);
 }
 
+/**
+ * Normalize a target string to an absolute URI suitable for SARIF artifactLocation.uri.
+ * If the target already has a scheme, return as-is. Otherwise prepend https://.
+ * If the result is not a valid URL, return a fallback and stash the original in properties.
+ */
+function normalizeTargetUri(target: string): { uri: string; originalTarget?: string } {
+  const trimmed = target.trim();
+  // Already has a scheme
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
+    try {
+      new URL(trimmed);
+      return { uri: trimmed };
+    } catch {
+      return { uri: `https://unknown-host`, originalTarget: trimmed };
+    }
+  }
+  // No scheme – prepend https://
+  const candidate = `https://${trimmed}`;
+  try {
+    new URL(candidate);
+    return { uri: candidate };
+  } catch {
+    return { uri: `https://unknown-host`, originalTarget: trimmed };
+  }
+}
+
 function formatSarif(results: ScanResult[]): string {
   const sarif = {
     $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
@@ -197,8 +223,9 @@ function formatSarif(results: ScanResult[]): string {
             })),
           },
         },
-        results: results.flatMap(result =>
-          result.vulnerabilities.map(vuln => ({
+        results: results.flatMap(result => {
+          const { uri, originalTarget } = normalizeTargetUri(result.target);
+          return result.vulnerabilities.map(vuln => ({
             ruleId: vuln.vulnerability.cve,
             level: vuln.vulnerability.severity === 'critical' ? 'error' : 
                    vuln.vulnerability.severity === 'high' ? 'error' :
@@ -208,7 +235,7 @@ function formatSarif(results: ScanResult[]): string {
               {
                 physicalLocation: {
                   artifactLocation: {
-                    uri: result.target,
+                    uri,
                   },
                 },
               },
@@ -216,9 +243,10 @@ function formatSarif(results: ScanResult[]): string {
             properties: {
               confidence: vuln.confidence,
               device: result.device,
+              ...(originalTarget ? { originalTarget } : {}),
             },
-          }))
-        ),
+          }));
+        }),
       },
     ],
   };
@@ -285,17 +313,46 @@ function formatOutput(results: ScanResult[], format: string): string {
   }
 }
 
-// Known options sets for validation
-const KNOWN_FLAGS = new Set([
+/** Per-subcommand allowed flags for validation */
+const SCAN_FLAGS = new Set([
   '-t', '--targets', '-o', '--output', '-f', '--format',
-  '--timeout', '--ports', '--vendor', '--severity',
+  '--timeout', '--ports', '--vendor',
   '--skip-vuln', '--skip-version', '--fast', '--concurrency',
   '-q', '--quiet', '-v', '--verbose',
-  '-h', '--help', '--version',
 ]);
+
+const LIST_VENDORS_FLAGS = new Set<string>([]);
+const LIST_VULNS_FLAGS = new Set(['--severity']);
 
 const VALID_FORMATS = ['json', 'sarif', 'csv', 'table'] as const;
 const VALID_SEVERITIES = ['critical', 'high', 'medium', 'low'] as const;
+
+/** Vendor alias map: common alternative spellings → canonical vendor id */
+const VENDOR_ALIASES: Record<string, string> = {
+  'palo-alto': 'paloalto',
+  'palo_alto': 'paloalto',
+  'paloaltonetworks': 'paloalto',
+  'sonic-wall': 'sonicwall',
+  'sonic_wall': 'sonicwall',
+  'check-point': 'checkpoint',
+  'check_point': 'checkpoint',
+  'pulse-secure': 'pulse',
+  'pulsesecure': 'pulse',
+};
+
+/**
+ * Resolve a user-provided vendor string to its canonical vendor id.
+ * Returns the canonical id or null if not found.
+ */
+function resolveVendor(input: string, knownVendors: string[]): string | null {
+  const normalized = input.trim().toLowerCase();
+  // Direct match
+  if (knownVendors.includes(normalized)) return normalized;
+  // Alias match
+  const aliased = VENDOR_ALIASES[normalized];
+  if (aliased && knownVendors.includes(aliased)) return aliased;
+  return null;
+}
 
 /**
  * Require the next argument as a value for the given option.
@@ -328,17 +385,16 @@ async function main(): Promise<void> {
   if (command === 'list') {
     const subCommand = args[1];
     if (subCommand === 'vendors') {
-      const unknownFlags = args.slice(2).filter(a => a.startsWith('-'));
+      const unknownFlags = args.slice(2).filter(a => a.startsWith('-') && !LIST_VENDORS_FLAGS.has(a));
       if (unknownFlags.length > 0) {
         logError(`Unknown option: ${unknownFlags[0]}`);
         process.exit(1);
       }
       listVendors();
     } else if (subCommand === 'vulns') {
-      const allowedVulnFlags = ['--severity'];
-      const unknownFlags = args.slice(2).filter(a => a.startsWith('-') && !allowedVulnFlags.includes(a));
+      const unknownFlags = args.slice(2).filter(a => a.startsWith('-') && !LIST_VULNS_FLAGS.has(a));
       if (unknownFlags.length > 0) {
-        logError(`Unknown option: ${unknownFlags[0]}. Allowed: ${allowedVulnFlags.join(', ')}`);
+        logError(`Unknown option: ${unknownFlags[0]}. Allowed: ${[...LIST_VULNS_FLAGS].join(', ')}`);
         process.exit(1);
       }
       const severityIdx = args.indexOf('--severity');
@@ -449,13 +505,15 @@ async function main(): Promise<void> {
       }
     }
     
-    // Validate --vendor
+    // Validate --vendor (case-insensitive + aliases)
     if (options.vendor) {
       const knownVendors = getAllVendors();
-      if (!knownVendors.includes(options.vendor)) {
+      const resolved = resolveVendor(options.vendor, knownVendors);
+      if (!resolved) {
         logError(`Unknown vendor: "${options.vendor}". Known vendors: ${knownVendors.join(', ')}`);
         process.exit(1);
       }
+      options.vendor = resolved;
     }
 
     if (targets.length === 0) {
