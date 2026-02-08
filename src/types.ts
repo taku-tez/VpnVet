@@ -58,15 +58,11 @@ export type VpnVendor =
   | 'secui'
   // Open Source
   | 'openvpn'
-  | 'wireguard'
   // Enterprise Mobility
   | 'netmotion'
-  | 'mobileiron'
   // Cloud / ZTNA (also detectable when self-hosted)
   | 'zscaler'
   | 'cloudflare'
-  | 'netskope'
-  | 'cato'
   // Other
   | 'aruba'
   | 'meraki'

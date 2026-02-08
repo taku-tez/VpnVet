@@ -146,6 +146,10 @@ describe('Vulnerabilities', () => {
     // Products that intentionally lack fingerprints (management-plane only, not VPN endpoints)
     const KNOWN_NO_FINGERPRINT = new Set([
       'fortinet:FortiManager',
+      'fortinet:FortiSIEM',    // Management-plane product, not a VPN endpoint
+      'fortinet:FortiWeb',     // WAF product, not a VPN endpoint
+      'fortinet:FortiProxy',   // Proxy product, not a VPN endpoint
+      'ivanti:EPMM',           // Mobile device management, not a VPN endpoint
       'cisco:ASA',   // ASA is the firewall; VPN endpoint detected as AnyConnect
       'cisco:FTD',   // FTD is threat defense; VPN endpoint detected as AnyConnect
     ]);
@@ -301,13 +305,15 @@ describe('Vulnerabilities', () => {
       expect(cve?.severity).toBe('critical');
     });
 
-    it('CVE-2025-64155 (FortiSIEM command injection) should be critical with KEV', () => {
+    it('CVE-2025-64155 (FortiSIEM command injection) should be critical with KEV and target FortiSIEM', () => {
       const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-64155');
       expect(cve).toBeDefined();
       expect(cve?.cvss).toBe(9.8);
       expect(cve?.severity).toBe('critical');
       expect(cve?.cisaKev).toBe(true);
       expect(cve?.exploitAvailable).toBe(true);
+      expect(cve?.affected.every(a => a.product === 'FortiSIEM')).toBe(true);
+      expect(cve?.affected.some(a => a.product === 'FortiGate')).toBe(false);
     });
 
     it('CVE-2026-0227 (PAN-OS GlobalProtect DoS) should be high with PoC', () => {
@@ -464,6 +470,53 @@ describe('Vulnerabilities', () => {
       );
       expect(pulseCves.length).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('description vs affected.product consistency', () => {
+  /**
+   * Map of product keywords found in descriptions to expected affected.product values.
+   * FortiGate and FortiOS are treated as the same product.
+   */
+  const PRODUCT_KEYWORD_MAP: Record<string, { vendor: string; products: string[] }> = {
+    'FortiSIEM': { vendor: 'fortinet', products: ['FortiSIEM'] },
+    'FortiWeb': { vendor: 'fortinet', products: ['FortiWeb'] },
+    'FortiManager': { vendor: 'fortinet', products: ['FortiManager'] },
+    'FortiProxy': { vendor: 'fortinet', products: ['FortiProxy'] },
+    'FortiAnalyzer': { vendor: 'fortinet', products: ['FortiManager'] }, // Grouped with FortiManager
+    // FortiOS/FortiGate are equivalent — no check needed
+  };
+
+  it('description product keywords should match affected.product', () => {
+    const mismatches: string[] = [];
+
+    for (const vuln of vulnerabilities) {
+      for (const [keyword, expected] of Object.entries(PRODUCT_KEYWORD_MAP)) {
+        if (vuln.description.includes(keyword)) {
+          // Check that at least one affected entry has the expected product
+          const hasMatchingProduct = vuln.affected.some(
+            a => a.vendor === expected.vendor && expected.products.includes(a.product)
+          );
+          if (!hasMatchingProduct) {
+            mismatches.push(
+              `${vuln.cve}: description mentions "${keyword}" but affected has [${vuln.affected.map(a => a.product).join(', ')}]`
+            );
+          }
+        }
+      }
+    }
+
+    expect(mismatches).toEqual([]);
+  });
+
+  it('Ivanti EPMM CVEs should not be listed as Connect Secure', () => {
+    const epmmCves = vulnerabilities.filter(v =>
+      v.description.includes('EPMM') || v.description.includes('Endpoint Manager Mobile')
+    );
+    for (const vuln of epmmCves) {
+      expect(vuln.affected.some(a => a.product === 'Connect Secure')).toBe(false);
+      expect(vuln.affected.some(a => a.product === 'EPMM')).toBe(true);
+    }
   });
 });
 

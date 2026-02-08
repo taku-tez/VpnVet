@@ -74,10 +74,12 @@ export const vulnerabilities: Vulnerability[] = [
     cve: 'CVE-2022-40684',
     severity: 'critical',
     cvss: 9.8,
-    description: 'FortiOS authentication bypass via alternate path (admin panel takeover)',
+    description: 'FortiOS/FortiProxy/FortiSwitchManager authentication bypass via alternate path (admin panel takeover)',
     affected: [
       { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.1' },
       { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.6' },
+      { vendor: 'fortinet', product: 'FortiProxy', versionStart: '7.2.0', versionEnd: '7.2.0' },
+      { vendor: 'fortinet', product: 'FortiProxy', versionStart: '7.0.0', versionEnd: '7.0.6' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-22-377',
@@ -128,6 +130,7 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'FortiOS/FortiManager/FortiAnalyzer FortiCloud SSO authentication bypass zero-day',
     affected: [
       { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.4.10' },
+      { vendor: 'fortinet', product: 'FortiManager' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-26-060',
@@ -146,6 +149,8 @@ export const vulnerabilities: Vulnerability[] = [
       { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.1' },
       { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.6' },
       { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.10' },
+      { vendor: 'fortinet', product: 'FortiProxy' },
+      { vendor: 'fortinet', product: 'FortiWeb' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-254',
@@ -161,8 +166,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiWeb FortiCloud SSO authentication bypass allowing unauthorized device management access',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.9' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.4' },
+      { vendor: 'fortinet', product: 'FortiWeb', versionStart: '7.4.0', versionEnd: '7.4.9' },
+      { vendor: 'fortinet', product: 'FortiWeb', versionStart: '7.6.0', versionEnd: '7.6.4' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-255',
@@ -196,7 +201,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiSIEM unauthenticated OS command injection allowing root-level RCE (PoC available, actively exploited)',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.2.0' },
+      { vendor: 'fortinet', product: 'FortiSIEM', versionStart: '7.0.0', versionEnd: '7.2.0' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-085',
@@ -489,7 +494,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'Ivanti Endpoint Manager Mobile (EPMM) pre-authentication code injection allowing RCE',
     affected: [
-      { vendor: 'ivanti', product: 'Connect Secure', versionEnd: '12.7.0.0' },
+      { vendor: 'ivanti', product: 'EPMM', versionEnd: '12.7.0.0' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Endpoint-Manager-Mobile-EPMM-CVE-2026-1281-CVE-2026-1340',
@@ -504,7 +509,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'Ivanti Endpoint Manager Mobile (EPMM) code injection allowing unauthenticated RCE',
     affected: [
-      { vendor: 'ivanti', product: 'Connect Secure', versionEnd: '12.7.0.0' },
+      { vendor: 'ivanti', product: 'EPMM', versionEnd: '12.7.0.0' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Endpoint-Manager-Mobile-EPMM-CVE-2026-1281-CVE-2026-1340',
@@ -1064,15 +1069,15 @@ export const vulnerabilities: Vulnerability[] = [
   // Sangfor
   // ============================================================
   {
-    cve: 'CVE-2021-22005',
-    severity: 'critical',
-    cvss: 9.8,
-    description: 'Sangfor SSL VPN arbitrary file write leading to RCE',
+    cve: 'CVE-2020-15728',
+    severity: 'high',
+    cvss: 7.5,
+    description: 'Sangfor SSL VPN client upgrade module signature verification bypass allowing code injection',
     affected: [
       { vendor: 'sangfor', product: 'SSL VPN' },
     ],
     references: [
-      'https://nvd.nist.gov/vuln/detail/CVE-2021-22005',
+      'https://www.sangfor.com/blog/cybersecurity/announcement-sangfor-ssl-vpn-vulnerabilities-recently-discovered-fixed-48-hours',
     ],
     exploitAvailable: true,
     cisaKev: false,

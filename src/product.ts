@@ -38,6 +38,23 @@ export const PRODUCT_ALIASES: Record<string, ProductAlias> = {
   'fortimanager': { vendor: 'fortinet', canonical: 'FortiManager' },
   'forti manager': { vendor: 'fortinet', canonical: 'FortiManager' },
 
+  // FortiSIEM product name variations
+  'fortisiem': { vendor: 'fortinet', canonical: 'FortiSIEM' },
+  'forti siem': { vendor: 'fortinet', canonical: 'FortiSIEM' },
+
+  // FortiWeb product name variations
+  'fortiweb': { vendor: 'fortinet', canonical: 'FortiWeb' },
+  'forti web': { vendor: 'fortinet', canonical: 'FortiWeb' },
+
+  // FortiProxy product name variations
+  'fortiproxy': { vendor: 'fortinet', canonical: 'FortiProxy' },
+  'forti proxy': { vendor: 'fortinet', canonical: 'FortiProxy' },
+
+  // Ivanti EPMM (MobileIron legacy)
+  'ivanti epmm': { vendor: 'ivanti', canonical: 'EPMM' },
+  'ivanti endpoint manager mobile': { vendor: 'ivanti', canonical: 'EPMM' },
+  'mobileiron core': { vendor: 'ivanti', canonical: 'EPMM' },
+
   // Palo Alto product name variations
   'pan-os': { vendor: 'paloalto', canonical: 'GlobalProtect' },
   'panos': { vendor: 'paloalto', canonical: 'GlobalProtect' },

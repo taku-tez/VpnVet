@@ -10,8 +10,8 @@ VpnVet detects VPN appliances exposed on the internet and checks them against kn
 
 ## Features
 
-- 🔍 **44 VPN Vendors** - Comprehensive global coverage
-- 🛡️ **52 Critical CVEs** - CISA KEV prioritized (48 KEV)
+- 🔍 **44 VPN Vendors** - Comprehensive global coverage (type-safe: every `VpnVendor` has fingerprints)
+- 🛡️ **80 Critical CVEs** - CISA KEV prioritized (60 KEV)
 - ⚠️ **CVE Coverage Warnings** - Alerts when detected products lack vulnerability mappings
 - 📊 **Multiple Formats** - JSON, SARIF, CSV, Table
 - 🚀 **Fast & Lightweight** - No heavy dependencies
@@ -58,6 +58,10 @@ Zscaler ZPA, Cloudflare Access
 
 ### Other
 OpenVPN Access Server, Cisco Meraki MX, Aruba ClearPass, Untangle NG Firewall, NetMotion Mobility
+
+> **Note:** The `VpnVendor` type in `src/types.ts` is kept in sync with fingerprint implementations.
+> Every vendor in the type has detection fingerprints — enforced by `tests/vendor-coverage.test.ts`.
+> To add a new vendor: implement fingerprints first, then add to the union type.
 
 ## Installation
 
@@ -274,7 +278,7 @@ vpnvet/
 │   ├── cli.ts              # CLI entry point
 │   ├── scanner.ts          # Core scanning logic
 │   ├── types.ts            # TypeScript definitions
-│   ├── vulnerabilities.ts  # CVE database (52 CVEs)
+│   ├── vulnerabilities.ts  # CVE database (80 CVEs)
 │   ├── vendor.ts           # Vendor alias resolution
 │   ├── product.ts          # Product alias resolution
 │   ├── utils.ts            # Shared utilities
@@ -286,7 +290,7 @@ vpnvet/
 │   │   ├── smb-soho.ts           # DrayTek, MikroTik, pfSense, etc.
 │   │   └── cloud-ztna.ts         # Zscaler, Cloudflare, Meraki, etc.
 │   └── index.ts            # Public API
-├── tests/                   # 636 tests across 30 files
+├── tests/                   # 633 tests across 38 files
 ├── scripts/                 # Utility scripts
 └── dist/                    # Compiled output
 ```

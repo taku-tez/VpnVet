@@ -208,6 +208,16 @@ node scripts/count-stats.mjs
 
 Update README.md and CHANGELOG.md if the counts have changed.
 
+### Mandatory: Stats Consistency
+
+When you add/remove vendors, CVEs, or tests, you **must** run the stats checker and update documentation:
+
+```bash
+node scripts/count-stats.mjs
+```
+
+If the script reports mismatches, update the numbers in README.md (Features, Project Structure) and CHANGELOG.md (1.0.0 Stats) before committing. Use `--check` flag in CI to enforce this.
+
 ## Test Guidelines
 
 ### Principles

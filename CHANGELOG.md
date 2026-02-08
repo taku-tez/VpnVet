@@ -10,8 +10,8 @@ VpnVet v1.0.0 — production-ready VPN device detection and vulnerability scanne
 
 ### Stats
 - **44 vendors** across 5 category files (Tier 1/2 Enterprise, Asia, SMB-SOHO, Cloud-ZTNA)
-- **52 CVEs** tracked (**48 CISA KEV**)
-- **636 tests** across 30 test files — all passing
+- **80 CVEs** tracked (**60 CISA KEV**)
+- **633 tests** across 38 test files — all passing
 - Zero `it.skip` without documented reason
 
 ### Added (since 0.9.0)
