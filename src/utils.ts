@@ -2,6 +2,7 @@
  * VpnVet Utility Functions
  */
 
+import * as crypto from 'node:crypto';
 import type { Vulnerability, VpnVendor } from './types.js';
 
 // ============================================================
@@ -26,6 +27,33 @@ export function logError(message: string): void {
 
 export function logInfo(message: string): void {
   console.error(`[vpnvet] ${message}`);
+}
+
+/**
+ * Normalize a target URI for SARIF output.
+ * Handles scheme detection, URL validation, and SHA-256 hashing for invalid targets.
+ */
+export function normalizeTargetUri(target: string): { uri: string; originalTarget?: string } {
+  const trimmed = target.trim();
+  // Already has a scheme
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
+    try {
+      new URL(trimmed);
+      return { uri: trimmed };
+    } catch {
+      const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
+      return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
+    }
+  }
+  // No scheme – prepend https://
+  const candidate = `https://${trimmed}`;
+  try {
+    new URL(candidate);
+    return { uri: candidate };
+  } catch {
+    const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
+    return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
+  }
 }
 
 /**

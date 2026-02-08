@@ -314,8 +314,8 @@ describe('Exit code semantics', () => {
     }
   });
 
-  it('README documents exit codes 0, 1, 2 matching implementation', () => {
-    const fs = require('fs');
+  it('README documents exit codes 0, 1, 2 matching implementation', async () => {
+    const fs = await import('node:fs');
     const readme = fs.readFileSync('README.md', 'utf-8');
     // Verify README documents the exit code table
     expect(readme).toContain('| 0 | No vulnerabilities found |');
@@ -323,8 +323,8 @@ describe('Exit code semantics', () => {
     expect(readme).toContain('| 2 | Critical vulnerabilities found |');
   });
 
-  it('CLI implementation matches README exit code logic', () => {
-    const fs = require('fs');
+  it('CLI implementation matches README exit code logic', async () => {
+    const fs = await import('node:fs');
     const cli = fs.readFileSync('src/cli.ts', 'utf-8');
     // Verify the exit code logic exists in implementation
     expect(cli).toContain("severity === 'critical'");

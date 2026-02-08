@@ -5,14 +5,13 @@
  * VPN device detection and vulnerability scanner for ASM.
  */
 
-import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VpnScanner } from './scanner.js';
 import { fingerprints, getAllVendors } from './fingerprints/index.js';
 import { vulnerabilities } from './vulnerabilities.js';
-import { setVerbose, logError, logInfo, formatVendorName } from './utils.js';
+import { setVerbose, logError, logInfo, formatVendorName, normalizeTargetUri } from './utils.js';
 import { resolveVendor } from './vendor.js';
 import type { ScanResult, ScanOptions } from './types.js';
 
@@ -198,29 +197,6 @@ function formatJson(results: ScanResult[]): string {
  * If the target already has a scheme, return as-is. Otherwise prepend https://.
  * If the result is not a valid URL, return a fallback and stash the original in properties.
  */
-function normalizeTargetUri(target: string): { uri: string; originalTarget?: string } {
-  const trimmed = target.trim();
-  // Already has a scheme
-  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
-    try {
-      new URL(trimmed);
-      return { uri: trimmed };
-    } catch {
-      const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
-      return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
-    }
-  }
-  // No scheme – prepend https://
-  const candidate = `https://${trimmed}`;
-  try {
-    new URL(candidate);
-    return { uri: candidate };
-  } catch {
-    const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
-    return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
-  }
-}
-
 function formatSarif(results: ScanResult[]): string {
   const sarif = {
     $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',

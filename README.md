@@ -101,10 +101,15 @@ vpnvet version                    # Show version
 | `-t, --targets <file>` | File with targets (one per line) | - |
 | `-o, --output <file>` | Output file path | stdout |
 | `-f, --format <fmt>` | Output format: json, sarif, csv, table | table |
-| `--timeout <ms>` | Request timeout | 10000 |
+| `--timeout <ms>` | Request timeout in milliseconds (max 120000) | 10000 |
+| `--ports <list>` | Comma-separated ports to scan | 443,10443,8443,4433 |
+| `--vendor <name>` | Test specific vendor only (faster) | - |
+| `--fast` | Fast mode (skip slow probes) | false |
+| `--concurrency <n>` | Max concurrent scans (1-100) | 5 |
 | `--skip-vuln` | Skip vulnerability check | false |
 | `--skip-version` | Skip version detection | false |
 | `-q, --quiet` | Suppress progress output | false |
+| `-v, --verbose` | Verbose output | false |
 
 ## Exit Codes
 

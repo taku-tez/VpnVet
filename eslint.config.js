@@ -16,13 +16,44 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      // Relax rules that conflict with existing codebase patterns
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': 'off',
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'tests/', '*.js', '*.cjs', '*.mjs'],
+    files: ['tests/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules,
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-console': 'off',
+      'no-unreachable': 'error',
+    },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+    },
+    rules: {
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unreachable': 'error',
+      'no-console': 'off',
+    },
+  },
+  {
+    ignores: ['dist/', 'node_modules/', '*.js', '*.cjs', '*.mjs'],
   },
 ];

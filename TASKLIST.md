@@ -212,6 +212,37 @@
 - [ ] CVE 更新の半自動化
 - [ ] CI/CD リリースチェックリスト整備
 
+### CVE未対応ベンダー整備バックログ (#5)
+
+以下21ベンダーは検出可能だがCVEマッピングが未整備。`scripts/audit-coverage.mjs --kev` で KEV該当を確認可能。
+
+**優先度高（KEV該当の可能性あり）:**
+- [ ] h3c - SecPath
+- [ ] hillstone - NGFW
+- [ ] ruijie - RG
+- [ ] stormshield - SNS
+- [ ] ubiquiti - UniFi
+
+**優先度中:**
+- [ ] ahnlab - TrusGuard
+- [ ] dptech - UTM
+- [ ] endian - UTM
+- [ ] kerio - Control
+- [ ] lancom - VPN
+- [ ] meraki - MX (Cisco子会社、Cisco CVEと重複可能性)
+- [ ] nsfocus - WAF/UTM
+- [ ] openvpn - Access Server
+- [ ] secui - MF2
+- [ ] topsec - NGFW
+- [ ] venustech - UTM
+
+**優先度低（ZTNA/クラウド、CVE形態が異なる）:**
+- [ ] cloudflare - Access
+- [ ] netmotion - Mobility
+- [ ] opnsense - Firewall
+- [ ] untangle - NG Firewall
+- [ ] zscaler - ZPA
+
 ---
 
 ## 10. 完了定義（Definition of Done）

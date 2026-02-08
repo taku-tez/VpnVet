@@ -1,31 +1,9 @@
 /**
  * Agent H: UX improvements (#3 SARIF URI, #4 vendor case, #7 KNOWN_FLAGS)
  */
+import { normalizeTargetUri } from '../src/utils';
 
 describe('SARIF URI normalization (#3)', () => {
-  // We test by running the CLI with --format sarif and checking output
-  // Since scan requires network, we test the normalizeTargetUri logic directly
-  
-  // Replicate normalizeTargetUri for unit testing (not exported)
-  function normalizeTargetUri(target: string): { uri: string; originalTarget?: string } {
-    const trimmed = target.trim();
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
-      try { new URL(trimmed); return { uri: trimmed }; }
-      catch {
-        const crypto = require('node:crypto');
-        const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
-        return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
-      }
-    }
-    const candidate = `https://${trimmed}`;
-    try { new URL(candidate); return { uri: candidate }; }
-    catch {
-      const crypto = require('node:crypto');
-      const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
-      return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
-    }
-  }
-
   it('should prepend https:// to bare hostname', () => {
     const result = normalizeTargetUri('vpn.example.com');
     expect(result.uri).toBe('https://vpn.example.com');

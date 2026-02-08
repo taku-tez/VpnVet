@@ -5,6 +5,7 @@
 import { resolveVendor, VENDOR_ALIASES } from '../src/vendor';
 import { getAllVendors } from '../src/fingerprints/index';
 import { VpnScanner } from '../src/scanner';
+import { normalizeTargetUri } from '../src/utils';
 
 describe('resolveVendor shared function (#3)', () => {
   const knownVendors = getAllVendors();
@@ -51,27 +52,6 @@ describe('Scanner vendor normalization via API (#3)', () => {
 });
 
 describe('SARIF URI hashing for invalid targets (#4)', () => {
-  // We need to test normalizeTargetUri indirectly or replicate it
-  // since it's not exported. We use crypto to verify the hash approach.
-  const crypto = require('node:crypto');
-
-  function normalizeTargetUri(target: string): { uri: string; originalTarget?: string } {
-    const trimmed = target.trim();
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
-      try { new URL(trimmed); return { uri: trimmed }; }
-      catch {
-        const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
-        return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
-      }
-    }
-    const candidate = `https://${trimmed}`;
-    try { new URL(candidate); return { uri: candidate }; }
-    catch {
-      const hash = crypto.createHash('sha256').update(trimmed).digest('hex').slice(0, 12);
-      return { uri: `https://invalid-target-${hash}`, originalTarget: trimmed };
-    }
-  }
-
   it('should produce unique URIs for different invalid targets', () => {
     const r1 = normalizeTargetUri(':::invalid1');
     const r2 = normalizeTargetUri(':::invalid2');
