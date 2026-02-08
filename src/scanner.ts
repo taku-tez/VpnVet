@@ -219,8 +219,9 @@ export class VpnScanner {
       let lastResult: ScanResult | undefined;
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         lastResult = await this.scan(target);
-        // Success: device found or no errors
-        if (lastResult.device || lastResult.errors.length === 0) {
+        // Success: device found, or no errors at all (including scanErrors)
+        const hasScanErrors = (lastResult.scanErrors?.length ?? 0) > 0;
+        if (lastResult.device || (lastResult.errors.length === 0 && !hasScanErrors)) {
           return lastResult;
         }
         // Don't retry permanent errors (invalid-url, ssrf-blocked, http-status, etc.)
@@ -468,7 +469,8 @@ export class VpnScanner {
   ): Promise<{ success: boolean; version?: string }> {
     try {
       if (pattern.type === 'endpoint' || pattern.type === 'body') {
-        const url = pattern.path ? `${baseUrl}${pattern.path}` : baseUrl;
+        const baseOrigin = new URL(baseUrl).origin;
+        const url = pattern.path ? `${baseOrigin}${pattern.path}` : baseUrl;
         const response = await this.httpRequest(url, pattern.method || 'GET');
         
         if (!response) return { success: false };
@@ -522,12 +524,19 @@ export class VpnScanner {
         
         if (!response) return { success: false };
 
+        // Validate HTTP status: use pattern.status if defined, otherwise require 2xx
+        if (pattern.status) {
+          if (!pattern.status.includes(response.statusCode)) return { success: false };
+        } else {
+          if (response.statusCode < 200 || response.statusCode >= 300) return { success: false };
+        }
+
         if (this.matchHeaders(response.headers, pattern.match)) {
           return { success: true };
         }
       } else if (pattern.type === 'favicon') {
         const faviconPath = pattern.path || '/favicon.ico';
-        const url = `${baseUrl}${faviconPath}`;
+        const url = `${new URL(baseUrl).origin}${faviconPath}`;
 
         const matchStr = typeof pattern.match === 'string' ? pattern.match : null;
         // If match looks like hash values (digits, optional minus, pipe-separated), use hash comparison
@@ -599,7 +608,7 @@ export class VpnScanner {
         scanResult.scanErrors ??= [];
         const kind: ScanErrorKind = 'pattern-error';
         const message = err instanceof Error ? err.message : String(err);
-        const url = pattern.path ? `${baseUrl}${pattern.path}` : baseUrl;
+        const url = pattern.path ? `${new URL(baseUrl).origin}${pattern.path}` : baseUrl;
         // Deduplicate by (kind, url, message)
         const isDuplicate = scanResult.scanErrors.some(
           e => e.kind === kind && e.url === url && e.message === message
