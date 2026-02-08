@@ -2,6 +2,44 @@
 
 All notable changes to VpnVet will be documented in this file.
 
+## [1.0.0] - 2026-02-08
+
+### 🎉 First Stable Release
+
+VpnVet v1.0.0 — production-ready VPN device detection and vulnerability scanner.
+
+### Stats
+- **44 vendors** across 5 category files (Tier 1/2 Enterprise, Asia, SMB-SOHO, Cloud-ZTNA)
+- **52 CVEs** tracked (**48 CISA KEV**)
+- **636 tests** across 30 test files — all passing
+- Zero `it.skip` without documented reason
+
+### Added (since 0.9.0)
+- **CVE semi-automation scripts** for maintaining vulnerability database
+- **Version boundary tests** for edge-case version range matching
+- **Performance & stability tests** (P2 test suite expansion)
+- **False positive/negative test suites** with real-world regression cases
+- **Output schema validation tests** for JSON, SARIF, CSV formats
+- **ESLint v9 flat config** with `@typescript-eslint`
+
+### Improved
+- CLI UX: case-insensitive `--vendor`, per-subcommand flag validation, helpful error messages
+- SSRF protection: expanded blocked IP ranges, hex IPv4-mapped IPv6 handling
+- Normalizer hardening: URL normalization, strict numeric CLI validation
+- Scanner refactoring: shared `httpRequest` core, adaptive concurrency
+- Dead code removal, simplified CLI output, stabilized list ordering
+
+### Security
+- Input validation for all CLI arguments (target, file paths, options)
+- SSRF redirect protection with DNS rebinding mitigation
+- TLS SNI pinning for certificate verification
+- No sensitive data (IPs/tokens) in log output
+
+### Documentation
+- LICENSE (MIT) file added
+- README updated with accurate CVE/test counts and project structure
+- CONTRIBUTING.md with category file guidelines and test conventions
+
 ## [0.9.0] - 2026-02-07
 
 ### Added

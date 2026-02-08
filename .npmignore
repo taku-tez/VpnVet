@@ -1,0 +1,20 @@
+# Source
+src/
+tests/
+scripts/
+
+# Config
+tsconfig.json
+jest.config.cjs
+eslint.config.js
+.gitignore
+
+# Dev files
+TASKLIST.md
+CONTRIBUTING.md
+CHANGELOG.md
+.git/
+node_modules/
+coverage/
+*.test.ts
+*.test.js

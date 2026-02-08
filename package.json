@@ -1,12 +1,12 @@
 {
   "name": "vpnvet",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "VPN device detection and vulnerability scanner for ASM",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "vpnvet": "./dist/cli.js"
+    "vpnvet": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/taku-tez/VpnVet.git"
+    "url": "git+https://github.com/taku-tez/VpnVet.git"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

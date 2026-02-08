@@ -11,7 +11,7 @@ VpnVet detects VPN appliances exposed on the internet and checks them against kn
 ## Features
 
 - 🔍 **44 VPN Vendors** - Comprehensive global coverage
-- 🛡️ **38 Critical CVEs** - CISA KEV prioritized
+- 🛡️ **52 Critical CVEs** - CISA KEV prioritized (48 KEV)
 - ⚠️ **CVE Coverage Warnings** - Alerts when detected products lack vulnerability mappings
 - 📊 **Multiple Formats** - JSON, SARIF, CSV, Table
 - 🚀 **Fast & Lightweight** - No heavy dependencies
@@ -266,18 +266,24 @@ CISA maintains a [Known Exploited Vulnerabilities (KEV)](https://www.cisa.gov/kn
 ```
 vpnvet/
 ├── src/
-│   ├── cli.ts           # CLI entry point
-│   ├── scanner.ts       # Core scanning logic
-│   ├── types.ts         # TypeScript definitions
-│   ├── vulnerabilities.ts  # CVE database
+│   ├── cli.ts              # CLI entry point
+│   ├── scanner.ts          # Core scanning logic
+│   ├── types.ts            # TypeScript definitions
+│   ├── vulnerabilities.ts  # CVE database (52 CVEs)
+│   ├── vendor.ts           # Vendor alias resolution
+│   ├── product.ts          # Product alias resolution
+│   ├── utils.ts            # Shared utilities
 │   ├── fingerprints/
-│   │   └── index.ts     # Vendor fingerprints
-│   └── index.ts         # Public API
-├── tests/
-│   ├── fingerprints.test.ts
-│   ├── vulnerabilities.test.ts
-│   └── scanner.test.ts
-└── dist/                # Compiled output
+│   │   ├── index.ts              # Aggregator
+│   │   ├── tier1-enterprise.ts   # Fortinet, Palo Alto, Cisco, etc.
+│   │   ├── tier2-enterprise.ts   # SonicWall, F5, Juniper, etc.
+│   │   ├── asia.ts               # Huawei, H3C, Sangfor, etc.
+│   │   ├── smb-soho.ts           # DrayTek, MikroTik, pfSense, etc.
+│   │   └── cloud-ztna.ts         # Zscaler, Cloudflare, Meraki, etc.
+│   └── index.ts            # Public API
+├── tests/                   # 636 tests across 30 files
+├── scripts/                 # Utility scripts
+└── dist/                    # Compiled output
 ```
 
 ## Detection Coverage vs CVE Coverage
