@@ -67,11 +67,24 @@ export function normalizeUrl(target: string): string {
     throw new Error('Invalid URL: empty target');
   }
 
-  const withScheme = (!trimmed.startsWith('http://') && !trimmed.startsWith('https://'))
-    ? `https://${trimmed}`
-    : trimmed;
+  const lower = trimmed.toLowerCase();
 
-  // Validate via URL constructor — throws on malformed URLs
+  // If it has a scheme, validate it's http(s) only
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
+    if (!lower.startsWith('http://') && !lower.startsWith('https://')) {
+      throw new Error(`Invalid URL: unsupported scheme in "${target}"`);
+    }
+    // Validate via URL constructor
+    try {
+      new URL(trimmed);
+    } catch {
+      throw new Error(`Invalid URL: "${target}"`);
+    }
+    return trimmed;
+  }
+
+  // No scheme – prepend https://
+  const withScheme = `https://${trimmed}`;
   try {
     new URL(withScheme);
   } catch {
