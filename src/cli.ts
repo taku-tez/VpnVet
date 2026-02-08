@@ -180,8 +180,11 @@ function formatTable(results: ScanResult[]): string {
       if (result.coverageWarning) {
         lines.push(`\n⚠️  Coverage Warning: ${result.coverageWarning}`);
       }
+    } else if (result.scanErrors && result.scanErrors.length > 0) {
+      const kinds = result.scanErrors.map(e => e.kind).filter((v, i, a) => a.indexOf(v) === i).join('/');
+      lines.push(`\n⚠ Connection failed (${kinds})`);
     } else {
-      lines.push(`\nNo VPN device detected.`);
+      lines.push(`\n✗ No VPN device detected`);
     }
   }
   
@@ -572,6 +575,9 @@ async function main(): Promise<void> {
         const result = results[i];
         if (result.device) {
           console.error(`[${i + 1}/${targets.length}] ${result.target} ✓ ${result.device.vendor} ${result.device.product} (${result.device.confidence}%)`);
+        } else if (result.scanErrors && result.scanErrors.length > 0) {
+          const kinds = result.scanErrors.map(e => e.kind).filter((v, i, a) => a.indexOf(v) === i).join('/');
+          console.error(`[${i + 1}/${targets.length}] ${result.target} ⚠ Connection failed (${kinds})`);
         } else if (result.errors.length > 0) {
           console.error(`[${i + 1}/${targets.length}] ${result.target} ✗ Error: ${result.errors[0]}`);
         } else {
@@ -580,6 +586,14 @@ async function main(): Promise<void> {
       }
     }
     
+    // In quiet mode, still print a one-line summary to stderr
+    if (options.quiet) {
+      const detected = results.filter(r => r.device).length;
+      const connFailed = results.filter(r => !r.device && r.scanErrors && r.scanErrors.length > 0).length;
+      const clean = results.length - detected - connFailed;
+      console.error(`Scanned ${results.length} target(s): ${detected} detected, ${connFailed} connection failed, ${clean} clean`);
+    }
+
     const output = formatOutput(results, options.format);
     
     // Output: write to file if --output specified, otherwise print to stdout

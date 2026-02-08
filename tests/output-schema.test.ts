@@ -323,10 +323,14 @@ describe('Table output format', () => {
     expect(output).toContain('192.0.2.1');
   });
 
-  it('should show "No VPN device detected" for non-VPN target', () => {
+  it('should show connection failure or no detection for non-VPN target', () => {
     const output = runCli('scan 192.0.2.1 -f table --timeout 2000');
     if (!output.trim()) return;
-    expect(output).toContain('No VPN device detected');
+    // 192.0.2.1 (TEST-NET) typically times out or is refused, so we expect
+    // either a connection failure message or a clean no-detection message
+    const hasConnectionFailed = output.includes('Connection failed');
+    const hasNoVpn = output.includes('No VPN device detected');
+    expect(hasConnectionFailed || hasNoVpn).toBe(true);
   });
 
   it('should contain separator lines', () => {
