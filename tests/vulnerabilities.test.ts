@@ -297,6 +297,30 @@ describe('Vulnerabilities', () => {
       expect(cve?.severity).toBe('critical');
     });
 
+    it('CVE-2025-64155 (FortiSIEM command injection) should be critical with KEV', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-64155');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(9.8);
+      expect(cve?.severity).toBe('critical');
+      expect(cve?.cisaKev).toBe(true);
+      expect(cve?.exploitAvailable).toBe(true);
+    });
+
+    it('CVE-2026-0227 (PAN-OS GlobalProtect DoS) should be high with PoC', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-0227');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(7.7);
+      expect(cve?.severity).toBe('high');
+      expect(cve?.exploitAvailable).toBe(true);
+    });
+
+    it('CVE-2025-11730 (Zyxel DDNS command injection) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-11730');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(7.2);
+      expect(cve?.severity).toBe('high');
+    });
+
     it('CVE-2025-25249 (FortiOS CAPWAP RCE) should be high severity', () => {
       const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-25249');
       expect(cve).toBeDefined();

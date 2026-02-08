@@ -183,6 +183,21 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: false,
   },
   {
+    cve: 'CVE-2025-64155',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'FortiSIEM unauthenticated OS command injection allowing root-level RCE (PoC available, actively exploited)',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.2.0' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-085',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-64155',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
     cve: 'CVE-2025-32756',
     severity: 'critical',
     cvss: 9.8,
@@ -294,6 +309,25 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+  },
+  {
+    cve: 'CVE-2026-0227',
+    severity: 'high',
+    cvss: 7.7,
+    description: 'PAN-OS GlobalProtect gateway/portal DoS via improper exceptional condition check (PoC available)',
+    affected: [
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h4' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.6-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.7' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.13-h3' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h11' },
+    ],
+    references: [
+      'https://security.paloaltonetworks.com/CVE-2026-0227',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-0227',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
   },
 
   // ============================================================
@@ -791,6 +825,21 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-11730',
+    severity: 'high',
+    cvss: 7.2,
+    description: 'Zyxel ATP/USG FLEX DDNS CLI command injection allowing OS command execution',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: '5.35', versionEnd: '5.41' },
+    ],
+    references: [
+      'https://www.zyxel.com/global/en/support/security-advisories',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-11730',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
   },
 
   // ============================================================
