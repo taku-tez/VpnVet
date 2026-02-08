@@ -1,7 +1,7 @@
 /**
  * Agent L: CLI improvements (#1 numeric validation, #2 --targets merge, #6 SCAN_FLAGS)
  */
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -10,12 +10,16 @@ const CLI = 'npx tsx src/cli.ts';
 const EXEC_OPTS = { cwd: process.cwd(), encoding: 'utf-8' as const, stdio: ['pipe', 'pipe', 'pipe'] as const };
 
 function runCli(args: string): { status: number; stdout: string; stderr: string } {
-  try {
-    const stdout = execSync(`${CLI} ${args}`, { ...EXEC_OPTS, timeout: 15000 });
-    return { status: 0, stdout, stderr: '' };
-  } catch (e: any) {
-    return { status: e.status ?? 1, stdout: e.stdout ?? '', stderr: e.stderr ?? '' };
-  }
+  const result = spawnSync('npx', ['tsx', 'src/cli.ts', ...args.split(/\s+/).filter(Boolean)], {
+    cwd: process.cwd(),
+    encoding: 'utf-8',
+    timeout: 15000,
+  });
+  return {
+    status: result.status ?? 1,
+    stdout: result.stdout ?? '',
+    stderr: result.stderr ?? '',
+  };
 }
 
 describe('Strict numeric validation (#1)', () => {

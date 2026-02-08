@@ -551,11 +551,11 @@ async function main(): Promise<void> {
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
         if (result.device) {
-          console.log(`[${i + 1}/${targets.length}] ${result.target} ✓ ${result.device.vendor} ${result.device.product} (${result.device.confidence}%)`);
+          console.error(`[${i + 1}/${targets.length}] ${result.target} ✓ ${result.device.vendor} ${result.device.product} (${result.device.confidence}%)`);
         } else if (result.errors.length > 0) {
-          console.log(`[${i + 1}/${targets.length}] ${result.target} ✗ Error: ${result.errors[0]}`);
+          console.error(`[${i + 1}/${targets.length}] ${result.target} ✗ Error: ${result.errors[0]}`);
         } else {
-          console.log(`[${i + 1}/${targets.length}] ${result.target} - No VPN detected`);
+          console.error(`[${i + 1}/${targets.length}] ${result.target} - No VPN detected`);
         }
       }
     }
@@ -567,7 +567,7 @@ async function main(): Promise<void> {
       const outputPath = path.resolve(options.output);
       fs.writeFileSync(outputPath, output);
       if (!options.quiet) {
-        console.log(`\nResults written to: ${outputPath}`);
+        console.error(`\nResults written to: ${outputPath}`);
       }
     } else {
       console.log(output);
