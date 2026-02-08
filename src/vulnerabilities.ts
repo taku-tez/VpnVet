@@ -1381,6 +1381,26 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: false,
     cisaKev: false,
   },
+
+  // ============================================================
+  // OpenVPN
+  // ============================================================
+  {
+    cve: 'CVE-2025-15497',
+    severity: 'medium',
+    cvss: 6.5,
+    description: 'OpenVPN 2.7 alpha/rc epoch key slot processing allows authenticated remote users to trigger assert causing DoS',
+    affected: [
+      { vendor: 'openvpn', product: 'Access Server', versionStart: '2.7_alpha1', versionEnd: '2.7_rc5' },
+    ],
+    references: [
+      'https://community.openvpn.net/Security%20Announcements/CVE-2025-15497',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-15497',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

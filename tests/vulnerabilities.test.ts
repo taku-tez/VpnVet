@@ -177,7 +177,7 @@ describe('Vulnerabilities', () => {
       // If a new vendor gets CVEs added, remove it from this list
       const expectedNoCve = [
         'ahnlab', 'cloudflare', 'dptech', 'endian', 'h3c', 'hillstone',
-        'kerio', 'lancom', 'meraki', 'netmotion', 'nsfocus', 'openvpn',
+        'kerio', 'lancom', 'meraki', 'netmotion', 'nsfocus',
         'opnsense', 'ruijie', 'secui', 'stormshield', 'topsec', 'ubiquiti',
         'untangle', 'venustech', 'zscaler',
       ].sort();
@@ -444,6 +444,14 @@ describe('Vulnerabilities', () => {
       expect(cve?.severity).toBe('low');
       expect(cve?.cvss).toBe(3.2);
       expect(cve?.affected.some(a => a.vendor === 'fortinet')).toBe(true);
+    });
+
+    it('CVE-2025-15497 (OpenVPN Epoch Key DoS) should be medium severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-15497');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('medium');
+      expect(cve?.cvss).toBe(6.5);
+      expect(cve?.affected.some(a => a.vendor === 'openvpn')).toBe(true);
     });
 
     it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {

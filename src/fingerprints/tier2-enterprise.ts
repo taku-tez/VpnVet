@@ -189,6 +189,27 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: 'OpenVPN',
         weight: 7,
       },
+      {
+        type: 'endpoint',
+        path: '/api/status/0',
+        method: 'GET',
+        match: 'openvpn|ovpn_status',
+        weight: 8,
+        versionExtract: /\"version\"\s*:\s*\"(\d+\.\d+(?:\.\d+)*)\"/i,
+      },
+      {
+        type: 'endpoint',
+        path: '/rest/GetUserlogin',
+        method: 'GET',
+        match: 'openvpn',
+        weight: 7,
+      },
+      {
+        type: 'body',
+        path: '/__session_start__/',
+        match: 'ovpnc|openvpn_client',
+        weight: 6,
+      },
     ],
   },
   {
