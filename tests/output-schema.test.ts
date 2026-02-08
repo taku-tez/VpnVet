@@ -191,12 +191,14 @@ describe('SARIF output schema', () => {
 
     for (const rule of rules) {
       expect(rule).toHaveProperty('id');
-      expect(rule.id).toMatch(/^CVE-\d{4}-\d+$/);
+      expect(rule.id).toMatch(/^(CVE-\d{4}-\d+|VPNVET-[A-Z-]+)$/);
       expect(rule).toHaveProperty('shortDescription');
       expect(rule.shortDescription).toHaveProperty('text');
       expect(rule).toHaveProperty('properties');
       expect(rule.properties).toHaveProperty('severity');
-      expect(rule.properties).toHaveProperty('cisaKev');
+      if (rule.id.startsWith('CVE-')) {
+        expect(rule.properties).toHaveProperty('cisaKev');
+      }
     }
   });
 
