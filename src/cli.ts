@@ -146,6 +146,11 @@ function formatTable(results: ScanResult[]): string {
     if (result.errors.length > 0) {
       lines.push(`Errors: ${result.errors.join(', ')}`);
     }
+    if (result.scanErrors && result.scanErrors.length > 0) {
+      for (const se of result.scanErrors) {
+        lines.push(`  [${se.kind}] ${se.message}${se.statusCode ? ` (HTTP ${se.statusCode})` : ''}`);
+      }
+    }
     
     if (result.device) {
       const d = result.device;
@@ -262,6 +267,7 @@ function formatSarif(results: ScanResult[]): string {
               device: result.device,
               ...(originalTarget ? { originalTarget } : {}),
               ...(result.coverageWarning ? { coverageWarning: result.coverageWarning } : {}),
+              ...(result.scanErrors?.length ? { scanErrors: result.scanErrors } : {}),
             },
           }));
         }),
@@ -280,9 +286,10 @@ function escapeCsvCell(value: string): string {
 }
 
 function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning'];
+  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning,scan_error_kinds'];
   
   for (const result of results) {
+    const errorKinds = result.scanErrors?.map(e => e.kind).join(';') || '';
     if (result.device) {
       if (result.vulnerabilities.length > 0) {
         for (const vuln of result.vulnerabilities) {
@@ -298,6 +305,7 @@ function formatCsv(results: ScanResult[]): string {
             vuln.confidence,
             vuln.vulnerability.cisaKev != null ? String(vuln.vulnerability.cisaKev) : '',
             result.coverageWarning || '',
+            errorKinds,
           ].map(escapeCsvCell).join(','));
         }
       } else {
@@ -309,10 +317,11 @@ function formatCsv(results: ScanResult[]): string {
           String(result.device.confidence),
           '', '', '', '', '',
           result.coverageWarning || '',
+          errorKinds,
         ].map(escapeCsvCell).join(','));
       }
     } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', '', ''].map(escapeCsvCell).join(','));
+      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
     }
   }
   

@@ -87,6 +87,70 @@ describe('scanMultiple concurrency', () => {
   });
 });
 
+describe('adaptiveConcurrency (#1)', () => {
+  it('reduces effective concurrency when failure rate exceeds 50%', async () => {
+    // 20 targets, all fail — should trigger concurrency reduction after 5 completions
+    const targets = Array.from({ length: 20 }, (_, i) => `fail-${i}`);
+    const scanner = new VpnScanner({ concurrency: 4, adaptiveConcurrency: true, timeout: 1000 });
+
+    let running = 0;
+    let maxRunningAfter10 = 0;
+    let completed = 0;
+
+    jest.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
+      running++;
+      await new Promise(r => setTimeout(r, 10));
+      running--;
+      completed++;
+      // After 10 completions (2 evaluation windows), record max concurrency
+      if (completed > 10) {
+        maxRunningAfter10 = Math.max(maxRunningAfter10, running);
+      }
+      return {
+        target,
+        timestamp: new Date().toISOString(),
+        vulnerabilities: [],
+        errors: ['Connection refused'],
+      };
+    });
+
+    const results = await scanner.scanMultiple(targets);
+
+    expect(results).toHaveLength(20);
+    // After 100% failure rate, concurrency should have been halved at least once
+    // Initial concurrency=4, after first eval (5 done, 100% fail) → 2, after second (10 done) → 1
+    // So max running after 10 completions should be ≤ 2
+    expect(maxRunningAfter10).toBeLessThanOrEqual(2);
+  });
+
+  it('does not reduce concurrency when failure rate is low', async () => {
+    const targets = Array.from({ length: 15 }, (_, i) => `ok-${i}`);
+    const scanner = new VpnScanner({ concurrency: 4, adaptiveConcurrency: true, timeout: 1000 });
+
+    let running = 0;
+    let maxRunning = 0;
+
+    jest.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
+      running++;
+      maxRunning = Math.max(maxRunning, running);
+      await new Promise(r => setTimeout(r, 10));
+      running--;
+      return {
+        target,
+        timestamp: new Date().toISOString(),
+        vulnerabilities: [],
+        errors: [],
+        device: { vendor: 'fortinet' as any, product: 'FortiGate', confidence: 80, detectionMethod: ['endpoint'], endpoints: [] },
+      };
+    });
+
+    await scanner.scanMultiple(targets);
+
+    // Concurrency should stay at 4
+    expect(maxRunning).toBeGreaterThanOrEqual(3); // Allow for timing variance
+  });
+});
+
 describe('concurrency constructor validation (#3)', () => {
   it('defaults to 5 when concurrency is undefined', () => {
     const scanner = new VpnScanner({});

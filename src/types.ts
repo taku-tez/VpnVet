@@ -116,6 +116,7 @@ export interface ScanResult {
   vulnerabilities: VulnerabilityMatch[];
   coverageWarning?: string;
   errors: string[];
+  scanErrors?: ScanError[];
 }
 
 export interface VulnerabilityMatch {

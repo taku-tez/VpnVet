@@ -237,7 +237,7 @@ describe('SARIF output schema', () => {
 // ─── CSV Schema Tests ────────────────────────────────────────────
 
 describe('CSV output schema', () => {
-  const CSV_HEADER = 'target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning';
+  const CSV_HEADER = 'target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning,scan_error_kinds';
 
   it('should have fixed column order header', () => {
     const output = runCli('scan 192.0.2.1 -f csv --timeout 2000');
@@ -247,19 +247,19 @@ describe('CSV output schema', () => {
     expect(lines[0]).toBe(CSV_HEADER);
   });
 
-  it('should have 11 columns per row', () => {
+  it('should have 12 columns per row', () => {
     const output = runCli('scan 192.0.2.1 -f csv --timeout 2000');
     if (!output.trim()) return;
 
     const lines = output.trim().split('\n');
     const headerCols = lines[0].split(',').length;
-    expect(headerCols).toBe(11);
+    expect(headerCols).toBe(12);
 
-    // Each data row should also have 11 columns (accounting for CSV escaping)
+    // Each data row should also have 12 columns (accounting for CSV escaping)
     for (let i = 1; i < lines.length; i++) {
       // Simple count: split by comma but respect quoted fields
       const cols = parseCsvRow(lines[i]);
-      expect(cols.length).toBe(11);
+      expect(cols.length).toBe(12);
     }
   });
 
@@ -299,14 +299,14 @@ describe('CSV output schema', () => {
   });
 
   it('should handle empty device rows with correct column count', () => {
-    // No device detected should still produce 11 columns
+    // No device detected should still produce 12 columns
     const output = runCli('scan 192.0.2.1 -f csv --timeout 2000');
     if (!output.trim()) return;
 
     const lines = output.trim().split('\n');
     for (let i = 1; i < lines.length; i++) {
       const cols = parseCsvRow(lines[i]);
-      expect(cols.length).toBe(11);
+      expect(cols.length).toBe(12);
     }
   });
 });

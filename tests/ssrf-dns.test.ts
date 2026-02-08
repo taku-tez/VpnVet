@@ -91,6 +91,11 @@ describe('Expanded unsafe IP ranges (#1)', () => {
     ['fc00::1', 'ULA fc00::/7'],
     ['fd12:3456::1', 'ULA fd'],
     ['fe80::1', 'link-local'],
+    ['ff02::1', 'multicast ff00::/8'],
+    ['ff00::0', 'multicast ff00::/8'],
+    ['ffff::1', 'multicast ff00::/8'],
+    ['2001:db8::1', 'documentation 2001:db8::/32'],
+    ['2001:db8:1234::1', 'documentation 2001:db8::/32'],
   ])('should block IPv6 %s (%s)', (ip) => {
     expect(isUnsafeIP(ip)).toBe(true);
   });
