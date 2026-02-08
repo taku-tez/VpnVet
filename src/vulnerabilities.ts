@@ -115,6 +115,91 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: true,
     cisaKev: true,
   },
+  {
+    cve: 'CVE-2026-24858',
+    severity: 'critical',
+    cvss: 9.4,
+    description: 'FortiOS/FortiManager/FortiAnalyzer FortiCloud SSO authentication bypass zero-day',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.4.10' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-26-060',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-24858',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-59718',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'FortiOS/FortiProxy/FortiSwitchManager/FortiWeb FortiCloud SSO cryptographic signature bypass allowing unauthenticated admin access',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.1' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.6' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.10' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-254',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-59718',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-59719',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'FortiWeb FortiCloud SSO authentication bypass allowing unauthorized device management access',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.9' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.4' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-255',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-59719',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-25249',
+    severity: 'high',
+    cvss: 8.1,
+    description: 'FortiOS/FortiSwitchManager CAPWAP daemon RCE via crafted network packets',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.3' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.8' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.11' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.17' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.16' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-084',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-25249',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+  {
+    cve: 'CVE-2025-32756',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'FortiOS/FortiVoice/FortiNDR/FortiMail/FortiRecorder stack-based buffer overflow allowing RCE',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.7' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.11' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.17' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.16' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-254',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-32756',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
 
   {
     cve: 'CVE-2024-47575',
@@ -314,6 +399,22 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
   {
+    cve: 'CVE-2025-0283',
+    severity: 'high',
+    cvss: 7.0,
+    description: 'Ivanti Connect Secure/Policy Secure/ZTA stack-based buffer overflow for local privilege escalation',
+    affected: [
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.4' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Connect-Secure-Policy-Secure-ZTA-Gateways-CVE-2025-0282-CVE-2025-0283',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-0283',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
+  {
     cve: 'CVE-2025-22457',
     severity: 'critical',
     cvss: 9.0,
@@ -401,6 +502,22 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
   {
+    cve: 'CVE-2025-32818',
+    severity: 'high',
+    cvss: 7.5,
+    description: 'SonicWall SonicOS SSLVPN NULL pointer dereference causing DoS (Gen7/Gen8)',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '7.1.1-7040', versionEnd: '7.1.3-7015' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '8.0.0', versionEnd: '8.0.0-8037' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0009',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-32818',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
     cve: 'CVE-2021-20016',
     severity: 'critical',
     cvss: 9.8,
@@ -411,6 +528,36 @@ export const vulnerabilities: Vulnerability[] = [
     references: [
       'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2021-0001',
       'https://nvd.nist.gov/vuln/detail/CVE-2021-20016',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-40599',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'SonicWall SMA 100 Series pre-auth RCE with OVERSTEP rootkit in-the-wild exploitation',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.1.15-81sv' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0011',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-40599',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-40602',
+    severity: 'high',
+    cvss: 7.8,
+    description: 'SonicWall SMA 1000 AMC local privilege escalation zero-day',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '12.4.0', versionEnd: '12.4.3-02758' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0015',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-40602',
     ],
     exploitAvailable: true,
     cisaKev: true,

@@ -281,6 +281,53 @@ describe('Vulnerabilities', () => {
       expect(cve?.affected.some(a => a.product === 'FortiGate')).toBe(false);
     });
 
+    it('CVE-2025-59718 (Fortinet SSO bypass) should be critical with CISA KEV', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-59718');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(9.8);
+      expect(cve?.severity).toBe('critical');
+      expect(cve?.cisaKev).toBe(true);
+      expect(cve?.exploitAvailable).toBe(true);
+    });
+
+    it('CVE-2025-59719 (FortiWeb SSO bypass) should be critical', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-59719');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(9.8);
+      expect(cve?.severity).toBe('critical');
+    });
+
+    it('CVE-2025-25249 (FortiOS CAPWAP RCE) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-25249');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(8.1);
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cisaKev).toBe(false);
+    });
+
+    it('CVE-2025-32756 (Fortinet buffer overflow) should be critical with exploit', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-32756');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(9.8);
+      expect(cve?.exploitAvailable).toBe(true);
+      expect(cve?.cisaKev).toBe(true);
+    });
+
+    it('CVE-2025-40599 (SonicWall SMA 100 OVERSTEP) should be critical', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-40599');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(9.8);
+      expect(cve?.severity).toBe('critical');
+      expect(cve?.exploitAvailable).toBe(true);
+    });
+
+    it('CVE-2025-40602 (SonicWall SMA 1000 privesc) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-40602');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.exploitAvailable).toBe(true);
+    });
+
     it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {
       const ivantiCves = vulnerabilities.filter(v =>
         v.affected.some(a => a.vendor === 'ivanti')
