@@ -3,24 +3,23 @@
  *
  * Tests scanner behavior under various error conditions.
  * Uses mocks for network-dependent scenarios so tests run without real connections.
- *
- * NOTE: Constructor defaults, options merging, scanMultiple basics, and result
- * structure tests live in scanner.test.ts — only error-specific cases here.
  */
 
 import { VpnScanner } from '../src/scanner.js';
+import * as httpClient from '../src/http-client.js';
 
 /**
- * Helper: mock all network I/O on a VpnScanner instance so scan() never
- * touches the network.  `httpRequestImpl` controls what httpRequest returns.
+ * Helper: mock all network I/O via http-client module so scan() never
+ * touches the network.
  */
 function mockNetwork(
-  scanner: VpnScanner,
   httpRequestImpl: (...args: any[]) => any = () => Promise.resolve(null),
 ) {
-  jest.spyOn(scanner as any, 'httpRequest').mockImplementation(httpRequestImpl);
-  jest.spyOn(scanner as any, 'httpRequestBinary').mockResolvedValue(null);
-  jest.spyOn(scanner as any, 'getCertificateInfo').mockResolvedValue(null);
+  jest.spyOn(httpClient, 'httpRequest').mockImplementation(httpRequestImpl);
+  jest.spyOn(httpClient, 'httpRequestBinary').mockResolvedValue(null);
+  jest.spyOn(httpClient, 'getCertificateInfo').mockResolvedValue(null);
+  jest.spyOn(httpClient, 'resolveSafeAddresses').mockResolvedValue(['93.184.216.34']);
+  jest.spyOn(httpClient, 'isHostSafe').mockResolvedValue(true);
 }
 
 describe('Error Handling', () => {
@@ -46,18 +45,18 @@ describe('Error Handling', () => {
   describe('Network errors (mocked)', () => {
     it('should handle connection refused', async () => {
       const scanner = new VpnScanner({ timeout: 1000 });
-      mockNetwork(scanner, () =>
+      mockNetwork(() =>
         Promise.reject(Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' })),
       );
 
-      const result = await scanner.scan('127.0.0.1:59999');
+      const result = await scanner.scan('example.com');
       expect(result).toBeDefined();
       expect(result.device).toBeUndefined();
     });
 
     it('should handle DNS resolution failure', async () => {
       const scanner = new VpnScanner({ timeout: 1000 });
-      mockNetwork(scanner, () =>
+      mockNetwork(() =>
         Promise.reject(Object.assign(new Error('getaddrinfo ENOTFOUND'), { code: 'ENOTFOUND' })),
       );
 
@@ -68,20 +67,20 @@ describe('Error Handling', () => {
 
     it('should handle socket timeout', async () => {
       const scanner = new VpnScanner({ timeout: 1000 });
-      mockNetwork(scanner, () =>
+      mockNetwork(() =>
         Promise.reject(Object.assign(new Error('socket hang up'), { code: 'ETIMEDOUT' })),
       );
 
-      const result = await scanner.scan('10.255.255.1');
+      const result = await scanner.scan('example.com');
       expect(result).toBeDefined();
       expect(result.device).toBeUndefined();
     });
 
     it('should handle unreachable host (null response)', async () => {
       const scanner = new VpnScanner({ timeout: 1000 });
-      mockNetwork(scanner); // default returns null
+      mockNetwork(); // default returns null
 
-      const result = await scanner.scan('192.0.2.1');
+      const result = await scanner.scan('example.com');
       expect(result).toBeDefined();
       expect(result.device).toBeUndefined();
     });
@@ -104,7 +103,7 @@ describe('Error Handling', () => {
 
     it('should handle multiple failing targets via mock', async () => {
       const scanner = new VpnScanner({ timeout: 1000 });
-      mockNetwork(scanner);
+      mockNetwork();
 
       const results = await scanner.scanMultiple(['bad1.invalid', 'bad2.invalid']);
       expect(results.length).toBe(2);

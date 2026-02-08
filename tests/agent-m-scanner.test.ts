@@ -6,6 +6,8 @@
  */
 
 import { VpnScanner } from '../src/scanner.js';
+import * as httpClient from '../src/http-client.js';
+import { testPattern } from '../src/detector.js';
 import type { ScanResult, ScanError } from '../src/types.js';
 
 // Helper to create a scanner with short timeout
@@ -136,12 +138,17 @@ describe('#2 scanMultiple retry conditions', () => {
 });
 
 describe('#3 testPattern exception collection', () => {
-  it('collects pattern-error in scanErrors', async () => {
-    // We scan a target that will fail in pattern testing
-    // Use a real scan against a non-existent but valid URL format
-    const scanner = makeScanner({ timeout: 100, ports: [443] });
+  afterEach(() => jest.restoreAllMocks());
 
-    // Access private testPattern via prototype to verify behavior
+  const defaultHttpOpts: httpClient.HttpClientOptions = {
+    timeout: 100,
+    userAgent: 'test',
+    headers: {},
+    followRedirects: true,
+    allowCrossHostRedirects: false,
+  };
+
+  it('collects pattern-error in scanErrors', async () => {
     const scanResult: ScanResult = {
       target: 'https://example.com',
       timestamp: new Date().toISOString(),
@@ -150,19 +157,15 @@ describe('#3 testPattern exception collection', () => {
       scanErrors: [],
     };
 
-    // Call testPattern with a pattern that will throw internally
-    // We test via a pattern with invalid regex that throws
-    const testPatternFn = (scanner as any).testPattern.bind(scanner);
-    
     // Mock httpRequest to throw
-    (scanner as any).httpRequest = async () => { throw new Error('test network error'); };
-    
-    const result = await testPatternFn('https://example.com', {
+    jest.spyOn(httpClient, 'httpRequest').mockRejectedValue(new Error('test network error'));
+
+    const result = await testPattern('https://example.com', {
       type: 'endpoint',
       path: '/test',
       match: /test/,
       weight: 5,
-    }, scanResult);
+    }, defaultHttpOpts, false, scanResult);
 
     expect(result.success).toBe(false);
     expect(scanResult.scanErrors!.length).toBe(1);
@@ -172,7 +175,6 @@ describe('#3 testPattern exception collection', () => {
   });
 
   it('deduplicates identical pattern-error entries', async () => {
-    const scanner = makeScanner({ timeout: 100 });
     const scanResult: ScanResult = {
       target: 'https://example.com',
       timestamp: new Date().toISOString(),
@@ -181,14 +183,12 @@ describe('#3 testPattern exception collection', () => {
       scanErrors: [],
     };
 
-    (scanner as any).httpRequest = async () => { throw new Error('same error'); };
-    const testPatternFn = (scanner as any).testPattern.bind(scanner);
-    const pattern = { type: 'endpoint', path: '/test', match: /x/, weight: 5 };
+    jest.spyOn(httpClient, 'httpRequest').mockRejectedValue(new Error('same error'));
+    const pattern = { type: 'endpoint' as const, path: '/test', match: /x/, weight: 5 };
 
-    await testPatternFn('https://example.com', pattern, scanResult);
-    await testPatternFn('https://example.com', pattern, scanResult);
+    await testPattern('https://example.com', pattern, defaultHttpOpts, false, scanResult);
+    await testPattern('https://example.com', pattern, defaultHttpOpts, false, scanResult);
 
-    // Should have only 1 entry despite 2 calls
     const patternErrors = scanResult.scanErrors!.filter(e => e.kind === 'pattern-error');
     expect(patternErrors.length).toBe(1);
   });

@@ -8,6 +8,8 @@
 
 import { compareVersions, isVersionAffected, hasVersionConstraints } from '../src/utils.js';
 import { VpnScanner } from '../src/scanner.js';
+import * as httpClient from '../src/http-client.js';
+import { testPattern, matchHeaders } from '../src/detector.js';
 
 describe('compareVersions (improved)', () => {
   it('should compare simple versions', () => {
@@ -63,7 +65,6 @@ describe('hasVersionConstraints', () => {
 
 describe('Version-undefined CVE handling', () => {
   it('isVersionAffected returns false for entries without version constraints', () => {
-    // An entry with only vendor/product (no version range)
     expect(isVersionAffected('7.0.1', {})).toBe(false);
   });
 
@@ -111,11 +112,16 @@ describe('skipVersionDetection', () => {
 describe('header HEAD→GET fallback (#4)', () => {
   afterEach(() => jest.restoreAllMocks());
 
-  it('should fall back to GET when HEAD returns null', async () => {
-    const scanner = new VpnScanner({ timeout: 1000 });
+  const defaultHttpOpts: httpClient.HttpClientOptions = {
+    timeout: 1000,
+    userAgent: 'test',
+    headers: {},
+    followRedirects: true,
+    allowCrossHostRedirects: false,
+  };
 
-    // Mock httpRequest: HEAD → null, GET → response with headers
-    const spy = jest.spyOn(scanner as any, 'httpRequest').mockImplementation(
+  it('should fall back to GET when HEAD returns null', async () => {
+    const spy = jest.spyOn(httpClient, 'httpRequest').mockImplementation(
       (_url: string, method: string) => {
         if (method === 'HEAD') return Promise.resolve(null);
         if (method === 'GET') {
@@ -128,27 +134,23 @@ describe('header HEAD→GET fallback (#4)', () => {
         return Promise.resolve(null);
       }
     );
-    jest.spyOn(scanner as any, 'httpRequestBinary').mockResolvedValue(null);
-    jest.spyOn(scanner as any, 'getCertificateInfo').mockResolvedValue(null);
+    jest.spyOn(httpClient, 'httpRequestBinary').mockResolvedValue(null);
+    jest.spyOn(httpClient, 'getCertificateInfo').mockResolvedValue(null);
 
-    // Call testPattern with a header pattern
-    const result = await (scanner as any).testPattern('https://example.com', {
+    const result = await testPattern('https://example.com', {
       type: 'header',
       match: 'sonicwall',
       weight: 5,
-    });
+    }, defaultHttpOpts, false);
 
     expect(result.success).toBe(true);
-    // HEAD was called first, then GET as fallback
     expect(spy).toHaveBeenCalledTimes(2);
-    expect(spy).toHaveBeenNthCalledWith(1, 'https://example.com', 'HEAD');
-    expect(spy).toHaveBeenNthCalledWith(2, 'https://example.com', 'GET');
+    expect(spy.mock.calls[0][1]).toBe('HEAD');
+    expect(spy.mock.calls[1][1]).toBe('GET');
   });
 
   it('should use HEAD response when HEAD succeeds (no GET fallback)', async () => {
-    const scanner = new VpnScanner({ timeout: 1000 });
-
-    const spy = jest.spyOn(scanner as any, 'httpRequest').mockImplementation(
+    const spy = jest.spyOn(httpClient, 'httpRequest').mockImplementation(
       (_url: string, method: string) => {
         if (method === 'HEAD') {
           return Promise.resolve({
@@ -161,15 +163,14 @@ describe('header HEAD→GET fallback (#4)', () => {
       }
     );
 
-    const result = await (scanner as any).testPattern('https://example.com', {
+    const result = await testPattern('https://example.com', {
       type: 'header',
       match: 'sonicwall',
       weight: 5,
-    });
+    }, defaultHttpOpts, false);
 
     expect(result.success).toBe(true);
-    // Only HEAD was called
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy).toHaveBeenCalledWith('https://example.com', 'HEAD');
+    expect(spy.mock.calls[0][1]).toBe('HEAD');
   });
 });
