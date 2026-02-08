@@ -259,6 +259,97 @@ Avoid duplicating the same assertion across multiple files. Each test should liv
 
 Tests in `cli-validation.test.ts` spawn a child process (`npx tsx src/cli.ts ...`). These are acceptable because they test CLI argument parsing, not network behavior.
 
+## Adding a New CVE (Semi-automated)
+
+### Quick Method (recommended)
+
+Use the `add-cve.mjs` script to auto-generate a vulnerability entry:
+
+```bash
+node scripts/add-cve.mjs CVE-2024-XXXXX
+```
+
+This will:
+1. Fetch CVE data from NVD API (severity, CVSS, description, references)
+2. Check the CISA KEV catalog for exploit status
+3. Auto-detect the VPN vendor from the description
+4. Output a TypeScript template to paste into `src/vulnerabilities.ts`
+
+### Manual Steps After Generation
+
+1. **Review the generated template** — verify severity and CVSS are correct
+2. **Fill in `product`** — replace `TODO_PRODUCT` with the actual product name (must match a fingerprint)
+3. **Fill in version ranges** — replace `TODO` with actual `versionStart`/`versionEnd` from the advisory
+4. **Verify `exploitAvailable`** — check if a public exploit exists (not just KEV status)
+5. **Place in correct section** — add under the appropriate vendor comment block in `vulnerabilities.ts`
+6. **Run tests** — `npm test` must pass
+
+### Required Fields
+
+| Field | Required | Source |
+|-------|----------|--------|
+| `cve` | ✅ | NVD (auto) |
+| `severity` | ✅ | NVD CVSS (auto) |
+| `cvss` | Recommended | NVD (auto) |
+| `description` | ✅ | NVD (auto) |
+| `affected` | ✅ | Vendor advisory (manual) |
+| `references` | ✅ | NVD + vendor (auto + manual) |
+| `exploitAvailable` | ✅ | KEV + manual verification |
+| `cisaKev` | ✅ | KEV catalog (auto) |
+
+### Version Range Guidelines
+
+- Use **inclusive** ranges: `versionStart <= affected <= versionEnd`
+- Use `versionExact` only for single-version issues
+- Omit `versionStart`/`versionEnd` if unknown (but add a comment)
+- Check the vendor advisory for exact affected version ranges
+
+## Monthly CVE Update Process
+
+VpnVet tracks actively exploited VPN vulnerabilities. Run the KEV checker monthly:
+
+```bash
+node scripts/check-kev-updates.mjs
+```
+
+This script:
+1. Downloads the latest CISA KEV catalog
+2. Compares against existing CVEs in `vulnerabilities.ts`
+3. Filters for VPN-related entries
+4. Lists any missing CVEs that should be added
+
+### Monthly Workflow
+
+1. **Run the checker**: `node scripts/check-kev-updates.mjs`
+2. **For each missing CVE**: run `node scripts/add-cve.mjs CVE-XXXX-XXXX`
+3. **Review and complete** the generated templates
+4. **Run tests**: `npm test`
+5. **Commit**: `git commit -m "vuln: add CVE-XXXX-XXXX to vulnerability database"`
+
+### CI Integration
+
+Add to your CI pipeline (monthly cron):
+
+```yaml
+# .github/workflows/kev-check.yml
+name: KEV Update Check
+on:
+  schedule:
+    - cron: '0 9 1 * *'  # 1st of each month at 9:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: node scripts/check-kev-updates.mjs
+```
+
+The script exits with code 1 when new CVEs are found, which will fail the CI job and alert you.
+
 ## Questions?
 
 Open an issue or discussion on GitHub!
