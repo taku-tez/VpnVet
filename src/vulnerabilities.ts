@@ -1441,6 +1441,42 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: false,
   },
 
+  // OpenSSL CMS AuthEnvelopedData stack buffer overflow (affects many VPN vendors using OpenSSL 3.x)
+  {
+    cve: 'CVE-2025-15467',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'OpenSSL CMS AuthEnvelopedData stack-based buffer overflow enabling pre-authentication RCE; affects OpenSSL 3.0-3.6 used in many VPN appliances',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.2' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.0.0', versionEnd: '12.1.3' },
+      { vendor: 'openvpn', product: 'Access Server', versionStart: '2.11.0', versionEnd: '2.14.2' },
+    ],
+    references: [
+      'https://www.openssl.org/news/secadv/20260127.txt',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-15467',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
+
+  // F5 BIG-IP Advanced WAF/ASM DoS via bd process termination
+  {
+    cve: 'CVE-2026-22548',
+    severity: 'medium',
+    cvss: 5.9,
+    description: 'BIG-IP Advanced WAF/ASM bd process termination causing DoS via undisclosed requests',
+    affected: [
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '17.1.2' },
+    ],
+    references: [
+      'https://my.f5.com/manage/s/article/K000150901',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-22548',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

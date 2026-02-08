@@ -289,6 +289,15 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'GlobalProtect|Palo Alto',
         weight: 9,
       },
+      // GlobalProtect getconfig (CVE-2026-0227 DoS target)
+      {
+        type: 'endpoint',
+        path: '/global-protect/getconfig.esp',
+        method: 'POST',
+        match: 'response|portal-config|gateways',
+        weight: 9,
+        versionExtract: /<panos-version>([^<]+)<\/panos-version>/,
+      },
       // HIP report (CVE-2024-3400 target)
       {
         type: 'endpoint',

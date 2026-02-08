@@ -302,13 +302,13 @@ export function formatCsv(results: ScanResult[]): string {
           result.device.product,
           result.device.version || '',
           String(result.device.confidence),
-          '', '', '', '', '',
+          '', '', '', '', '', '',
           result.coverageWarning || '',
           errorKinds,
         ].map(escapeCsvCell).join(','));
       }
     } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
+      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
     }
   }
   

@@ -548,3 +548,29 @@ describe('Ransomware tagging', () => {
     }
   });
 });
+
+describe('February 2026 CVE additions', () => {
+  it('should include CVE-2025-15467 OpenSSL CMS RCE', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-15467');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('critical');
+    expect(vuln!.cvss).toBe(9.8);
+    expect(vuln!.exploitAvailable).toBe(true);
+    expect(vuln!.affected.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('should include CVE-2026-22548 F5 BIG-IP WAF DoS', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-22548');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('medium');
+    expect(vuln!.cvss).toBe(5.9);
+  });
+
+  it('CVE-2025-15467 should affect multiple vendors', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-15467')!;
+    const vendors = vuln.affected.map(a => a.vendor);
+    expect(vendors).toContain('fortinet');
+    expect(vendors).toContain('paloalto');
+    expect(vendors).toContain('openvpn');
+  });
+});

@@ -93,13 +93,28 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: 'WorkPlace|Appliance Management Console',
         weight: 9,
       },
-      // Version extraction
+      // Version extraction from main page
       {
         type: 'body',
         path: '/',
         match: 'SonicWall|SonicWALL',
         weight: 8,
         versionExtract: /(\d+\.\d+\.\d+\.\d+)-(\d+)sv/,
+      },
+      // SSLVPN firmware version from login page JS
+      {
+        type: 'endpoint',
+        path: '/cgi-bin/sslvpnclient',
+        method: 'GET',
+        match: 'SonicWall|sslvpn|firmware',
+        weight: 9,
+        versionExtract: /firmwareVersion['":\s]*['"]([\d.]+)['"]/,
+      },
+      // SonicWall cookie-based detection (swap cookie)
+      {
+        type: 'header',
+        match: 'Set-Cookie: swap=',
+        weight: 7,
       },
       {
         type: 'certificate',
