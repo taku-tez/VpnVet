@@ -126,7 +126,7 @@ export interface VulnerabilityMatch {
 }
 
 /** Classified error kinds for scan failures */
-export type ScanErrorKind = 'timeout' | 'dns' | 'tls' | 'reset' | 'refused' | 'http-status' | 'invalid-url' | 'ssrf-blocked' | 'unknown';
+export type ScanErrorKind = 'timeout' | 'dns' | 'tls' | 'reset' | 'refused' | 'http-status' | 'invalid-url' | 'ssrf-blocked' | 'pattern-error' | 'unknown';
 
 export interface ScanError {
   kind: ScanErrorKind;

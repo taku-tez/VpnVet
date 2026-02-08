@@ -24,12 +24,20 @@ for (const f of fpFiles) {
 
 console.log(`Vendors: ${vendorCount}, Fingerprints: ${fpFiles.length} files, CVEs: ${cveCount}, CISA KEV: ${kevCount}`);
 
+// Count versionExtract entries
+let versionExtractCount = 0;
+for (const f of fpFiles) {
+  const src = readFileSync(join(fpDir, f), 'utf8');
+  versionExtractCount += (src.match(/\bversionExtract:/g) || []).length;
+}
+console.log(`Version extractors: ${versionExtractCount}`);
+
 // Cross-check with README.md
 const readme = readFileSync(join(root, 'README.md'), 'utf8');
 const checks = [
   { label: 'Vendors', actual: vendorCount, pattern: /(\d+)\s*VPN Vendors/ },
   { label: 'CVEs', actual: cveCount, pattern: /(\d+)\s*Critical CVEs/ },
-  { label: 'CISA KEV', actual: kevCount, pattern: /(\d+)\s*in CISA KEV/ },
+  { label: 'CISA KEV', actual: kevCount, pattern: /\((\d+)\s*KEV\)/ },
 ];
 
 let mismatch = false;
@@ -43,6 +51,8 @@ for (const { label, actual, pattern } of checks) {
     }
   }
 }
-if (!mismatch) {
+if (mismatch) {
+  process.exit(1);
+} else {
   console.log('✅ README stats match actual data.');
 }

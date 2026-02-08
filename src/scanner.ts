@@ -80,9 +80,21 @@ export function errorKindLabel(kind: ScanErrorKind): string {
     'http-status': 'HTTP error',
     'invalid-url': 'Invalid URL',
     'ssrf-blocked': 'Blocked (internal address)',
+    'pattern-error': 'Pattern test error',
     'unknown': 'Unknown error',
   };
   return labels[kind];
+}
+
+/** Error kinds that represent transient failures worth retrying */
+const RETRYABLE_KINDS: ReadonlySet<ScanErrorKind> = new Set([
+  'timeout', 'reset', 'refused', 'dns',
+]);
+
+/** Check if a ScanResult contains only retryable (transient) errors */
+function isRetryable(result: ScanResult): boolean {
+  if (!result.scanErrors || result.scanErrors.length === 0) return true;
+  return result.scanErrors.every(e => RETRYABLE_KINDS.has(e.kind));
 }
 
 interface HttpResponse {
@@ -207,7 +219,12 @@ export class VpnScanner {
       let lastResult: ScanResult | undefined;
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         lastResult = await this.scan(target);
+        // Success: device found or no errors
         if (lastResult.device || lastResult.errors.length === 0) {
+          return lastResult;
+        }
+        // Don't retry permanent errors (invalid-url, ssrf-blocked, http-status, etc.)
+        if (!isRetryable(lastResult)) {
           return lastResult;
         }
       }
@@ -270,6 +287,18 @@ export class VpnScanner {
     // Determine URLs to try based on ports option
     const urlsToTry = this.buildPortUrls(baseUrl);
 
+    // Pre-check host safety once to avoid duplicate SSRF errors across ports
+    const parsedBase = new URL(baseUrl);
+    if (!(await VpnScanner.isHostSafe(parsedBase.hostname))) {
+      const msg = `SSRF blocked: ${parsedBase.hostname} resolves to internal/unsafe address`;
+      if (scanResult) {
+        scanResult.errors.push(msg);
+        scanResult.scanErrors ??= [];
+        scanResult.scanErrors.push({ kind: 'ssrf-blocked', message: msg, url: baseUrl });
+      }
+      return undefined;
+    }
+
     for (const url of urlsToTry) {
       const result = await this.detectDeviceForUrl(url, scanResult);
       if (result) return result;
@@ -310,9 +339,15 @@ export class VpnScanner {
     if (!(await VpnScanner.isHostSafe(parsedBase.hostname))) {
       const msg = `SSRF blocked: ${parsedBase.hostname} resolves to internal/unsafe address`;
       if (scanResult) {
-        scanResult.errors.push(msg);
-        scanResult.scanErrors ??= [];
-        scanResult.scanErrors.push({ kind: 'ssrf-blocked', message: msg, url: baseUrl });
+        // Deduplicate: only add if no ssrf-blocked error for this host already exists
+        const alreadyBlocked = scanResult.scanErrors?.some(
+          e => e.kind === 'ssrf-blocked' && e.message?.includes(parsedBase.hostname)
+        );
+        if (!alreadyBlocked) {
+          scanResult.errors.push(msg);
+          scanResult.scanErrors ??= [];
+          scanResult.scanErrors.push({ kind: 'ssrf-blocked', message: msg, url: baseUrl });
+        }
       }
       return undefined;
     }
@@ -558,8 +593,21 @@ export class VpnScanner {
           }
         }
       }
-    } catch {
-      // Ignore errors during pattern testing
+    } catch (err) {
+      // Record pattern test errors as lightweight diagnostics
+      if (scanResult) {
+        scanResult.scanErrors ??= [];
+        const kind: ScanErrorKind = 'pattern-error';
+        const message = err instanceof Error ? err.message : String(err);
+        const url = pattern.path ? `${baseUrl}${pattern.path}` : baseUrl;
+        // Deduplicate by (kind, url, message)
+        const isDuplicate = scanResult.scanErrors.some(
+          e => e.kind === kind && e.url === url && e.message === message
+        );
+        if (!isDuplicate) {
+          scanResult.scanErrors.push({ kind, message, url });
+        }
+      }
     }
 
     return { success: false };
