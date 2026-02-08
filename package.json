@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest --config jest.config.cjs",
+    "test:unit": "jest --config jest.config.cjs --forceExit --testPathIgnorePatterns='agent-h-ux|agent-l-cli|agent-p-cli-output|agent-q-fixes|agent-s-refactor|cli-validation|output-schema'",
     "lint": "eslint src/ tests/ scripts/",
     "prepublishOnly": "npm run build"
   },

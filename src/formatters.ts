@@ -71,7 +71,8 @@ export function listVulnerabilities(severity?: string): void {
     for (const vuln of vendorVulns) {
       const kev = vuln.cisaKev ? ' [KEV]' : '';
       const exploit = vuln.exploitAvailable ? ' [EXPLOIT]' : '';
-      console.log(`    ${vuln.cve} (${vuln.severity.toUpperCase()}, CVSS ${vuln.cvss})${kev}${exploit}`);
+      const ransomware = vuln.knownRansomware ? ' [RANSOMWARE]' : '';
+      console.log(`    ${vuln.cve} (${vuln.severity.toUpperCase()}, CVSS ${vuln.cvss})${kev}${exploit}${ransomware}`);
       console.log(`      ${vuln.description}`);
     }
     console.log();
@@ -119,7 +120,8 @@ export function formatTable(results: ScanResult[]): string {
         for (const vuln of result.vulnerabilities) {
           const v = vuln.vulnerability;
           const kev = v.cisaKev ? ' 🚨 CISA KEV' : '';
-          lines.push(`  [${v.severity.toUpperCase()}] ${v.cve} (CVSS ${v.cvss})${kev}`);
+          const ransomware = v.knownRansomware ? ' 💀 Ransomware' : '';
+          lines.push(`  [${v.severity.toUpperCase()}] ${v.cve} (CVSS ${v.cvss})${kev}${ransomware}`);
           lines.push(`    ${v.description}`);
           lines.push(`    Confidence: ${vuln.confidence}`);
           lines.push(`    Evidence: ${vuln.evidence}`);
@@ -187,6 +189,7 @@ export function formatSarif(results: ScanResult[], version: string): string {
                   severity: v.severity,
                   cvss: v.cvss,
                   cisaKev: v.cisaKev,
+                  knownRansomware: v.knownRansomware || false,
                 },
               })),
               {
@@ -269,7 +272,7 @@ function escapeCsvCell(value: string): string {
 }
 
 export function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning,scan_error_kinds'];
+  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds'];
   
   for (const result of results) {
     const errorKinds = result.scanErrors?.map(e => e.kind).join(';') || '';
@@ -287,6 +290,7 @@ export function formatCsv(results: ScanResult[]): string {
             vuln.vulnerability.cvss != null ? String(vuln.vulnerability.cvss) : '',
             vuln.confidence,
             vuln.vulnerability.cisaKev != null ? String(vuln.vulnerability.cisaKev) : '',
+            vuln.vulnerability.knownRansomware ? 'true' : 'false',
             result.coverageWarning || '',
             errorKinds,
           ].map(escapeCsvCell).join(','));

@@ -89,6 +89,7 @@ export interface Vulnerability {
   references: string[];
   exploitAvailable: boolean;
   cisaKev: boolean; // CISA Known Exploited Vulnerabilities
+  knownRansomware?: boolean; // Known to be used in ransomware campaigns
 }
 
 /**

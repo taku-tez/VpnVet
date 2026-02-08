@@ -466,3 +466,32 @@ describe('Vulnerabilities', () => {
     });
   });
 });
+
+describe('Ransomware tagging', () => {
+  const ransomwareCves = vulnerabilities.filter(v => v.knownRansomware);
+
+  it('should have ransomware-tagged CVEs', () => {
+    expect(ransomwareCves.length).toBeGreaterThan(20);
+  });
+
+  it('all ransomware-tagged CVEs should also be CISA KEV', () => {
+    for (const v of ransomwareCves) {
+      expect(v.cisaKev).toBe(true);
+    }
+  });
+
+  it('should tag known ransomware CVEs', () => {
+    const knownRansomwareCves = [
+      'CVE-2024-21762', // FortiOS - Akira, LockBit
+      'CVE-2019-11510', // Pulse Secure - REvil
+      'CVE-2023-4966',  // Citrix Bleed - LockBit
+      'CVE-2024-40766', // SonicWall - Akira
+      'CVE-2023-20269', // Cisco ASA - Akira, LockBit
+    ];
+    for (const cve of knownRansomwareCves) {
+      const vuln = vulnerabilities.find(v => v.cve === cve);
+      expect(vuln).toBeDefined();
+      expect(vuln!.knownRansomware).toBe(true);
+    }
+  });
+});

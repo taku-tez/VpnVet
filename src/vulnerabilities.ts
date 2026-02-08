@@ -29,6 +29,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2023-27997',
@@ -48,6 +49,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2022-42475',
@@ -66,6 +68,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2022-40684',
@@ -82,6 +85,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2018-13379',
@@ -99,6 +103,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2024-55591',
@@ -114,6 +119,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2026-24858',
@@ -129,6 +135,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2025-59718',
@@ -146,6 +153,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2025-59719',
@@ -233,6 +241,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
@@ -254,6 +263,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2020-2021',
@@ -271,6 +281,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   {
@@ -290,6 +301,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2024-9474',
@@ -309,6 +321,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2026-0227',
@@ -347,6 +360,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2020-3452',
@@ -362,6 +376,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
@@ -383,6 +398,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2024-21893',
@@ -399,6 +415,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2023-46805',
@@ -415,6 +432,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2025-0282',
@@ -431,6 +449,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2025-0283',
@@ -511,6 +530,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
@@ -549,6 +569,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2024-53704',
@@ -564,6 +585,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2025-32818',
@@ -595,6 +617,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2025-40599',
@@ -646,6 +669,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2023-3519',
@@ -662,6 +686,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2019-19781',
@@ -681,6 +706,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
@@ -703,6 +729,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2023-46747',
@@ -722,6 +749,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2020-5902',
@@ -741,6 +769,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
@@ -809,6 +838,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2023-28771',
@@ -824,6 +854,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   {
@@ -840,6 +871,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2024-40891',
@@ -934,6 +966,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
@@ -968,6 +1001,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
   {
     cve: 'CVE-2026-1498',
@@ -1004,6 +1038,7 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+    knownRansomware: true,
   },
 
   // ============================================================
