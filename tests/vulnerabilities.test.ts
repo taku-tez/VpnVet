@@ -67,6 +67,8 @@ describe('Vulnerabilities', () => {
       expect(kevCves).toContain('CVE-2022-30525'); // Zyxel
       expect(kevCves).toContain('CVE-2022-3236');  // Sophos
       expect(kevCves).toContain('CVE-2023-2868');  // Barracuda
+      expect(kevCves).toContain('CVE-2025-20333'); // Cisco ASA RCE
+      expect(kevCves).toContain('CVE-2025-20362'); // Cisco ASA/FTD reload
     });
   });
 
@@ -144,6 +146,8 @@ describe('Vulnerabilities', () => {
     // Products that intentionally lack fingerprints (management-plane only, not VPN endpoints)
     const KNOWN_NO_FINGERPRINT = new Set([
       'fortinet:FortiManager',
+      'cisco:ASA',   // ASA is the firewall; VPN endpoint detected as AnyConnect
+      'cisco:FTD',   // FTD is threat defense; VPN endpoint detected as AnyConnect
     ]);
 
     it('affected vendor+product should exist in fingerprints (or be in known exceptions)', () => {

@@ -1122,6 +1122,77 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: true,
     cisaKev: true,
   },
+
+  // ============================================================
+  // Cisco ASA / FTD (2025)
+  // ============================================================
+  {
+    cve: 'CVE-2025-20333',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Cisco ASA and FTD Software VPN Web Server RCE allowing root-level code execution',
+    affected: [
+      { vendor: 'cisco', product: 'ASA', versionStart: '9.8.0', versionEnd: '9.22.99' },
+      { vendor: 'cisco', product: 'FTD' },
+    ],
+    references: [
+      'https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-asaftd-webvpn-z5xP8EUB',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-20333',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-20362',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Cisco ASA and FTD Software VPN Web Server vulnerability causing device reload and potential RCE',
+    affected: [
+      { vendor: 'cisco', product: 'ASA' },
+      { vendor: 'cisco', product: 'FTD' },
+    ],
+    references: [
+      'https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-asaftd-webvpn-z5xP8EUB',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-20362',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2025-20363',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Cisco ASA and FTD Software privilege escalation via VPN web services',
+    affected: [
+      { vendor: 'cisco', product: 'ASA' },
+      { vendor: 'cisco', product: 'FTD' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-20363',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
+
+  // ============================================================
+  // SonicWall (2025)
+  // ============================================================
+  {
+    cve: 'CVE-2025-40601',
+    severity: 'high',
+    cvss: 7.5,
+    description: 'SonicOS SSLVPN buffer overflow causing remote firewall crash (Gen7/Gen8)',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '7.0.0', versionEnd: '7.3.0-7012' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '8.0.0', versionEnd: '8.0.2-8011' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0016',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-40601',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {
