@@ -1327,6 +1327,22 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: false,
   },
 
+  // Fortinet - FortiOS Default Cryptographic Key (2026)
+  {
+    cve: 'CVE-2026-25815',
+    severity: 'low',
+    cvss: 3.2,
+    description: 'Use of default cryptographic key in FortiOS allows local attacker with access to the FortiGate to decrypt sensitive data (private data encryption disabled by default)',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionEnd: '7.6.6' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-25815',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+
   // Juniper - SRX/MX flowd Double Free DoS (2026)
   {
     cve: 'CVE-2026-21918',

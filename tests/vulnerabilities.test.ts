@@ -438,6 +438,14 @@ describe('Vulnerabilities', () => {
       expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
     });
 
+    it('CVE-2026-25815 (FortiOS Default Cryptographic Key) should be low severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-25815');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('low');
+      expect(cve?.cvss).toBe(3.2);
+      expect(cve?.affected.some(a => a.vendor === 'fortinet')).toBe(true);
+    });
+
     it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {
       const ivantiCves = vulnerabilities.filter(v =>
         v.affected.some(a => a.vendor === 'ivanti')

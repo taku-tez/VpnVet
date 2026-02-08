@@ -680,6 +680,7 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         versionExtract: /version="([^"]+)"/,
       },
       // EPA endpoints (version in Content-Disposition or Last-Modified)
+      // GreyNoise Feb 2026: 63K+ residential proxies scanning these paths
       {
         type: 'endpoint',
         path: '/epa/scripts/win/nsepa_setup.exe',
@@ -688,11 +689,45 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         weight: 8,
         versionExtract: /nsepa_setup[_-]?(\d+\.\d+\.\d+\.\d+)/,
       },
+      // EPA macOS installer (also targeted in scanning campaigns)
+      {
+        type: 'endpoint',
+        path: '/epa/scripts/mac/nsepa_setup.dmg',
+        method: 'HEAD',
+        match: '.*',
+        weight: 8,
+        versionExtract: /nsepa_setup[_-]?(\d+\.\d+\.\d+\.\d+)/,
+      },
+      // EPA Linux installer
+      {
+        type: 'endpoint',
+        path: '/epa/scripts/linux/nsepa_setup.sh',
+        method: 'HEAD',
+        match: '.*',
+        weight: 8,
+      },
       {
         type: 'endpoint',
         path: '/epa/epa.html',
         method: 'GET',
         match: 'epa|Citrix',
+        weight: 8,
+      },
+      // NSAPI detection (admin API, can leak version info)
+      {
+        type: 'endpoint',
+        path: '/nitro/v1/config/nsversion',
+        method: 'GET',
+        match: 'version|NetScaler|Citrix ADC',
+        weight: 9,
+        versionExtract: /NS(\d+\.\d+).*Build\s+(\d+\.\d+)/,
+      },
+      // DTLS endpoint (indicates Gateway with DTLS enabled)
+      {
+        type: 'endpoint',
+        path: '/cginfra/https/scripts/ctxnsap.js',
+        method: 'GET',
+        match: 'CTXS|nsap|dtls',
         weight: 8,
       },
       // HTML patterns (includes version hash - MD5 of build timestamp)

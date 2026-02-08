@@ -208,6 +208,46 @@ describe('Version Detection - Tier 1 Enterprise', () => {
   });
 
   // ============================================================
+  // Citrix EPA macOS/Linux and NSAPI patterns (Feb 2026 additions)
+  // ============================================================
+  describe('Citrix EPA extended paths', () => {
+    const citrix = tier1enterpriseFingerprints.find(f => f.vendor === 'citrix');
+    const patterns = citrix!.patterns;
+
+    it('should have macOS EPA installer path', () => {
+      const p = patterns.find(p => p.path === '/epa/scripts/mac/nsepa_setup.dmg');
+      expect(p).toBeDefined();
+      expect(p!.method).toBe('HEAD');
+      expect(p!.weight).toBe(8);
+    });
+
+    it('should have Linux EPA installer path', () => {
+      const p = patterns.find(p => p.path === '/epa/scripts/linux/nsepa_setup.sh');
+      expect(p).toBeDefined();
+      expect(p!.method).toBe('HEAD');
+    });
+
+    it('should have NSAPI version endpoint', () => {
+      const p = patterns.find(p => p.path === '/nitro/v1/config/nsversion');
+      expect(p).toBeDefined();
+      expect(p!.versionExtract).toBeDefined();
+    });
+
+    it('should extract version from NSAPI response', () => {
+      const p = patterns.find(p => p.path === '/nitro/v1/config/nsversion');
+      const body = '{"nsversion": {"version": "NS14.1 Build 30.52"}}';
+      const match = p!.versionExtract!.exec(body);
+      expect(match).not.toBeNull();
+    });
+
+    it('should have DTLS/nsap.js detection', () => {
+      const p = patterns.find(p => p.path === '/cginfra/https/scripts/ctxnsap.js');
+      expect(p).toBeDefined();
+      expect(p!.weight).toBe(8);
+    });
+  });
+
+  // ============================================================
   // Cross-vendor: all versionExtract regexes should be valid
   // ============================================================
   describe('All versionExtract patterns are valid RegExp', () => {
