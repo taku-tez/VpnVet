@@ -73,6 +73,24 @@ describe('Tier 2 Version Detection', () => {
       expect(match).toBeTruthy();
       expect(match![1]).toBe('22.4R1.10');
     });
+
+    it('should extract Junos version from J-Web system-information API', () => {
+      const patterns = getVersionPatterns('juniper');
+      const sysInfo = patterns.find((p) => p.path === '/api/v1/system-information');
+      expect(sysInfo).toBeDefined();
+      const match = '"junos-version": "23.4R2-S5"'.match(sysInfo!.versionExtract!);
+      expect(match).toBeTruthy();
+      expect(match![1]).toBe('23.4R2-S5');
+    });
+
+    it('should extract Junos version from configuration API', () => {
+      const patterns = getVersionPatterns('juniper');
+      const cfgInfo = patterns.find((p) => p.path === '/api/v1/configuration/system/information');
+      expect(cfgInfo).toBeDefined();
+      const match = '"version": "24.2R2-S3"'.match(cfgInfo!.versionExtract!);
+      expect(match).toBeTruthy();
+      expect(match![1]).toBe('24.2R2-S3');
+    });
   });
 
   describe('SonicWall version extraction', () => {

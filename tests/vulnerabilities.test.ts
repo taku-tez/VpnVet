@@ -365,6 +365,30 @@ describe('Vulnerabilities', () => {
       expect(cve?.exploitAvailable).toBe(true);
     });
 
+    it('CVE-2025-9133 (Zyxel missing authorization) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-9133');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cvss).toBe(7.2);
+      expect(cve?.affected.some(a => a.vendor === 'zyxel')).toBe(true);
+    });
+
+    it('CVE-2026-21914 (Juniper SRX GTP DoS) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-21914');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cvss).toBe(7.5);
+      expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
+    });
+
+    it('CVE-2026-21906 (Juniper SRX IPsec/GRE DoS) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-21906');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cvss).toBe(7.5);
+      expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
+    });
+
     it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {
       const ivantiCves = vulnerabilities.filter(v =>
         v.affected.some(a => a.vendor === 'ivanti')

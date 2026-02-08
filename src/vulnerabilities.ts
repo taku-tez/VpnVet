@@ -1208,6 +1208,57 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: false,
     cisaKev: false,
   },
+  // Zyxel - Missing Authorization (2025)
+  {
+    cve: 'CVE-2025-9133',
+    severity: 'high',
+    cvss: 7.2,
+    description: 'Zyxel ATP/USG FLEX/USG20-VPN missing authorization vulnerability allowing unauthorized configuration access',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: 'V4.16', versionEnd: 'V5.40' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-9133',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+  // Juniper - SRX GTP DoS (2026)
+  {
+    cve: 'CVE-2026-21914',
+    severity: 'high',
+    cvss: 7.5,
+    description: 'Juniper Junos OS SRX Series GTP plugin improper locking DoS via malformed GTP Modify Bearer Request',
+    affected: [
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '22.4R3-S8' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S5' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S6' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '24.2', versionEnd: '24.2R2-S3' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-21914',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+  // Juniper - SRX IPsec/GRE DoS (2026)
+  {
+    cve: 'CVE-2026-21906',
+    severity: 'high',
+    cvss: 7.5,
+    description: 'Juniper Junos OS SRX Series PFE crash via ICMP packet through GRE tunnel with PMI enabled',
+    affected: [
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '21.4R3-S12' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S8' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S5' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S5' },
+    ],
+    references: [
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-21906',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

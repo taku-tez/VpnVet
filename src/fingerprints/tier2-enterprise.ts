@@ -330,7 +330,7 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'version|junos',
         weight: 8,
-        versionExtract: /"version"\s*:\s*"(\d+\.\d+[A-Z]?\d*(?:\.\d+)?)"/i,
+        versionExtract: /"version"\s*:\s*"(\d+\.\d+[A-Z]?\d*(?:[.-][A-Za-z0-9]+)*)"/i,
       },
       // Dynamic VPN portal
       {
@@ -395,6 +395,23 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
       {
         type: 'certificate',
         match: 'Juniper',
+        weight: 8,
+      },
+      // J-Web system info API (version extraction)
+      {
+        type: 'endpoint',
+        path: '/api/v1/system-information',
+        method: 'GET',
+        match: 'junos-version|hardware-model|host-name',
+        weight: 9,
+        versionExtract: /junos-version['":\s]+(\d+\.\d+[A-Z]?\d*(?:[.-][A-Za-z0-9]+)*)/i,
+      },
+      // SRX Cluster status page
+      {
+        type: 'endpoint',
+        path: '/api/v1/high-availability/information',
+        method: 'GET',
+        match: 'cluster|redundancy-group|node',
         weight: 8,
       },
       // Favicon hash (Shodan: 2141724739)
@@ -491,6 +508,14 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Zyxel|dispatcher',
         weight: 9,
+      },
+      // Zyxel SecuExtender SSL VPN client download
+      {
+        type: 'endpoint',
+        path: '/ext-ui/index.html',
+        method: 'GET',
+        match: 'SecuExtender|Zyxel|SSL VPN',
+        weight: 10,
       },
       // Cookie
       {
