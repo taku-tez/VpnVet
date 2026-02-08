@@ -232,22 +232,32 @@ function formatSarif(results: ScanResult[]): string {
             name: 'VpnVet',
             version: VERSION,
             informationUri: 'https://github.com/taku-tez/VpnVet',
-            rules: vulnerabilities.map(v => ({
-              id: v.cve,
-              name: v.cve,
-              shortDescription: { text: v.description },
-              helpUri: v.references[0],
-              properties: {
-                severity: v.severity,
-                cvss: v.cvss,
-                cisaKev: v.cisaKev,
+            rules: [
+              ...vulnerabilities.map(v => ({
+                id: v.cve,
+                name: v.cve,
+                shortDescription: { text: v.description },
+                helpUri: v.references[0],
+                properties: {
+                  severity: v.severity,
+                  cvss: v.cvss,
+                  cisaKev: v.cisaKev,
+                },
+              })),
+              {
+                id: 'VPNVET-COVERAGE-WARNING',
+                name: 'CoverageWarning',
+                shortDescription: { text: 'VPN device detected but no CVE mappings available for this product' },
+                properties: {
+                  severity: 'note',
+                },
               },
-            })),
+            ],
           },
         },
         results: results.flatMap(result => {
           const { uri, originalTarget } = normalizeTargetUri(result.target);
-          return result.vulnerabilities.map(vuln => ({
+          const vulnResults: any[] = result.vulnerabilities.map(vuln => ({
             ruleId: vuln.vulnerability.cve,
             level: vuln.vulnerability.severity === 'critical' ? 'error' : 
                    vuln.vulnerability.severity === 'high' ? 'error' :
@@ -270,6 +280,31 @@ function formatSarif(results: ScanResult[]): string {
               ...(result.scanErrors?.length ? { scanErrors: result.scanErrors } : {}),
             },
           }));
+
+          // Add coverage warning as a separate SARIF result
+          if (result.coverageWarning) {
+            vulnResults.push({
+              ruleId: 'VPNVET-COVERAGE-WARNING',
+              level: 'note',
+              message: { text: result.coverageWarning },
+              locations: [
+                {
+                  physicalLocation: {
+                    artifactLocation: {
+                      uri,
+                    },
+                  },
+                },
+              ],
+              properties: {
+                confidence: 'informational',
+                device: result.device,
+                ...(originalTarget ? { originalTarget } : {}),
+              },
+            });
+          }
+
+          return vulnResults;
         }),
       },
     ],

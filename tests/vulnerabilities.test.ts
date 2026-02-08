@@ -141,13 +141,20 @@ describe('Vulnerabilities', () => {
   });
 
   describe('cross-reference integrity with fingerprints', () => {
-    it('affected vendor+product should exist in fingerprints', () => {
+    // Products that intentionally lack fingerprints (management-plane only, not VPN endpoints)
+    const KNOWN_NO_FINGERPRINT = new Set([
+      'fortinet:FortiManager',
+    ]);
+
+    it('affected vendor+product should exist in fingerprints (or be in known exceptions)', () => {
       const fpKeys = new Set(fingerprints.map(f => `${f.vendor}:${f.product}`));
       const missing: string[] = [];
       for (const v of vulnerabilities) {
         for (const a of v.affected) {
           const key = `${a.vendor}:${a.product}`;
-          if (!fpKeys.has(key)) missing.push(`${v.cve} -> ${key}`);
+          if (!fpKeys.has(key) && !KNOWN_NO_FINGERPRINT.has(key)) {
+            missing.push(`${v.cve} -> ${key}`);
+          }
         }
       }
       expect(missing).toEqual([]);
@@ -262,6 +269,27 @@ describe('Vulnerabilities', () => {
         a => a.versionStart && a.versionEnd
       );
       expect(hasVersionRange).toBe(true);
+    });
+
+    it('CVE-2024-47575 (FortiJump) should target FortiManager, not FortiGate', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2024-47575');
+      expect(cve).toBeDefined();
+      expect(cve?.description).toContain('FortiManager');
+      for (const a of cve!.affected) {
+        expect(a.product).toBe('FortiManager');
+      }
+      expect(cve?.affected.some(a => a.product === 'FortiGate')).toBe(false);
+    });
+
+    it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {
+      const ivantiCves = vulnerabilities.filter(v =>
+        v.affected.some(a => a.vendor === 'ivanti')
+      );
+      expect(ivantiCves.length).toBeGreaterThan(0);
+      const pulseCves = vulnerabilities.filter(v =>
+        v.affected.some(a => a.vendor === 'pulse')
+      );
+      expect(pulseCves.length).toBeGreaterThan(0);
     });
   });
 });

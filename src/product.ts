@@ -34,6 +34,10 @@ export const PRODUCT_ALIASES: Record<string, ProductAlias> = {
   'fortigate ssl vpn': { vendor: 'fortinet', canonical: 'FortiGate' },
   'forti ssl vpn': { vendor: 'fortinet', canonical: 'FortiGate' },
 
+  // FortiManager product name variations
+  'fortimanager': { vendor: 'fortinet', canonical: 'FortiManager' },
+  'forti manager': { vendor: 'fortinet', canonical: 'FortiManager' },
+
   // Palo Alto product name variations
   'pan-os': { vendor: 'paloalto', canonical: 'GlobalProtect' },
   'panos': { vendor: 'paloalto', canonical: 'GlobalProtect' },

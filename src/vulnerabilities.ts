@@ -122,10 +122,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiManager missing authentication for critical function (FortiJump) allowing RCE',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.0' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.4' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.7' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.12' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.6.0', versionEnd: '7.6.0' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.4.0', versionEnd: '7.4.4' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.2.0', versionEnd: '7.2.7' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.0.0', versionEnd: '7.0.12' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-24-423',
