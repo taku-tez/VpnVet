@@ -389,6 +389,31 @@ describe('Vulnerabilities', () => {
       expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
     });
 
+    it('CVE-2026-1281 (Ivanti EPMM pre-auth RCE) should be critical with CISA KEV', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-1281');
+      expect(cve).toBeDefined();
+      expect(cve!.severity).toBe('critical');
+      expect(cve!.cvss).toBe(9.8);
+      expect(cve!.cisaKev).toBe(true);
+      expect(cve!.exploitAvailable).toBe(true);
+    });
+
+    it('CVE-2026-1340 (Ivanti EPMM code injection) should be critical', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-1340');
+      expect(cve).toBeDefined();
+      expect(cve!.severity).toBe('critical');
+      expect(cve!.cvss).toBe(9.8);
+      expect(cve!.exploitAvailable).toBe(true);
+    });
+
+    it('CVE-2026-1498 (WatchGuard Firebox LDAP injection) should be high', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-1498');
+      expect(cve).toBeDefined();
+      expect(cve!.severity).toBe('high');
+      expect(cve!.cvss).toBe(7.0);
+      expect(cve!.affected.some(a => a.vendor === 'watchguard')).toBe(true);
+    });
+
     it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {
       const ivantiCves = vulnerabilities.filter(v =>
         v.affected.some(a => a.vendor === 'ivanti')

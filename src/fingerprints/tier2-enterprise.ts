@@ -721,6 +721,22 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: '/wgrd-assets/|/wg_resources/',
         weight: 8,
       },
+      // Mobile VPN with SSL portal
+      {
+        type: 'endpoint',
+        path: '/sslvpn.html',
+        method: 'GET',
+        match: 'WatchGuard|Mobile VPN|SSLVPN',
+        weight: 9,
+      },
+      // Fireware 2026.x version pattern
+      {
+        type: 'body',
+        path: '/',
+        match: 'Fireware\\s+(?:v)?2026|Fireware\\s+(?:v)?12\\.(?:5|11)',
+        weight: 9,
+        versionExtract: /Fireware\s*v?(20\d{2}\.\d+(?:\.\d+)*|\d+\.\d+\.\d+)/i,
+      },
     ],
   },
   {

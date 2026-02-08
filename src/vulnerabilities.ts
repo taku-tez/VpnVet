@@ -465,6 +465,36 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: true,
   },
   {
+    cve: 'CVE-2026-1281',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Ivanti Endpoint Manager Mobile (EPMM) pre-authentication code injection allowing RCE',
+    affected: [
+      { vendor: 'ivanti', product: 'Connect Secure', versionEnd: '12.7.0.0' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Endpoint-Manager-Mobile-EPMM-CVE-2026-1281-CVE-2026-1340',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-1281',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
+    cve: 'CVE-2026-1340',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'Ivanti Endpoint Manager Mobile (EPMM) code injection allowing unauthenticated RCE',
+    affected: [
+      { vendor: 'ivanti', product: 'Connect Secure', versionEnd: '12.7.0.0' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Endpoint-Manager-Mobile-EPMM-CVE-2026-1281-CVE-2026-1340',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-1340',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+  },
+  {
     cve: 'CVE-2019-11510',
     severity: 'critical',
     cvss: 10.0,
@@ -938,6 +968,23 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: true,
     cisaKev: true,
+  },
+  {
+    cve: 'CVE-2026-1498',
+    severity: 'high',
+    cvss: 7.0,
+    description: 'WatchGuard Firebox Fireware OS LDAP injection in authentication interface allowing data exfiltration',
+    affected: [
+      { vendor: 'watchguard', product: 'Firebox', versionEnd: '12.11.6' },
+      { vendor: 'watchguard', product: 'Firebox', versionStart: '12.5', versionEnd: '12.5.15' },
+      { vendor: 'watchguard', product: 'Firebox', versionStart: '2025.1', versionEnd: '2025.1' },
+    ],
+    references: [
+      'https://www.watchguard.com/wgrd-psirt/advisory/wgsa-2026-00001',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-1498',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
   },
 
   // ============================================================
