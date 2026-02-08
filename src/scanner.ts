@@ -138,7 +138,7 @@ export class VpnScanner {
       }
       
       // Try to detect VPN device
-      const device = await this.detectDevice(baseUrl);
+      const device = await this.detectDevice(baseUrl, result);
       
       if (device) {
         result.device = device;
@@ -158,10 +158,15 @@ export class VpnScanner {
             coverageVendors.add(resolvedPV.vendor);
           }
           const hasCveMappings = vulnerabilities.some(v =>
-            v.affected.some(a =>
-              coverageVendors.has(a.vendor) &&
-              (!a.product || normalizeProduct(a.product) === deviceProductNorm)
-            )
+            v.affected.some(a => {
+              if (!coverageVendors.has(a.vendor)) return false;
+              if (!a.product) return true; // no product constraint = matches all for this vendor
+              const aNorm = normalizeProduct(a.product);
+              if (aNorm === deviceProductNorm) return true;
+              // Also resolve CVE-side product alias (e.g. "Pulse Connect Secure" → "Connect Secure")
+              const aCanonical = resolveProductAlias(a.product);
+              return normalizeProduct(aCanonical) === deviceProductNorm;
+            })
           );
           if (!hasCveMappings) {
             result.coverageWarning = `No CVE mappings currently available for ${device.vendor} ${device.product}. Detection coverage and vulnerability coverage are independent — a detected product with zero CVEs does not imply it is secure.`;
@@ -261,12 +266,12 @@ export class VpnScanner {
     });
   }
 
-  private async detectDevice(baseUrl: string): Promise<VpnDevice | undefined> {
+  private async detectDevice(baseUrl: string, scanResult?: ScanResult): Promise<VpnDevice | undefined> {
     // Determine URLs to try based on ports option
     const urlsToTry = this.buildPortUrls(baseUrl);
 
     for (const url of urlsToTry) {
-      const result = await this.detectDeviceForUrl(url);
+      const result = await this.detectDeviceForUrl(url, scanResult);
       if (result) return result;
     }
 
@@ -299,10 +304,16 @@ export class VpnScanner {
     return [...new Set(urls)];
   }
 
-  private async detectDeviceForUrl(baseUrl: string): Promise<VpnDevice | undefined> {
+  private async detectDeviceForUrl(baseUrl: string, scanResult?: ScanResult): Promise<VpnDevice | undefined> {
     // SSRF: block private/internal targets at the detection level
     const parsedBase = new URL(baseUrl);
     if (!(await VpnScanner.isHostSafe(parsedBase.hostname))) {
+      const msg = `SSRF blocked: ${parsedBase.hostname} resolves to internal/unsafe address`;
+      if (scanResult) {
+        scanResult.errors.push(msg);
+        scanResult.scanErrors ??= [];
+        scanResult.scanErrors.push({ kind: 'ssrf-blocked', message: msg, url: baseUrl });
+      }
       return undefined;
     }
 
@@ -322,7 +333,7 @@ export class VpnScanner {
       let detectedVersion: string | undefined;
 
       for (const pattern of fingerprint.patterns) {
-        const matched = await this.testPattern(baseUrl, pattern);
+        const matched = await this.testPattern(baseUrl, pattern, scanResult);
         
         if (matched.success) {
           totalScore += pattern.weight;
@@ -417,7 +428,8 @@ export class VpnScanner {
 
   private async testPattern(
     baseUrl: string,
-    pattern: FingerprintPattern
+    pattern: FingerprintPattern,
+    scanResult?: ScanResult
   ): Promise<{ success: boolean; version?: string }> {
     try {
       if (pattern.type === 'endpoint' || pattern.type === 'body') {
@@ -425,6 +437,23 @@ export class VpnScanner {
         const response = await this.httpRequest(url, pattern.method || 'GET');
         
         if (!response) return { success: false };
+
+        // Record HTTP error statuses (4xx/5xx) for diagnostics
+        if (response.statusCode >= 400 && scanResult) {
+          scanResult.scanErrors ??= [];
+          // Avoid duplicate entries for the same URL+status
+          const alreadyRecorded = scanResult.scanErrors.some(
+            e => e.kind === 'http-status' && e.url === url && e.statusCode === response.statusCode
+          );
+          if (!alreadyRecorded) {
+            scanResult.scanErrors.push({
+              kind: 'http-status',
+              message: `HTTP ${response.statusCode} from ${url}`,
+              url,
+              statusCode: response.statusCode,
+            });
+          }
+        }
 
         // Status code validation
         if (pattern.status) {
