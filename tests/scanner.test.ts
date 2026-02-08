@@ -3,7 +3,7 @@
  */
 
 import { VpnScanner, scan } from '../src/scanner.js';
-import type { ScanResult, ScanOptions } from '../src/types.js';
+
 
 describe('VpnScanner', () => {
   describe('constructor', () => {

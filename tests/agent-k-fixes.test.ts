@@ -2,7 +2,7 @@
  * Agent K Tests: favicon HTTP status validation (#2) and CVE coverage warnings (#5)
  */
 
-import { faviconHash } from '../src/utils.js';
+
 import { vulnerabilities } from '../src/vulnerabilities.js';
 import type { ScanResult, VpnVendor } from '../src/types.js';
 

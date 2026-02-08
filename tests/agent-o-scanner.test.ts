@@ -119,7 +119,7 @@ describe('header pattern HTTP status validation (#2)', () => {
   });
 
   it('should accept header match on 200 response', async () => {
-    jest.spyOn(httpClient, 'httpRequest').mockImplementation(async (_url: string, method?: string) => {
+    jest.spyOn(httpClient, 'httpRequest').mockImplementation(async (_url: string, _method?: string) => {
       return {
         statusCode: 200,
         headers: { 'server': 'xxxxxxx' },

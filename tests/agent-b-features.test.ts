@@ -9,7 +9,7 @@
 import { compareVersions, isVersionAffected, hasVersionConstraints } from '../src/utils.js';
 import { VpnScanner } from '../src/scanner.js';
 import * as httpClient from '../src/http-client.js';
-import { testPattern, matchHeaders } from '../src/detector.js';
+import { testPattern } from '../src/detector.js';
 
 describe('compareVersions (improved)', () => {
   it('should compare simple versions', () => {

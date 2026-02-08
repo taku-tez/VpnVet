@@ -2,7 +2,7 @@
  * Agent Q: vendor shared normalization (#3), SARIF URI hashing (#4),
  * logError unification (#5)
  */
-import { resolveVendor, VENDOR_ALIASES } from '../src/vendor';
+import { resolveVendor } from '../src/vendor';
 import { getAllVendors } from '../src/fingerprints/index';
 import { VpnScanner } from '../src/scanner';
 import { normalizeTargetUri } from '../src/utils';

@@ -5,7 +5,7 @@
  * edge cases: hidden versions, customized pages, minimal responses.
  */
 
-import { fingerprints, getFingerprintsByVendor } from '../src/fingerprints/index.js';
+import { getFingerprintsByVendor } from '../src/fingerprints/index.js';
 import type { FingerprintPattern } from '../src/types.js';
 
 /**

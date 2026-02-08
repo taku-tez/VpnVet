@@ -9,11 +9,11 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VpnScanner } from './scanner.js';
-import { fingerprints, getAllVendors } from './fingerprints/index.js';
-import { vulnerabilities } from './vulnerabilities.js';
-import { setVerbose, logError, logInfo, formatVendorName, normalizeTargetUri } from './utils.js';
+import { getAllVendors } from './fingerprints/index.js';
+import { setVerbose, logError, logInfo } from './utils.js';
 import { resolveVendor } from './vendor.js';
-import type { ScanResult, ScanOptions } from './types.js';
+import { formatOutput, listVendors, listVulnerabilities } from './formatters.js';
+import type { ScanOptions } from './types.js';
 
 // Get version from package.json
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -63,297 +63,6 @@ EXAMPLES:
 
 function printVersion(): void {
   console.log(`VpnVet v${VERSION}`);
-}
-
-function listVendors(): void {
-  console.log('\nSupported VPN Vendors:\n');
-  
-  const vendorProducts = new Map<string, string[]>();
-  
-  for (const fp of fingerprints) {
-    const existing = vendorProducts.get(fp.vendor) || [];
-    if (!existing.includes(fp.product)) {
-      existing.push(fp.product);
-    }
-    vendorProducts.set(fp.vendor, existing);
-  }
-  
-  const sortedVendors = [...vendorProducts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  for (const [vendor, products] of sortedVendors) {
-    const displayName = formatVendorName(vendor as Parameters<typeof formatVendorName>[0]);
-    console.log(`  ${displayName} (${vendor})`);
-    for (const product of products) {
-      console.log(`    - ${product}`);
-    }
-  }
-  
-  console.log(`\nTotal: ${vendorProducts.size} vendors, ${fingerprints.length} fingerprints`);
-}
-
-function listVulnerabilities(severity?: string): void {
-  console.log('\nKnown VPN Vulnerabilities:\n');
-  
-  let vulns = vulnerabilities;
-  
-  if (severity) {
-    vulns = vulns.filter(v => v.severity === severity);
-  }
-  
-  // Group by vendor
-  const byVendor = new Map<string, typeof vulnerabilities>();
-  
-  for (const vuln of vulns) {
-    const vendors = [...new Set(vuln.affected.map(a => a.vendor))];
-    for (const vendor of vendors) {
-      const existing = byVendor.get(vendor) || [];
-      existing.push(vuln);
-      byVendor.set(vendor, existing);
-    }
-  }
-  
-  const sortedVulnVendors = [...byVendor.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  for (const [vendor, vendorVulns] of sortedVulnVendors) {
-    console.log(`  ${vendor.toUpperCase()}`);
-    // Sort by severity (critical first) then CVE id
-    const severityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-    vendorVulns.sort((a, b) => {
-      const sevDiff = (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4);
-      if (sevDiff !== 0) return sevDiff;
-      return a.cve.localeCompare(b.cve);
-    });
-    for (const vuln of vendorVulns) {
-      const kev = vuln.cisaKev ? ' [KEV]' : '';
-      const exploit = vuln.exploitAvailable ? ' [EXPLOIT]' : '';
-      console.log(`    ${vuln.cve} (${vuln.severity.toUpperCase()}, CVSS ${vuln.cvss})${kev}${exploit}`);
-      console.log(`      ${vuln.description}`);
-    }
-    console.log();
-  }
-  
-  const kevCount = vulns.filter(v => v.cisaKev).length;
-  console.log(`Total: ${vulns.length} CVEs (${kevCount} in CISA KEV)`);
-}
-
-function formatTable(results: ScanResult[]): string {
-  const lines: string[] = [];
-  
-  for (const result of results) {
-    lines.push(`\n${'='.repeat(60)}`);
-    lines.push(`Target: ${result.target}`);
-    lines.push(`Scanned: ${result.timestamp}`);
-    
-    if (result.errors.length > 0) {
-      lines.push(`Errors: ${result.errors.join(', ')}`);
-    }
-    if (result.scanErrors && result.scanErrors.length > 0) {
-      for (const se of result.scanErrors) {
-        lines.push(`  [${se.kind}] ${se.message}${se.statusCode ? ` (HTTP ${se.statusCode})` : ''}`);
-      }
-    }
-    
-    if (result.device) {
-      const d = result.device;
-      lines.push(`\nDevice Detected:`);
-      lines.push(`  Vendor: ${formatVendorName(d.vendor)}`);
-      lines.push(`  Product: ${d.product}`);
-      if (d.version) lines.push(`  Version: ${d.version}`);
-      lines.push(`  Confidence: ${d.confidence}%`);
-      lines.push(`  Detection Methods: ${d.detectionMethod.join(', ')}`);
-      if (d.endpoints.length > 0) {
-        lines.push(`  Endpoints: ${d.endpoints.join(', ')}`);
-      }
-      
-      if (result.vulnerabilities.length > 0) {
-        lines.push(`\nPotential Vulnerabilities:`);
-        for (const vuln of result.vulnerabilities) {
-          const v = vuln.vulnerability;
-          const kev = v.cisaKev ? ' 🚨 CISA KEV' : '';
-          lines.push(`  [${v.severity.toUpperCase()}] ${v.cve} (CVSS ${v.cvss})${kev}`);
-          lines.push(`    ${v.description}`);
-          lines.push(`    Confidence: ${vuln.confidence}`);
-          lines.push(`    Evidence: ${vuln.evidence}`);
-        }
-      } else {
-        lines.push(`\nNo known vulnerabilities detected.`);
-      }
-
-      if (result.coverageWarning) {
-        lines.push(`\n⚠️  Coverage Warning: ${result.coverageWarning}`);
-      }
-    } else if (result.scanErrors && result.scanErrors.length > 0) {
-      const kinds = result.scanErrors.map(e => e.kind).filter((v, i, a) => a.indexOf(v) === i).join('/');
-      lines.push(`\n⚠ Connection failed (${kinds})`);
-    } else {
-      lines.push(`\n✗ No VPN device detected`);
-    }
-  }
-  
-  return lines.join('\n');
-}
-
-function formatJson(results: ScanResult[]): string {
-  return JSON.stringify(results, null, 2);
-}
-
-/**
- * Normalize a target string to an absolute URI suitable for SARIF artifactLocation.uri.
- * If the target already has a scheme, return as-is. Otherwise prepend https://.
- * If the result is not a valid URL, return a fallback and stash the original in properties.
- */
-function formatSarif(results: ScanResult[]): string {
-  const sarif = {
-    $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
-    version: '2.1.0',
-    runs: [
-      {
-        tool: {
-          driver: {
-            name: 'VpnVet',
-            version: VERSION,
-            informationUri: 'https://github.com/taku-tez/VpnVet',
-            rules: [
-              ...vulnerabilities.map(v => ({
-                id: v.cve,
-                name: v.cve,
-                shortDescription: { text: v.description },
-                helpUri: v.references[0],
-                properties: {
-                  severity: v.severity,
-                  cvss: v.cvss,
-                  cisaKev: v.cisaKev,
-                },
-              })),
-              {
-                id: 'VPNVET-COVERAGE-WARNING',
-                name: 'CoverageWarning',
-                shortDescription: { text: 'VPN device detected but no CVE mappings available for this product' },
-                properties: {
-                  severity: 'note',
-                },
-              },
-            ],
-          },
-        },
-        results: results.flatMap(result => {
-          const { uri, originalTarget } = normalizeTargetUri(result.target);
-          const vulnResults: any[] = result.vulnerabilities.map(vuln => ({
-            ruleId: vuln.vulnerability.cve,
-            level: vuln.vulnerability.severity === 'critical' ? 'error' : 
-                   vuln.vulnerability.severity === 'high' ? 'error' :
-                   vuln.vulnerability.severity === 'medium' ? 'warning' : 'note',
-            message: { text: vuln.evidence },
-            locations: [
-              {
-                physicalLocation: {
-                  artifactLocation: {
-                    uri,
-                  },
-                },
-              },
-            ],
-            properties: {
-              confidence: vuln.confidence,
-              device: result.device,
-              ...(originalTarget ? { originalTarget } : {}),
-              ...(result.coverageWarning ? { coverageWarning: result.coverageWarning } : {}),
-              ...(result.scanErrors?.length ? { scanErrors: result.scanErrors } : {}),
-            },
-          }));
-
-          // Add coverage warning as a separate SARIF result
-          if (result.coverageWarning) {
-            vulnResults.push({
-              ruleId: 'VPNVET-COVERAGE-WARNING',
-              level: 'note',
-              message: { text: result.coverageWarning },
-              locations: [
-                {
-                  physicalLocation: {
-                    artifactLocation: {
-                      uri,
-                    },
-                  },
-                },
-              ],
-              properties: {
-                confidence: 'informational',
-                device: result.device,
-                ...(originalTarget ? { originalTarget } : {}),
-              },
-            });
-          }
-
-          return vulnResults;
-        }),
-      },
-    ],
-  };
-  
-  return JSON.stringify(sarif, null, 2);
-}
-
-function escapeCsvCell(value: string): string {
-  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
-}
-
-function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,coverage_warning,scan_error_kinds'];
-  
-  for (const result of results) {
-    const errorKinds = result.scanErrors?.map(e => e.kind).join(';') || '';
-    if (result.device) {
-      if (result.vulnerabilities.length > 0) {
-        for (const vuln of result.vulnerabilities) {
-          lines.push([
-            result.target,
-            result.device.vendor,
-            result.device.product,
-            result.device.version || '',
-            String(result.device.confidence),
-            vuln.vulnerability.cve,
-            vuln.vulnerability.severity,
-            vuln.vulnerability.cvss != null ? String(vuln.vulnerability.cvss) : '',
-            vuln.confidence,
-            vuln.vulnerability.cisaKev != null ? String(vuln.vulnerability.cisaKev) : '',
-            result.coverageWarning || '',
-            errorKinds,
-          ].map(escapeCsvCell).join(','));
-        }
-      } else {
-        lines.push([
-          result.target,
-          result.device.vendor,
-          result.device.product,
-          result.device.version || '',
-          String(result.device.confidence),
-          '', '', '', '', '',
-          result.coverageWarning || '',
-          errorKinds,
-        ].map(escapeCsvCell).join(','));
-      }
-    } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
-    }
-  }
-  
-  return lines.join('\n');
-}
-
-function formatOutput(results: ScanResult[], format: string): string {
-  switch (format) {
-    case 'json':
-      return formatJson(results);
-    case 'sarif':
-      return formatSarif(results);
-    case 'csv':
-      return formatCsv(results);
-    case 'table':
-    default:
-      return formatTable(results);
-  }
 }
 
 /** Per-subcommand allowed flags for validation */
@@ -440,7 +149,6 @@ async function main(): Promise<void> {
     
     let targets: string[] = [];
     
-    // Parse arguments
     for (let i = 1; i < args.length; i++) {
       const arg = args[i];
       
@@ -531,7 +239,6 @@ async function main(): Promise<void> {
           logError(`Unknown option: "${arg}". Run vpnvet --help for usage.`);
           process.exit(1);
         }
-        // Known flag but not handled above — should not happen
         logError(`Unhandled option: "${arg}". Run vpnvet --help for usage.`);
         process.exit(1);
       } else {
@@ -539,7 +246,6 @@ async function main(): Promise<void> {
       }
     }
     
-    // Validate --vendor (case-insensitive + aliases)
     if (options.vendor) {
       const knownVendors = getAllVendors();
       const resolved = resolveVendor(options.vendor, knownVendors);
@@ -550,7 +256,6 @@ async function main(): Promise<void> {
       options.vendor = resolved;
     }
 
-    // Trim and deduplicate targets
     targets = [...new Set(targets.map(t => t.trim()).filter(t => t))];
 
     if (targets.length === 0) {
@@ -558,7 +263,6 @@ async function main(): Promise<void> {
       process.exit(1);
     }
     
-    // Set verbose mode for logging
     if (options.verbose) {
       setVerbose(true);
     }
@@ -586,7 +290,6 @@ async function main(): Promise<void> {
       }
     }
     
-    // In quiet mode, still print a one-line summary to stderr
     if (options.quiet) {
       const detected = results.filter(r => r.device).length;
       const connFailed = results.filter(r => !r.device && r.scanErrors && r.scanErrors.length > 0).length;
@@ -594,9 +297,8 @@ async function main(): Promise<void> {
       console.error(`Scanned ${results.length} target(s): ${detected} detected, ${connFailed} connection failed, ${clean} clean`);
     }
 
-    const output = formatOutput(results, options.format);
+    const output = formatOutput(results, options.format, VERSION);
     
-    // Output: write to file if --output specified, otherwise print to stdout
     if (options.output) {
       const outputPath = path.resolve(options.output);
       fs.writeFileSync(outputPath, output);
@@ -607,7 +309,6 @@ async function main(): Promise<void> {
       console.log(output);
     }
     
-    // Exit code based on findings
     const hasVulnerabilities = results.some(r => r.vulnerabilities.length > 0);
     const hasCritical = results.some(r => 
       r.vulnerabilities.some(v => v.vulnerability.severity === 'critical')

@@ -36,7 +36,7 @@ describe('SSRF Redirect Protection', () => {
     });
   }
 
-  function createOkServer(): Promise<number> {
+  function _createOkServer(): Promise<number> {
     return new Promise((resolve) => {
       server = http.createServer((_req, res) => {
         res.writeHead(200);

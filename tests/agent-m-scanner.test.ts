@@ -8,7 +8,7 @@
 import { VpnScanner } from '../src/scanner.js';
 import * as httpClient from '../src/http-client.js';
 import { testPattern } from '../src/detector.js';
-import type { ScanResult, ScanError } from '../src/types.js';
+import type { ScanResult } from '../src/types.js';
 
 // Helper to create a scanner with short timeout
 function makeScanner(opts = {}) {

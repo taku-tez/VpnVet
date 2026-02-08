@@ -1,7 +1,7 @@
 /**
  * Agent L: CLI improvements (#1 numeric validation, #2 --targets merge, #6 SCAN_FLAGS)
  */
-import { execSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
