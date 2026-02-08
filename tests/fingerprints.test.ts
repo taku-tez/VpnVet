@@ -153,6 +153,62 @@ describe('Fingerprints', () => {
       expect(zyxel).toBeDefined();
       expect(zyxel.product).toBe('USG/ZyWALL');
     });
+
+    it('should have firmware info API endpoint pattern', () => {
+      const zyxel = getFingerprintsByVendor('zyxel')[0];
+      const apiPattern = zyxel.patterns.find(p => p.path === '/api/firmware/info');
+      expect(apiPattern).toBeDefined();
+      expect(apiPattern?.versionExtract).toBeDefined();
+    });
+
+    it('should extract version from firmware info', () => {
+      const zyxel = getFingerprintsByVendor('zyxel')[0];
+      const apiPattern = zyxel.patterns.find(p => p.path === '/api/firmware/info');
+      const match = '{"fw_ver": "V5.40(ABCD.0)"}' .match(apiPattern!.versionExtract!);
+      expect(match?.[1]).toBe('5.40');
+    });
+  });
+
+  describe('WatchGuard patterns', () => {
+    it('should have Firebox patterns with admin wizard endpoint', () => {
+      const wg = getFingerprintsByVendor('watchguard')[0];
+      expect(wg).toBeDefined();
+      const wizardPattern = wg.patterns.find(p => p.path === '/wizard/Wizard_Portal.html');
+      expect(wizardPattern).toBeDefined();
+      expect(wizardPattern?.weight).toBe(9);
+    });
+
+    it('should have Fireware Web UI title pattern', () => {
+      const wg = getFingerprintsByVendor('watchguard')[0];
+      const titlePattern = wg.patterns.find(p =>
+        p.type === 'body' && p.match?.includes('Fireware')
+      );
+      expect(titlePattern).toBeDefined();
+      expect(titlePattern?.versionExtract).toBeDefined();
+    });
+  });
+
+  describe('SonicWall patterns', () => {
+    it('should have SonicOS 7.x version extraction', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const sonicui = sw.patterns.find(p => p.path === '/sonicui/7/login/');
+      expect(sonicui).toBeDefined();
+      expect(sonicui?.versionExtract).toBeDefined();
+    });
+
+    it('should have API version endpoint', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const apiPattern = sw.patterns.find(p => p.path === '/api/sonicos/version');
+      expect(apiPattern).toBeDefined();
+      expect(apiPattern?.versionExtract).toBeDefined();
+    });
+
+    it('should extract SonicOS version', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const sonicui = sw.patterns.find(p => p.path === '/sonicui/7/login/');
+      const match = 'SonicOS 7.1.1-7040'.match(sonicui!.versionExtract!);
+      expect(match?.[1]).toBe('7.1.1-7040');
+    });
   });
 
   describe('Sophos patterns', () => {

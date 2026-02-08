@@ -325,6 +325,15 @@ describe('Vulnerabilities', () => {
       expect(cve?.severity).toBe('high');
     });
 
+    it('CVE-2025-8078 (Zyxel post-auth command injection) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-8078');
+      expect(cve).toBeDefined();
+      expect(cve?.cvss).toBe(7.2);
+      expect(cve?.severity).toBe('high');
+      expect(cve?.affected[0]?.versionStart).toBe('4.32');
+      expect(cve?.affected[0]?.versionEnd).toBe('5.40');
+    });
+
     it('CVE-2025-25249 (FortiOS CAPWAP RCE) should be high severity', () => {
       const cve = vulnerabilities.find(v => v.cve === 'CVE-2025-25249');
       expect(cve).toBeDefined();

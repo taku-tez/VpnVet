@@ -841,6 +841,21 @@ export const vulnerabilities: Vulnerability[] = [
     exploitAvailable: true,
     cisaKev: false,
   },
+  {
+    cve: 'CVE-2025-8078',
+    severity: 'high',
+    cvss: 7.2,
+    description: 'Zyxel ATP/USG FLEX/USG20 post-authentication command injection via IPSec VPN configuration',
+    affected: [
+      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: '4.32', versionEnd: '5.40' },
+    ],
+    references: [
+      'https://www.zyxel.com/global/en/support/security-advisories',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-8078',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+  },
 
   // ============================================================
   // Sophos

@@ -63,6 +63,16 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'sonicui|login',
         weight: 9,
+        versionExtract: /SonicOS\s+(\d+\.\d+(?:\.\d+)*(?:-\d+[a-z]?)?)/i,
+      },
+      // SonicOS 7.x API version endpoint
+      {
+        type: 'endpoint',
+        path: '/api/sonicos/version',
+        method: 'GET',
+        match: 'firmware_version|SonicOS',
+        weight: 9,
+        versionExtract: /(\d+\.\d+\.\d+(?:\.\d+)*)/,
       },
       // HTML body patterns
       {
@@ -434,7 +444,23 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'ZLD|version|product',
         weight: 9,
-        versionExtract: /ZLD\s*V?(\d+\.\d+)/i,
+        versionExtract: /ZLD\s*V?(\d+\.\d+(?:\.\d+)*)/i,
+      },
+      // Zyxel firmware info API (ZLD 5.x+)
+      {
+        type: 'endpoint',
+        path: '/api/firmware/info',
+        method: 'GET',
+        match: 'firmware|version|model',
+        weight: 9,
+        versionExtract: /(?:fw_ver|version)['":\s]+V?(\d+\.\d+(?:\.\d+)*)/i,
+      },
+      // Model detection from HTML title
+      {
+        type: 'body',
+        path: '/',
+        match: '<title>(?:USG\\s*FLEX|ATP|VPN|ZyWALL)\\s*\\d+',
+        weight: 10,
       },
       // ZTP endpoints (CVE-2023-33012 target)
       {
@@ -646,6 +672,29 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         type: 'certificate',
         match: 'WatchGuard',
         weight: 7,
+      },
+      // Admin interface (port 8080) - Wizard portal
+      {
+        type: 'endpoint',
+        path: '/wizard/Wizard_Portal.html',
+        method: 'GET',
+        match: 'WatchGuard|Wizard',
+        weight: 9,
+      },
+      // Fireware OS login page title pattern
+      {
+        type: 'body',
+        path: '/',
+        match: '<title>Fireware\\s+(?:XTM\\s+)?Web\\s*UI',
+        weight: 10,
+        versionExtract: /Fireware\s*(?:XTM\s*)?v?(\d+\.\d+(?:\.\d+)*)/i,
+      },
+      // Static resource paths unique to WatchGuard
+      {
+        type: 'body',
+        path: '/',
+        match: '/wgrd-assets/|/wg_resources/',
+        weight: 8,
       },
     ],
   },
