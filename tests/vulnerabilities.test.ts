@@ -414,6 +414,30 @@ describe('Vulnerabilities', () => {
       expect(cve!.affected.some(a => a.vendor === 'watchguard')).toBe(true);
     });
 
+    it('CVE-2026-21917 (Juniper SRX Web-Filtering DoS) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-21917');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cvss).toBe(7.5);
+      expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
+    });
+
+    it('CVE-2026-21918 (Juniper SRX/MX flowd Double Free DoS) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-21918');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cvss).toBe(7.5);
+      expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
+    });
+
+    it('CVE-2026-21905 (Juniper SRX SIP ALG DoS) should be high severity', () => {
+      const cve = vulnerabilities.find(v => v.cve === 'CVE-2026-21905');
+      expect(cve).toBeDefined();
+      expect(cve?.severity).toBe('high');
+      expect(cve?.cvss).toBe(7.5);
+      expect(cve?.affected.some(a => a.vendor === 'juniper')).toBe(true);
+    });
+
     it('Pulse/Ivanti CVEs should be accessible via both vendor names', () => {
       const ivantiCves = vulnerabilities.filter(v =>
         v.affected.some(a => a.vendor === 'ivanti')
