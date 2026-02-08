@@ -193,16 +193,17 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'fgt_lang|ftnt-fortinet',
         weight: 9,
       },
-      // Security headers (FortiOS 7.x adds these)
+      // Security headers (FortiOS 7.x adds these - very common across all web servers,
+      // kept at weight 1 to avoid false positives on generic sites)
       {
         type: 'header',
         match: 'X-Frame-Options: SAMEORIGIN',
-        weight: 3,
+        weight: 1,
       },
       {
         type: 'header',
         match: 'Content-Security-Policy: frame-ancestors',
-        weight: 3,
+        weight: 1,
       },
 
       // === TIER 6: Version Detection ===
@@ -210,10 +211,11 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
       // ETag header (FG-IR-23-224: version info leak)
       // Last 8 hex chars = Unix timestamp of firmware build date
       // Affected: FortiOS 7.4.0-7.4.1, 7.2.0-7.2.5, 7.0.x, 6.4.x
+      // Weight 1: ETag is present on virtually all web servers; only useful as supporting signal
       {
         type: 'header',
         match: 'ETag',
-        weight: 2,
+        weight: 1,
       },
       // REST API firmware version (requires auth usually)
       {

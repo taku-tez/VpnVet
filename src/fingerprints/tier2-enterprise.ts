@@ -123,6 +123,20 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: 'Check Point|cpws',
         weight: 10,
       },
+      // Check Point SmartPortal
+      {
+        type: 'endpoint',
+        path: '/UserCheck/wa498247.js',
+        method: 'GET',
+        match: 'Check Point|UserCheck',
+        weight: 8,
+      },
+      {
+        type: 'body',
+        path: '/',
+        match: 'Check Point|checkpoint\\.com|SmartPortal|Mobile Access',
+        weight: 9,
+      },
       {
         type: 'certificate',
         match: 'Check Point',

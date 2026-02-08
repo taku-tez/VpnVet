@@ -292,7 +292,7 @@ export const asiaFingerprints: Fingerprint[] = [
       {
         type: 'body',
         path: '/',
-        match: 'NSFOCUS|绿盟科技|NF',
+        match: 'NSFOCUS|绿盟科技|NF[_-]\\w+',
         weight: 9,
       },
       {
@@ -314,10 +314,23 @@ export const asiaFingerprints: Fingerprint[] = [
         weight: 10,
         versionExtract: /(?:Venusense|Version|ver)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
+      // Venusense UTM login page
+      {
+        type: 'endpoint',
+        path: '/login.php',
+        method: 'GET',
+        match: 'Venustech|Venusense|启明星辰',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'Venustech|Venusense',
+        weight: 10,
+      },
       {
         type: 'body',
         path: '/',
-        match: 'Venustech|启明星辰|Venus',
+        match: 'Venustech|启明星辰|Venusense',
         weight: 9,
       },
       {
@@ -338,6 +351,19 @@ export const asiaFingerprints: Fingerprint[] = [
         match: 'TopSec|天融信',
         weight: 10,
         versionExtract: /(?:TopSec|TOS|Version)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
+      },
+      // TOS management interface
+      {
+        type: 'endpoint',
+        path: '/cgi-bin/webui',
+        method: 'GET',
+        match: 'TopSec|TOPSEC|天融信',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'TopSec|TOPSEC',
+        weight: 10,
       },
       {
         type: 'body',
@@ -364,10 +390,23 @@ export const asiaFingerprints: Fingerprint[] = [
         weight: 10,
         versionExtract: /(?:DPtech|Version|ver)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
       },
+      // DPtech management console
+      {
+        type: 'endpoint',
+        path: '/webui/login.html',
+        method: 'GET',
+        match: 'DPtech|迪普科技',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'DPtech',
+        weight: 10,
+      },
       {
         type: 'body',
         path: '/',
-        match: 'DPtech|迪普科技|DP',
+        match: 'DPtech|迪普科技|DPtech[_\\s-]',
         weight: 9,
       },
       {
@@ -388,6 +427,19 @@ export const asiaFingerprints: Fingerprint[] = [
         match: 'AhnLab|TrusGuard|안랩',
         weight: 10,
         versionExtract: /(?:TrusGuard|Version|firmware)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
+      },
+      // AhnLab SSL VPN portal
+      {
+        type: 'endpoint',
+        path: '/sslvpn/login.html',
+        method: 'GET',
+        match: 'AhnLab|TrusGuard',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'AhnLab|TrusGuard',
+        weight: 10,
       },
       {
         type: 'body',
@@ -413,6 +465,19 @@ export const asiaFingerprints: Fingerprint[] = [
         match: 'SECUI|시큐아이',
         weight: 10,
         versionExtract: /(?:MF2|Version|firmware)[:\s]+v?(\d+\.\d+(?:\.\d+)?)/i,
+      },
+      // SECUI management UI
+      {
+        type: 'endpoint',
+        path: '/webui/',
+        method: 'GET',
+        match: 'SECUI|MF2|시큐아이',
+        weight: 9,
+      },
+      {
+        type: 'header',
+        match: 'SECUI',
+        weight: 10,
       },
       {
         type: 'body',

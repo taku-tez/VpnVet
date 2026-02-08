@@ -351,6 +351,15 @@ export class VpnScanner {
     }
 
     if (bestMatch && bestMatch.score >= 5) {
+      // `unknown` fallback criteria:
+      // - Score < 5: No detection returned (undefined). The score threshold of 5
+      //   prevents low-confidence noise. A single weight-3 body match alone won't trigger.
+      // - Score >= 5 but < 10: Low confidence detection. Usually from generic patterns
+      //   (e.g., certificate + one body match). May warrant manual verification.
+      // - Score >= 10: Reliable detection. Typically requires multiple independent
+      //   signals (header + endpoint, or header + body).
+      // If no vendor fingerprint scores >= 5, the result is `undefined` (no device detected).
+      // The scanner never returns vendor='unknown'; absence of a result IS the unknown case.
       // Calculate confidence (0-100)
       const maxPossibleScore = bestMatch.fingerprint.patterns.reduce((sum, p) => sum + p.weight, 0);
       const confidence = Math.min(100, Math.round((bestMatch.score / maxPossibleScore) * 100));
