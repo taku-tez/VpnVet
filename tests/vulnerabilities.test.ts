@@ -154,6 +154,27 @@ describe('Vulnerabilities', () => {
     });
   });
 
+  describe('fingerprint vendors without CVE coverage', () => {
+    it('should identify vendors with fingerprints but no CVEs (coverage warning candidates)', () => {
+      const vulnVendors = new Set(
+        vulnerabilities.flatMap(v => v.affected.map(a => a.vendor))
+      );
+      const fpVendors = new Set(fingerprints.map(f => f.vendor));
+      const noCveVendors = [...fpVendors].filter(v => !vulnVendors.has(v)).sort();
+
+      // These vendors have fingerprints but no CVEs — expected for cloud/ZTNA/niche vendors
+      // If a new vendor gets CVEs added, remove it from this list
+      const expectedNoCve = [
+        'ahnlab', 'cloudflare', 'dptech', 'endian', 'h3c', 'hillstone',
+        'kerio', 'lancom', 'meraki', 'netmotion', 'nsfocus', 'openvpn',
+        'opnsense', 'ruijie', 'secui', 'stormshield', 'topsec', 'ubiquiti',
+        'untangle', 'venustech', 'zscaler',
+      ].sort();
+
+      expect(noCveVendors).toEqual(expectedNoCve);
+    });
+  });
+
   describe('references URL validity', () => {
     it('all references should start with http:// or https://', () => {
       const invalid: string[] = [];
