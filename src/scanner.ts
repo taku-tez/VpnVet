@@ -27,6 +27,7 @@ import {
 } from './http-client.js';
 import type { HttpClientOptions } from './http-client.js';
 import { detectDevice } from './detector.js';
+import { scanJarm, lookupJarmHash } from './jarm.js';
 import type {
   ScanResult,
   ScanOptions,
@@ -50,6 +51,7 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   adaptiveConcurrency: false,
   maxRetries: 0,
   insecureTls: true,
+  jarm: false,
 };
 
 // Re-export classifyError from http-client for backward compatibility
@@ -146,13 +148,50 @@ export class VpnScanner {
         return result;
       }
 
-      const device = await detectDevice(baseUrl, {
+      let device = await detectDevice(baseUrl, {
         ports: this.options.ports,
         vendor: this.options.vendor,
         fast: this.options.fast,
         skipVersionDetection: this.options.skipVersionDetection,
         httpOpts: this.httpOpts,
       }, result);
+
+      // JARM fingerprinting (if enabled)
+      if (this.options.jarm) {
+        try {
+          const parsedUrl = new URL(baseUrl);
+          const jarmPort = parsedUrl.port ? parseInt(parsedUrl.port, 10) : 443;
+          const jarmResult = await scanJarm(parsedUrl.hostname, jarmPort, this.options.timeout);
+          if (jarmResult.hash && jarmResult.hash !== '0'.repeat(62)) {
+            result.jarmHash = jarmResult.hash;
+
+            // If no device detected via HTTP, try JARM-based identification
+            if (!device) {
+              const known = lookupJarmHash(jarmResult.hash);
+              if (known) {
+                device = {
+                  vendor: known.vendor as any,
+                  product: known.product,
+                  confidence: 50,
+                  detectionMethod: ['jarm'],
+                  endpoints: [],
+                };
+              }
+            } else {
+              // Boost confidence if JARM matches known hash for detected vendor
+              const known = lookupJarmHash(jarmResult.hash);
+              if (known && known.vendor === device.vendor) {
+                device.confidence = Math.min(100, device.confidence + 15);
+                if (!device.detectionMethod.includes('jarm')) {
+                  device.detectionMethod.push('jarm');
+                }
+              }
+            }
+          }
+        } catch {
+          // JARM scan failure is non-fatal
+        }
+      }
 
       if (device) {
         result.device = device;

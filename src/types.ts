@@ -78,7 +78,8 @@ export type DetectionMethod =
   | 'certificate'
   | 'banner'
   | 'favicon'
-  | 'html';
+  | 'html'
+  | 'jarm';
 
 export interface Vulnerability {
   cve: string;
@@ -114,6 +115,7 @@ export interface ScanResult {
   target: string;
   timestamp: string;
   device?: VpnDevice;
+  jarmHash?: string;
   vulnerabilities: VulnerabilityMatch[];
   coverageWarning?: string;
   errors: string[];
@@ -151,6 +153,7 @@ export interface ScanOptions {
   adaptiveConcurrency?: boolean; // Reduce concurrency on high failure rate (default: false)
   maxRetries?: number; // Max retries per target (default: 0)
   insecureTls?: boolean; // Skip TLS certificate verification (default: true for scanner use)
+  jarm?: boolean; // Enable JARM TLS fingerprinting (default: false)
 }
 
 export interface Fingerprint {

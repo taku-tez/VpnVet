@@ -51,6 +51,8 @@ SCAN OPTIONS:
   -v, --verbose            Verbose output
   --vendor <name>          Test specific vendor only (faster)
   --concurrency <n>        Max concurrent scans (default: 5, max: 100)
+  --jarm                   Enable JARM TLS fingerprinting (slow, default: off)
+  --no-jarm                Explicitly disable JARM fingerprinting
   --insecure               Skip TLS certificate verification (default: on)
   --no-insecure            Enable TLS certificate verification
 
@@ -73,6 +75,7 @@ const SCAN_FLAGS = new Set([
   '--timeout', '--ports', '--vendor',
   '--skip-vuln', '--skip-version', '--fast', '--concurrency',
   '-q', '--quiet', '-v', '--verbose',
+  '--jarm', '--no-jarm',
   '--insecure', '--no-insecure',
 ]);
 
@@ -223,6 +226,10 @@ async function main(): Promise<void> {
       } else if (arg === '--vendor') {
         options.vendor = requireArg(args, i, arg);
         i++;
+      } else if (arg === '--jarm') {
+        options.jarm = true;
+      } else if (arg === '--no-jarm') {
+        options.jarm = false;
       } else if (arg === '--insecure') {
         options.insecureTls = true;
       } else if (arg === '--no-insecure') {

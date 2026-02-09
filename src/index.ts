@@ -36,6 +36,9 @@ export { resolveVendor, VENDOR_ALIASES } from './vendor.js';
 // Product alias resolution
 export { resolveProductAlias, resolveProductAndVendor, PRODUCT_ALIASES } from './product.js';
 
+// JARM fingerprinting
+export { scanJarm, computeJarmHash, lookupJarmHash, KNOWN_JARM_HASHES } from './jarm.js';
+
 // Types
 export type {
   VpnDevice,

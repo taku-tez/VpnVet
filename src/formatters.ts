@@ -114,6 +114,9 @@ export function formatTable(results: ScanResult[]): string {
       if (d.endpoints.length > 0) {
         lines.push(`  Endpoints: ${d.endpoints.join(', ')}`);
       }
+      if (result.jarmHash) {
+        lines.push(`  JARM Hash: ${result.jarmHash}`);
+      }
       
       if (result.vulnerabilities.length > 0) {
         lines.push(`\nPotential Vulnerabilities:`);
@@ -231,6 +234,7 @@ export function formatSarif(results: ScanResult[], version: string): string {
             properties: {
               confidence: vuln.confidence,
               device: result.device,
+              ...(result.jarmHash ? { jarmHash: result.jarmHash } : {}),
               ...(originalTarget ? { originalTarget } : {}),
               ...(result.coverageWarning ? { coverageWarning: result.coverageWarning } : {}),
               ...(result.scanErrors?.length ? { scanErrors: result.scanErrors } : {}),
@@ -309,7 +313,7 @@ function escapeCsvCell(value: string): string {
 }
 
 export function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,confidence,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds'];
+  const lines = ['target,vendor,product,version,confidence,jarm_hash,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds'];
   
   for (const result of results) {
     const errorKinds = result.scanErrors?.map(e => e.kind).join(';') || '';
@@ -322,6 +326,7 @@ export function formatCsv(results: ScanResult[]): string {
             result.device.product,
             result.device.version || '',
             String(result.device.confidence),
+            result.jarmHash || '',
             vuln.vulnerability.cve,
             vuln.vulnerability.severity,
             vuln.vulnerability.cvss != null ? String(vuln.vulnerability.cvss) : '',
@@ -339,13 +344,14 @@ export function formatCsv(results: ScanResult[]): string {
           result.device.product,
           result.device.version || '',
           String(result.device.confidence),
+          result.jarmHash || '',
           '', '', '', '', '', '',
           result.coverageWarning || '',
           errorKinds,
         ].map(escapeCsvCell).join(','));
       }
     } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
+      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
     }
   }
   
