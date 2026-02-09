@@ -23,6 +23,7 @@ import {
   isHostSafe,
   resolveSafeAddresses,
   buildPinnedLookup,
+  classifyError,
 } from './http-client.js';
 import type { HttpClientOptions } from './http-client.js';
 import { detectDevice } from './detector.js';
@@ -48,6 +49,7 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   concurrency: 5,
   adaptiveConcurrency: false,
   maxRetries: 0,
+  insecureTls: true,
 };
 
 /**
@@ -134,6 +136,7 @@ export class VpnScanner {
       headers: this.options.headers as Record<string, string>,
       followRedirects: this.options.followRedirects,
       allowCrossHostRedirects: this.options.allowCrossHostRedirects,
+      insecureTls: this.options.insecureTls,
     };
   }
 
@@ -256,7 +259,7 @@ export class VpnScanner {
             doneCount++;
 
             if (adaptive) {
-              if (result.errors.length > 0 && !result.device) {
+              if (!result.device && (result.errors.length > 0 || (result.scanErrors && result.scanErrors.length > 0))) {
                 failureCount++;
               }
               if (doneCount % 5 === 0 && doneCount >= 5) {

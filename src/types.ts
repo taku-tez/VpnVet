@@ -58,11 +58,14 @@ export type VpnVendor =
   | 'secui'
   // Open Source
   | 'openvpn'
+  | 'wireguard'
   // Enterprise Mobility
   | 'netmotion'
+  | 'mobileiron'
   // Cloud / ZTNA (also detectable when self-hosted)
   | 'zscaler'
   | 'cloudflare'
+  | 'netskope'
   // Other
   | 'aruba'
   | 'meraki'
@@ -146,6 +149,7 @@ export interface ScanOptions {
   concurrency?: number; // Max concurrent scans in scanMultiple (default: 5)
   adaptiveConcurrency?: boolean; // Reduce concurrency on high failure rate (default: false)
   maxRetries?: number; // Max retries per target (default: 0)
+  insecureTls?: boolean; // Skip TLS certificate verification (default: true for scanner use)
 }
 
 export interface Fingerprint {

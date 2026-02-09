@@ -200,6 +200,14 @@ export function formatSarif(results: ScanResult[], version: string): string {
                   severity: 'note',
                 },
               },
+              {
+                id: 'VPNVET-SCAN-ERROR',
+                name: 'ScanError',
+                shortDescription: { text: 'Target could not be scanned (connection failure or scan error)' },
+                properties: {
+                  severity: 'warning',
+                },
+              },
             ],
           },
         },
@@ -249,6 +257,35 @@ export function formatSarif(results: ScanResult[], version: string): string {
                 ...(originalTarget ? { originalTarget } : {}),
               },
             });
+          }
+
+          if (result.scanErrors && result.scanErrors.length > 0) {
+            for (const se of result.scanErrors) {
+              vulnResults.push({
+                ruleId: 'VPNVET-SCAN-ERROR',
+                level: 'warning',
+                message: { text: `Scan error (${se.kind}): ${se.message}` },
+                locations: [
+                  {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri,
+                      },
+                    },
+                  },
+                ],
+                properties: {
+                  confidence: 'informational',
+                  ...(originalTarget ? { originalTarget } : {}),
+                  scanErrors: [{
+                    kind: se.kind,
+                    message: se.message,
+                    ...(se.statusCode != null ? { statusCode: se.statusCode } : {}),
+                    ...(se.url ? { url: se.url } : {}),
+                  }],
+                },
+              });
+            }
           }
 
           return vulnResults;

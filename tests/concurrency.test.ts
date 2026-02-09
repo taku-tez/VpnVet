@@ -123,6 +123,37 @@ describe('adaptiveConcurrency (#1)', () => {
     expect(maxRunningAfter10).toBeLessThanOrEqual(2);
   });
 
+  it('reduces concurrency when scanErrors cause high failure rate', async () => {
+    const targets = Array.from({ length: 20 }, (_, i) => `fail-${i}`);
+    const scanner = new VpnScanner({ concurrency: 4, adaptiveConcurrency: true, timeout: 1000 });
+
+    let running = 0;
+    let maxRunningAfter10 = 0;
+    let completed = 0;
+
+    jest.spyOn(scanner, 'scan').mockImplementation(async (target: string) => {
+      running++;
+      await new Promise(r => setTimeout(r, 10));
+      running--;
+      completed++;
+      if (completed > 10) {
+        maxRunningAfter10 = Math.max(maxRunningAfter10, running);
+      }
+      return {
+        target,
+        timestamp: new Date().toISOString(),
+        vulnerabilities: [],
+        errors: [],
+        scanErrors: [{ kind: 'timeout' as const, message: 'request timed out' }],
+      };
+    });
+
+    const results = await scanner.scanMultiple(targets);
+
+    expect(results).toHaveLength(20);
+    expect(maxRunningAfter10).toBeLessThanOrEqual(2);
+  });
+
   it('does not reduce concurrency when failure rate is low', async () => {
     const targets = Array.from({ length: 15 }, (_, i) => `ok-${i}`);
     const scanner = new VpnScanner({ concurrency: 4, adaptiveConcurrency: true, timeout: 1000 });

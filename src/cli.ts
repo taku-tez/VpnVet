@@ -51,6 +51,8 @@ SCAN OPTIONS:
   -v, --verbose            Verbose output
   --vendor <name>          Test specific vendor only (faster)
   --concurrency <n>        Max concurrent scans (default: 5, max: 100)
+  --insecure               Skip TLS certificate verification (default: on)
+  --no-insecure            Enable TLS certificate verification
 
 EXAMPLES:
   vpnvet scan vpn.example.com
@@ -71,6 +73,7 @@ const SCAN_FLAGS = new Set([
   '--timeout', '--ports', '--vendor',
   '--skip-vuln', '--skip-version', '--fast', '--concurrency',
   '-q', '--quiet', '-v', '--verbose',
+  '--insecure', '--no-insecure',
 ]);
 
 const LIST_VENDORS_FLAGS = new Set<string>([]);
@@ -219,6 +222,10 @@ async function main(): Promise<void> {
       } else if (arg === '--vendor') {
         options.vendor = requireArg(args, i, arg);
         i++;
+      } else if (arg === '--insecure') {
+        options.insecureTls = true;
+      } else if (arg === '--no-insecure') {
+        options.insecureTls = false;
       } else if (arg === '--fast') {
         options.fast = true;
       } else if (arg === '--concurrency') {

@@ -497,6 +497,72 @@ describe('CLI UX validation', () => {
   });
 });
 
+// ─── SARIF scan error output (#5) ────────────────────────────────
+
+describe('SARIF VPNVET-SCAN-ERROR output', () => {
+  it('emits VPNVET-SCAN-ERROR for targets with scanErrors and zero vulnerabilities', () => {
+    const { formatSarif } = require('../src/formatters.js');
+    const results: ScanResult[] = [
+      {
+        target: 'https://unreachable.example.com',
+        timestamp: new Date().toISOString(),
+        vulnerabilities: [],
+        errors: [],
+        scanErrors: [
+          { kind: 'timeout', message: 'request timed out', url: 'https://unreachable.example.com/remote/login' },
+          { kind: 'dns', message: 'ENOTFOUND', url: 'https://unreachable.example.com/' },
+        ],
+      },
+    ];
+
+    const sarif = JSON.parse(formatSarif(results, '1.0.0-test'));
+    const run = sarif.runs[0];
+
+    // Rule should be registered
+    const ruleIds = run.tool.driver.rules.map((r: any) => r.id);
+    expect(ruleIds).toContain('VPNVET-SCAN-ERROR');
+
+    // Should have 2 results (one per scanError)
+    const scanErrorResults = run.results.filter((r: any) => r.ruleId === 'VPNVET-SCAN-ERROR');
+    expect(scanErrorResults).toHaveLength(2);
+
+    // Check first result
+    const first = scanErrorResults[0];
+    expect(first.level).toBe('warning');
+    expect(first.message.text).toContain('timeout');
+    expect(first.locations[0].physicalLocation.artifactLocation.uri).toBeDefined();
+    expect(first.properties.scanErrors[0]).toMatchObject({
+      kind: 'timeout',
+      message: 'request timed out',
+      url: 'https://unreachable.example.com/remote/login',
+    });
+
+    // No vulnerability results
+    const vulnResults = run.results.filter((r: any) => r.ruleId !== 'VPNVET-SCAN-ERROR' && r.ruleId !== 'VPNVET-COVERAGE-WARNING');
+    expect(vulnResults).toHaveLength(0);
+  });
+
+  it('includes statusCode in scanError properties when present', () => {
+    const { formatSarif } = require('../src/formatters.js');
+    const results: ScanResult[] = [
+      {
+        target: 'https://blocked.example.com',
+        timestamp: new Date().toISOString(),
+        vulnerabilities: [],
+        errors: [],
+        scanErrors: [
+          { kind: 'http-status', message: '403 Forbidden', statusCode: 403, url: 'https://blocked.example.com/' },
+        ],
+      },
+    ];
+
+    const sarif = JSON.parse(formatSarif(results, '1.0.0-test'));
+    const scanErrorResults = sarif.runs[0].results.filter((r: any) => r.ruleId === 'VPNVET-SCAN-ERROR');
+    expect(scanErrorResults).toHaveLength(1);
+    expect(scanErrorResults[0].properties.scanErrors[0].statusCode).toBe(403);
+  });
+});
+
 // ─── Helpers ─────────────────────────────────────────────────────
 
 /** Simple CSV row parser respecting quoted fields */

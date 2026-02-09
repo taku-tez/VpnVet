@@ -10,6 +10,7 @@ import * as tls from 'node:tls';
 import * as net from 'node:net';
 import * as dns from 'node:dns/promises';
 import { URL } from 'node:url';
+import type { ScanErrorKind } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,12 +34,46 @@ export interface BinaryResult {
   contentType: string;
 }
 
+/** Enriched result carrying optional error info when data is null */
+export interface HttpRequestError {
+  kind: ScanErrorKind;
+  message: string;
+}
+
+export interface HttpResult<T> {
+  data: T | null;
+  error?: HttpRequestError;
+}
+
+// ---------------------------------------------------------------------------
+// Error classification (shared with scanner.ts)
+// ---------------------------------------------------------------------------
+
+/**
+ * Classify a network/request error into a ScanErrorKind.
+ */
+export function classifyError(err: unknown): ScanErrorKind {
+  if (!(err instanceof Error)) return 'unknown';
+  const msg = err.message.toLowerCase();
+  const code = (err as NodeJS.ErrnoException).code?.toLowerCase() ?? '';
+
+  if (code === 'etimedout' || code === 'esockettimedout' || msg.includes('timeout')) return 'timeout';
+  if (code === 'enotfound' || code === 'eai_again' || msg.includes('getaddrinfo')) return 'dns';
+  if (code === 'econnreset' || msg.includes('socket hang up')) return 'reset';
+  if (code === 'econnrefused') return 'refused';
+  if (msg.includes('tls') || msg.includes('ssl') || msg.includes('certificate') ||
+      code === 'err_tls_cert_altname_invalid' || code === 'unable_to_verify_leaf_signature') return 'tls';
+  if (msg.includes('invalid url')) return 'invalid-url';
+  return 'unknown';
+}
+
 export interface HttpClientOptions {
   timeout: number;
   userAgent: string;
   headers: Record<string, string>;
   followRedirects: boolean;
   allowCrossHostRedirects: boolean;
+  insecureTls?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -173,12 +208,12 @@ export async function resolveSafeAddresses(hostname: string): Promise<string[]> 
  */
 export function buildPinnedLookup(pinnedAddresses: string[]): (
   hostname: string,
-  options: any,
+  options: { family?: number } | number,
   callback: (err: Error | null, address: string, family: number) => void
 ) => void {
   let callIndex = 0;
   return (_hostname, options, callback) => {
-    const familyHint = options?.family;
+    const familyHint = typeof options === 'object' ? options?.family : options;
     const candidates = familyHint
       ? pinnedAddresses.filter(a => (net.isIPv4(a) ? 4 : 6) === familyHint)
       : pinnedAddresses;
@@ -206,28 +241,34 @@ export function buildPinnedLookup(pinnedAddresses: string[]): (
 export async function httpRequestCore<T extends { statusCode: number; headers: Record<string, string | string[]> }>(
   url: string,
   opts: HttpClientOptions,
-  singleFetch: (currentUrl: string, pinnedAddresses: string[]) => Promise<T | null>,
-): Promise<T | null> {
+  singleFetch: (currentUrl: string, pinnedAddresses: string[]) => Promise<HttpResult<T>>,
+): Promise<HttpResult<T>> {
   const maxRedirects = opts.followRedirects ? 5 : 0;
   const visited = new Set<string>();
   let currentUrl = url;
   const originalHost = new URL(url).hostname;
 
   let pinnedAddresses = await resolveSafeAddresses(originalHost);
-  if (pinnedAddresses.length === 0) return null;
+  if (pinnedAddresses.length === 0) return { data: null, error: { kind: 'dns', message: `DNS resolution failed or unsafe: ${originalHost}` } };
+
+  let lastError: HttpRequestError | undefined;
 
   for (let i = 0; i <= maxRedirects; i++) {
-    if (visited.has(currentUrl)) return null;
+    if (visited.has(currentUrl)) return { data: null, error: lastError };
     visited.add(currentUrl);
 
-    let response: T | null = null;
+    let result: HttpResult<T> = { data: null };
     const maxAttempts = Math.min(pinnedAddresses.length, 3);
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      response = await singleFetch(currentUrl, pinnedAddresses.slice(attempt));
-      if (response) break;
+      result = await singleFetch(currentUrl, pinnedAddresses.slice(attempt));
+      if (result.data) break;
     }
-    if (!response) return null;
+    if (!result.data) {
+      lastError = result.error;
+      return { data: null, error: lastError };
+    }
 
+    const response = result.data;
     const isRedirect = response.statusCode >= 300 && response.statusCode < 400;
     if (isRedirect && i < maxRedirects) {
       const location = response.headers['location'];
@@ -237,28 +278,28 @@ export async function httpRequestCore<T extends { statusCode: number; headers: R
         const redirectHost = redirectUrl.hostname;
 
         if (redirectHost !== originalHost && !opts.allowCrossHostRedirects) {
-          return null;
+          return { data: null };
         }
 
         pinnedAddresses = await resolveSafeAddresses(redirectHost);
-        if (pinnedAddresses.length === 0) return null;
+        if (pinnedAddresses.length === 0) return { data: null, error: { kind: 'dns', message: `DNS resolution failed or unsafe: ${redirectHost}` } };
 
         currentUrl = redirectUrl.toString();
         continue;
       }
     }
 
-    return response;
+    return { data: response };
   }
 
-  return null;
+  return { data: null, error: lastError };
 }
 
 export async function httpRequest(
   url: string,
   method: string,
   opts: HttpClientOptions,
-): Promise<HttpResponse | null> {
+): Promise<HttpResult<HttpResponse>> {
   return httpRequestCore<HttpResponse>(
     url,
     opts,
@@ -271,14 +312,14 @@ export async function httpRequestSingle(
   method: string,
   opts: HttpClientOptions,
   pinnedAddresses?: string[],
-): Promise<HttpResponse | null> {
+): Promise<HttpResult<HttpResponse>> {
   return new Promise((resolve) => {
     try {
       const parsedUrl = new URL(url);
       const isHttps = parsedUrl.protocol === 'https:';
       const lib = isHttps ? https : http;
 
-      const options: Record<string, any> = {
+      const requestOptions: https.RequestOptions = {
         hostname: parsedUrl.hostname,
         port: parsedUrl.port || (isHttps ? 443 : 80),
         path: parsedUrl.pathname + parsedUrl.search,
@@ -289,17 +330,17 @@ export async function httpRequestSingle(
           ...opts.headers,
         },
         timeout: opts.timeout,
-        rejectUnauthorized: false,
+        rejectUnauthorized: opts.insecureTls === false ? true : false,
       };
 
       if (pinnedAddresses && pinnedAddresses.length > 0) {
-        options.lookup = buildPinnedLookup(pinnedAddresses);
+        requestOptions.lookup = buildPinnedLookup(pinnedAddresses) as https.RequestOptions['lookup'];
         if (isHttps && !net.isIP(parsedUrl.hostname)) {
-          options.servername = parsedUrl.hostname;
+          (requestOptions as https.RequestOptions).servername = parsedUrl.hostname;
         }
       }
 
-      const req = lib.request(options, (res) => {
+      const req = lib.request(requestOptions, (res) => {
         let body = '';
         res.setEncoding('utf8');
         res.on('data', (chunk) => {
@@ -310,22 +351,24 @@ export async function httpRequestSingle(
         });
         res.on('end', () => {
           resolve({
-            statusCode: res.statusCode || 0,
-            headers: res.headers as Record<string, string | string[]>,
-            body,
+            data: {
+              statusCode: res.statusCode || 0,
+              headers: res.headers as Record<string, string | string[]>,
+              body,
+            },
           });
         });
       });
 
-      req.on('error', () => resolve(null));
+      req.on('error', (err) => resolve({ data: null, error: { kind: classifyError(err), message: err.message } }));
       req.on('timeout', () => {
         req.destroy();
-        resolve(null);
+        resolve({ data: null, error: { kind: 'timeout', message: 'Request timed out' } });
       });
 
       req.end();
-    } catch {
-      resolve(null);
+    } catch (err) {
+      resolve({ data: null, error: { kind: classifyError(err), message: err instanceof Error ? err.message : String(err) } });
     }
   });
 }
@@ -333,31 +376,31 @@ export async function httpRequestSingle(
 export async function httpRequestBinary(
   url: string,
   opts: HttpClientOptions,
-): Promise<BinaryResult | null> {
+): Promise<HttpResult<BinaryResult>> {
   const result = await httpRequestCore<BinaryResponse>(
     url,
     opts,
     (currentUrl, pinnedAddresses) => httpRequestBinarySingle(currentUrl, opts, pinnedAddresses),
   );
-  if (!result) return null;
+  if (!result.data) return { data: null, error: result.error };
 
-  const contentTypeRaw = result.headers['content-type'];
+  const contentTypeRaw = result.data.headers['content-type'];
   const contentType = (Array.isArray(contentTypeRaw) ? contentTypeRaw[0] : contentTypeRaw) || '';
-  return { buffer: result.body, statusCode: result.statusCode, contentType };
+  return { data: { buffer: result.data.body, statusCode: result.data.statusCode, contentType } };
 }
 
 export async function httpRequestBinarySingle(
   url: string,
   opts: HttpClientOptions,
   pinnedAddresses?: string[],
-): Promise<BinaryResponse | null> {
+): Promise<HttpResult<BinaryResponse>> {
   return new Promise((resolve) => {
     try {
       const parsedUrl = new URL(url);
       const isHttps = parsedUrl.protocol === 'https:';
       const lib = isHttps ? https : http;
 
-      const options: Record<string, any> = {
+      const requestOptions: https.RequestOptions = {
         hostname: parsedUrl.hostname,
         port: parsedUrl.port || (isHttps ? 443 : 80),
         path: parsedUrl.pathname + parsedUrl.search,
@@ -368,17 +411,17 @@ export async function httpRequestBinarySingle(
           ...opts.headers,
         },
         timeout: opts.timeout,
-        rejectUnauthorized: false,
+        rejectUnauthorized: opts.insecureTls === false ? true : false,
       };
 
       if (pinnedAddresses && pinnedAddresses.length > 0) {
-        options.lookup = buildPinnedLookup(pinnedAddresses);
+        requestOptions.lookup = buildPinnedLookup(pinnedAddresses) as https.RequestOptions['lookup'];
         if (isHttps && !net.isIP(parsedUrl.hostname)) {
-          options.servername = parsedUrl.hostname;
+          (requestOptions as https.RequestOptions).servername = parsedUrl.hostname;
         }
       }
 
-      const req = lib.request(options, (res) => {
+      const req = lib.request(requestOptions, (res) => {
         const chunks: Buffer[] = [];
         let totalLen = 0;
 
@@ -393,22 +436,24 @@ export async function httpRequestBinarySingle(
 
         res.on('end', () => {
           resolve({
-            statusCode: res.statusCode || 0,
-            headers: res.headers as Record<string, string | string[]>,
-            body: Buffer.concat(chunks),
+            data: {
+              statusCode: res.statusCode || 0,
+              headers: res.headers as Record<string, string | string[]>,
+              body: Buffer.concat(chunks),
+            },
           });
         });
       });
 
-      req.on('error', () => resolve(null));
+      req.on('error', (err) => resolve({ data: null, error: { kind: classifyError(err), message: err.message } }));
       req.on('timeout', () => {
         req.destroy();
-        resolve(null);
+        resolve({ data: null, error: { kind: 'timeout', message: 'Request timed out' } });
       });
 
       req.end();
-    } catch {
-      resolve(null);
+    } catch (err) {
+      resolve({ data: null, error: { kind: classifyError(err), message: err instanceof Error ? err.message : String(err) } });
     }
   });
 }
@@ -420,22 +465,24 @@ export async function httpRequestBinarySingle(
 export async function getCertificateInfo(
   url: string,
   timeout: number,
-): Promise<string | null> {
+): Promise<HttpResult<string>> {
   const parsedUrl = new URL(url);
-  if (parsedUrl.protocol !== 'https:') return null;
+  if (parsedUrl.protocol !== 'https:') return { data: null };
 
   const hostname = parsedUrl.hostname;
   const port = Number(parsedUrl.port) || 443;
 
   const safeAddresses = await resolveSafeAddresses(hostname);
-  if (safeAddresses.length === 0) return null;
+  if (safeAddresses.length === 0) return { data: null, error: { kind: 'dns', message: `DNS resolution failed or unsafe: ${hostname}` } };
 
+  let lastError: HttpRequestError | undefined;
   for (const ip of safeAddresses) {
     const result = await getCertificateInfoSingle(ip, port, hostname, timeout);
-    if (result !== null) return result;
+    if (result.data !== null) return result;
+    lastError = result.error;
   }
 
-  return null;
+  return { data: null, error: lastError };
 }
 
 export function getCertificateInfoSingle(
@@ -443,7 +490,7 @@ export function getCertificateInfoSingle(
   port: number,
   hostname: string,
   timeout: number,
-): Promise<string | null> {
+): Promise<HttpResult<string>> {
   return new Promise((resolve) => {
     try {
       const tlsOptions: tls.ConnectionOptions = {
@@ -470,19 +517,19 @@ export function getCertificateInfoSingle(
           ]
             .filter(Boolean)
             .join(' ');
-          resolve(info);
+          resolve({ data: info });
         } else {
-          resolve(null);
+          resolve({ data: null });
         }
       });
 
-      socket.on('error', () => resolve(null));
+      socket.on('error', (err) => resolve({ data: null, error: { kind: classifyError(err), message: err.message } }));
       socket.on('timeout', () => {
         socket.destroy();
-        resolve(null);
+        resolve({ data: null, error: { kind: 'timeout', message: `TLS connection to ${hostname} timed out` } });
       });
-    } catch {
-      resolve(null);
+    } catch (err) {
+      resolve({ data: null, error: { kind: classifyError(err), message: err instanceof Error ? err.message : String(err) } });
     }
   });
 }
