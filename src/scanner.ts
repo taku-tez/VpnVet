@@ -23,7 +23,7 @@ import {
   isHostSafe,
   resolveSafeAddresses,
   buildPinnedLookup,
-  classifyError,
+  classifyError as classifyError_,
 } from './http-client.js';
 import type { HttpClientOptions } from './http-client.js';
 import { detectDevice } from './detector.js';
@@ -52,23 +52,8 @@ const DEFAULT_OPTIONS: Required<ScanOptions> = {
   insecureTls: true,
 };
 
-/**
- * Classify a network/request error into a ScanErrorKind.
- */
-export function classifyError(err: unknown): ScanErrorKind {
-  if (!(err instanceof Error)) return 'unknown';
-  const msg = err.message.toLowerCase();
-  const code = (err as NodeJS.ErrnoException).code?.toLowerCase() ?? '';
-
-  if (code === 'etimedout' || code === 'esockettimedout' || msg.includes('timeout')) return 'timeout';
-  if (code === 'enotfound' || code === 'eai_again' || msg.includes('getaddrinfo')) return 'dns';
-  if (code === 'econnreset' || msg.includes('socket hang up')) return 'reset';
-  if (code === 'econnrefused') return 'refused';
-  if (msg.includes('tls') || msg.includes('ssl') || msg.includes('certificate') ||
-      code === 'err_tls_cert_altname_invalid' || code === 'unable_to_verify_leaf_signature') return 'tls';
-  if (msg.includes('invalid url')) return 'invalid-url';
-  return 'unknown';
-}
+// Re-export classifyError from http-client for backward compatibility
+export const classifyError = classifyError_;
 
 /** Human-readable label for a ScanErrorKind */
 export function errorKindLabel(kind: ScanErrorKind): string {

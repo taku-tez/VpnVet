@@ -13,9 +13,10 @@ import {
   httpRequestBinary,
   getCertificateInfo,
 } from './http-client.js';
-import type { HttpClientOptions } from './http-client.js';
+import type { HttpClientOptions, HttpRequestError } from './http-client.js';
 import type {
   ScanResult,
+  ScanError,
   ScanErrorKind,
   VpnDevice,
   Fingerprint,
@@ -65,6 +66,55 @@ export function matchHeaders(headers: Record<string, string | string[]>, match: 
 }
 
 // ---------------------------------------------------------------------------
+// Dedup scan error helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Add a scan error with dedup by (kind, url, statusCode).
+ */
+export function addScanError(
+  scanResult: ScanResult,
+  entry: ScanError,
+): void {
+  scanResult.scanErrors ??= [];
+  const isDuplicate = scanResult.scanErrors.some(
+    e => e.kind === entry.kind && e.url === entry.url && e.statusCode === entry.statusCode,
+  );
+  if (!isDuplicate) {
+    scanResult.scanErrors.push(entry);
+  }
+}
+
+/**
+ * Record an HTTP request error (network failure) into scanErrors.
+ */
+function recordHttpError(
+  scanResult: ScanResult | undefined,
+  url: string,
+  error: HttpRequestError | undefined,
+): void {
+  if (!scanResult || !error) return;
+  addScanError(scanResult, { kind: error.kind, message: error.message, url });
+}
+
+/**
+ * Record an HTTP status error (4xx/5xx) into scanErrors.
+ */
+function recordHttpStatus(
+  scanResult: ScanResult | undefined,
+  url: string,
+  statusCode: number,
+): void {
+  if (!scanResult || statusCode < 400) return;
+  addScanError(scanResult, {
+    kind: 'http-status',
+    message: `HTTP ${statusCode} from ${url}`,
+    url,
+    statusCode,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Pattern testing
 // ---------------------------------------------------------------------------
 
@@ -79,24 +129,15 @@ export async function testPattern(
     if (pattern.type === 'endpoint' || pattern.type === 'body') {
       const baseOrigin = new URL(baseUrl).origin;
       const url = pattern.path ? `${baseOrigin}${pattern.path}` : baseUrl;
-      const response = await httpRequest(url, pattern.method || 'GET', httpOpts);
+      const result = await httpRequest(url, pattern.method || 'GET', httpOpts);
 
-      if (!response) return { success: false };
-
-      if (response.statusCode >= 400 && scanResult) {
-        scanResult.scanErrors ??= [];
-        const alreadyRecorded = scanResult.scanErrors.some(
-          e => e.kind === 'http-status' && e.url === url && e.statusCode === response.statusCode
-        );
-        if (!alreadyRecorded) {
-          scanResult.scanErrors.push({
-            kind: 'http-status',
-            message: `HTTP ${response.statusCode} from ${url}`,
-            url,
-            statusCode: response.statusCode,
-          });
-        }
+      if (!result.data) {
+        recordHttpError(scanResult, url, result.error);
+        return { success: false };
       }
+
+      const response = result.data;
+      recordHttpStatus(scanResult, url, response.statusCode);
 
       if (pattern.status) {
         if (!pattern.status.includes(response.statusCode)) return { success: false };
@@ -119,12 +160,19 @@ export async function testPattern(
         return { success: true, version };
       }
     } else if (pattern.type === 'header') {
-      let response = await httpRequest(baseUrl, 'HEAD', httpOpts);
-      if (!response || response.statusCode === 405 || response.statusCode === 501) {
-        response = await httpRequest(baseUrl, 'GET', httpOpts);
+      const url = baseUrl;
+      let result = await httpRequest(url, 'HEAD', httpOpts);
+      if (!result.data || result.data.statusCode === 405 || result.data.statusCode === 501) {
+        result = await httpRequest(url, 'GET', httpOpts);
       }
 
-      if (!response) return { success: false };
+      if (!result.data) {
+        recordHttpError(scanResult, url, result.error);
+        return { success: false };
+      }
+
+      const response = result.data;
+      recordHttpStatus(scanResult, url, response.statusCode);
 
       if (pattern.status) {
         if (!pattern.status.includes(response.statusCode)) return { success: false };
@@ -143,8 +191,15 @@ export async function testPattern(
       const isHashMatch = matchStr && /^-?\d+(\|-?\d+)*$/.test(matchStr);
 
       if (isHashMatch) {
-        const binaryResult = await httpRequestBinary(url, httpOpts);
-        if (!binaryResult) return { success: false };
+        const binResult = await httpRequestBinary(url, httpOpts);
+        if (!binResult.data) {
+          recordHttpError(scanResult, url, binResult.error);
+          return { success: false };
+        }
+
+        const binaryResult = binResult.data;
+        recordHttpStatus(scanResult, url, binaryResult.statusCode);
+
         if (binaryResult.statusCode < 200 || binaryResult.statusCode >= 300) return { success: false };
 
         const ct = binaryResult.contentType.toLowerCase().split(';')[0].trim();
@@ -159,8 +214,20 @@ export async function testPattern(
           return { success: true };
         }
       } else {
-        const response = await httpRequest(url, 'GET', httpOpts);
-        if (!response) return { success: false };
+        const result = await httpRequest(url, 'GET', httpOpts);
+        if (!result.data) {
+          recordHttpError(scanResult, url, result.error);
+          return { success: false };
+        }
+
+        const response = result.data;
+        recordHttpStatus(scanResult, url, response.statusCode);
+
+        if (pattern.status) {
+          if (!pattern.status.includes(response.statusCode)) return { success: false };
+        } else {
+          if (response.statusCode < 200 || response.statusCode >= 300) return { success: false };
+        }
 
         const matchPattern2 = typeof pattern.match === 'string'
           ? new RegExp(pattern.match, 'i')
@@ -178,30 +245,28 @@ export async function testPattern(
         }
       }
     } else if (pattern.type === 'certificate') {
-      const certInfo = await getCertificateInfo(baseUrl, httpOpts.timeout);
+      const url = baseUrl;
+      const certResult = await getCertificateInfo(url, httpOpts.timeout);
 
-      if (certInfo) {
-        const matchPattern = typeof pattern.match === 'string'
-          ? new RegExp(pattern.match, 'i')
-          : pattern.match;
+      if (!certResult.data) {
+        recordHttpError(scanResult, url, certResult.error);
+        return { success: false };
+      }
 
-        if (matchPattern.test(certInfo)) {
-          return { success: true };
-        }
+      const matchPattern = typeof pattern.match === 'string'
+        ? new RegExp(pattern.match, 'i')
+        : pattern.match;
+
+      if (matchPattern.test(certResult.data)) {
+        return { success: true };
       }
     }
   } catch (err) {
     if (scanResult) {
-      scanResult.scanErrors ??= [];
       const kind: ScanErrorKind = 'pattern-error';
       const message = err instanceof Error ? err.message : String(err);
       const url = pattern.path ? `${new URL(baseUrl).origin}${pattern.path}` : baseUrl;
-      const isDuplicate = scanResult.scanErrors.some(
-        e => e.kind === kind && e.url === url && e.message === message
-      );
-      if (!isDuplicate) {
-        scanResult.scanErrors.push({ kind, message, url });
-      }
+      addScanError(scanResult, { kind, message, url });
     }
   }
 
@@ -232,8 +297,7 @@ export async function detectDevice(
     const msg = `SSRF blocked: ${parsedBase.hostname} resolves to internal/unsafe address`;
     if (scanResult) {
       scanResult.errors.push(msg);
-      scanResult.scanErrors ??= [];
-      scanResult.scanErrors.push({ kind: 'ssrf-blocked', message: msg, url: baseUrl });
+      addScanError(scanResult, { kind: 'ssrf-blocked', message: msg, url: baseUrl });
     }
     return undefined;
   }
@@ -260,8 +324,7 @@ export async function detectDeviceForUrl(
       );
       if (!alreadyBlocked) {
         scanResult.errors.push(msg);
-        scanResult.scanErrors ??= [];
-        scanResult.scanErrors.push({ kind: 'ssrf-blocked', message: msg, url: baseUrl });
+        addScanError(scanResult, { kind: 'ssrf-blocked', message: msg, url: baseUrl });
       }
     }
     return undefined;

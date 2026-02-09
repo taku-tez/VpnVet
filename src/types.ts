@@ -66,6 +66,7 @@ export type VpnVendor =
   | 'zscaler'
   | 'cloudflare'
   | 'netskope'
+  | 'cato'
   // Other
   | 'aruba'
   | 'meraki'

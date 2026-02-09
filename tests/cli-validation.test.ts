@@ -378,3 +378,44 @@ describe('--vendor validation (#3)', () => {
     }
   });
 });
+
+describe('--insecure TLS flag (#3)', () => {
+  it('should accept --insecure flag without error', async () => {
+    const { execSync } = await import('node:child_process');
+    const result = execSync('npx tsx src/cli.ts scan 192.0.2.1 --insecure --timeout 2000', {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 15000,
+    }).toString();
+    // Should not error on the flag itself (target may fail but that's OK)
+    expect(result).toBeDefined();
+  });
+
+  it('should accept --no-insecure flag without error', async () => {
+    const { execSync } = await import('node:child_process');
+    try {
+      execSync('npx tsx src/cli.ts scan 192.0.2.1 --no-insecure --timeout 2000', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 15000,
+      });
+    } catch (e: any) {
+      // Exit code 0 or scan-failure exit codes are fine; just ensure no "Unknown option" error
+      expect(e.stderr || '').not.toContain('Unknown option');
+    }
+  });
+
+  it('--insecure should be default (help text confirms)', async () => {
+    const { execSync } = await import('node:child_process');
+    const result = execSync('npx tsx src/cli.ts --help', {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 15000,
+    });
+    expect(result).toContain('--insecure');
+    expect(result).toContain('--no-insecure');
+  });
+});

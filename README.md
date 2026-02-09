@@ -110,6 +110,8 @@ vpnvet version                    # Show version
 | `--vendor <name>` | Test specific vendor only (faster) | - |
 | `--fast` | Fast mode (skip slow probes) | false |
 | `--concurrency <n>` | Max concurrent scans (1-100) | 5 |
+| `--insecure` | Skip TLS certificate verification | on |
+| `--no-insecure` | Enable TLS certificate verification | - |
 | `--skip-vuln` | Skip vulnerability check | false |
 | `--skip-version` | Skip version detection | false |
 | `-q, --quiet` | Suppress progress output | false |

@@ -121,9 +121,11 @@ describe('header pattern HTTP status validation (#2)', () => {
   it('should accept header match on 200 response', async () => {
     jest.spyOn(httpClient, 'httpRequest').mockImplementation(async (_url: string, _method?: string) => {
       return {
-        statusCode: 200,
-        headers: { 'server': 'xxxxxxx' },
-        body: '',
+        data: {
+          statusCode: 200,
+          headers: { 'server': 'xxxxxxx' },
+          body: '',
+        },
       };
     });
 
@@ -137,9 +139,11 @@ describe('header pattern HTTP status validation (#2)', () => {
 
   it('should reject header match on 500 response', async () => {
     jest.spyOn(httpClient, 'httpRequest').mockImplementation(async () => ({
-      statusCode: 500,
-      headers: { 'server': 'xxxxxxx' },
-      body: '',
+      data: {
+        statusCode: 500,
+        headers: { 'server': 'xxxxxxx' },
+        body: '',
+      },
     }));
 
     const matched = await testPattern('https://example.com', {
@@ -152,9 +156,11 @@ describe('header pattern HTTP status validation (#2)', () => {
 
   it('should accept header match on custom status codes', async () => {
     jest.spyOn(httpClient, 'httpRequest').mockImplementation(async () => ({
-      statusCode: 302,
-      headers: { 'server': 'xxxxxxx' },
-      body: '',
+      data: {
+        statusCode: 302,
+        headers: { 'server': 'xxxxxxx' },
+        body: '',
+      },
     }));
 
     const matched = await testPattern('https://example.com', {

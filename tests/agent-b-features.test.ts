@@ -123,19 +123,21 @@ describe('header HEAD→GET fallback (#4)', () => {
   it('should fall back to GET when HEAD returns null', async () => {
     const spy = jest.spyOn(httpClient, 'httpRequest').mockImplementation(
       (_url: string, method: string) => {
-        if (method === 'HEAD') return Promise.resolve(null);
+        if (method === 'HEAD') return Promise.resolve({ data: null });
         if (method === 'GET') {
           return Promise.resolve({
-            statusCode: 200,
-            headers: { server: 'SonicWALL SSL-VPN Web Server' },
-            body: '<html>ignored</html>',
+            data: {
+              statusCode: 200,
+              headers: { server: 'SonicWALL SSL-VPN Web Server' },
+              body: '<html>ignored</html>',
+            },
           });
         }
-        return Promise.resolve(null);
+        return Promise.resolve({ data: null });
       }
     );
-    jest.spyOn(httpClient, 'httpRequestBinary').mockResolvedValue(null);
-    jest.spyOn(httpClient, 'getCertificateInfo').mockResolvedValue(null);
+    jest.spyOn(httpClient, 'httpRequestBinary').mockResolvedValue({ data: null });
+    jest.spyOn(httpClient, 'getCertificateInfo').mockResolvedValue({ data: null });
 
     const result = await testPattern('https://example.com', {
       type: 'header',
@@ -154,12 +156,14 @@ describe('header HEAD→GET fallback (#4)', () => {
       (_url: string, method: string) => {
         if (method === 'HEAD') {
           return Promise.resolve({
-            statusCode: 200,
-            headers: { server: 'SonicWALL SSL-VPN Web Server' },
-            body: '',
+            data: {
+              statusCode: 200,
+              headers: { server: 'SonicWALL SSL-VPN Web Server' },
+              body: '',
+            },
           });
         }
-        return Promise.resolve(null);
+        return Promise.resolve({ data: null });
       }
     );
 

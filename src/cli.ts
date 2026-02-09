@@ -140,7 +140,8 @@ async function main(): Promise<void> {
       logError('Unknown list command. Use: list vendors | list vulns');
       process.exit(1);
     }
-    process.exit(0);
+    // Use return instead of process.exit(0) to allow stdout to flush
+    return;
   }
   
   if (command === 'scan') {
