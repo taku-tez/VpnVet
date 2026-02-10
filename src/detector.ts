@@ -22,6 +22,7 @@ import type {
   Fingerprint,
   FingerprintPattern,
   DetectionMethod,
+  DetectionEvidence,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -124,7 +125,7 @@ export async function testPattern(
   httpOpts: HttpClientOptions,
   skipVersionDetection: boolean,
   scanResult?: ScanResult,
-): Promise<{ success: boolean; version?: string }> {
+): Promise<{ success: boolean; version?: string; evidence?: DetectionEvidence }> {
   try {
     if (pattern.type === 'endpoint' || pattern.type === 'body') {
       const baseOrigin = new URL(baseUrl).origin;
@@ -149,7 +150,8 @@ export async function testPattern(
         ? new RegExp(pattern.match, 'i')
         : pattern.match;
 
-      if (matchPattern.test(response.body)) {
+      const bodyMatch = response.body.match(matchPattern);
+      if (bodyMatch) {
         let version: string | undefined;
         if (pattern.versionExtract && !skipVersionDetection) {
           const versionMatch = response.body.match(pattern.versionExtract);
@@ -157,7 +159,16 @@ export async function testPattern(
             version = versionMatch[1];
           }
         }
-        return { success: true, version };
+        const method: DetectionMethod = pattern.type === 'body' ? 'html' : 'endpoint';
+        const matchedSnippet = bodyMatch[0].length > 200 ? bodyMatch[0].slice(0, 200) + '...' : bodyMatch[0];
+        const evidence: DetectionEvidence = {
+          method,
+          url,
+          pattern: matchPattern.source,
+          matchedValue: `HTTP ${response.statusCode}: ${matchedSnippet}`,
+          description: `${method === 'html' ? 'HTML body' : 'Endpoint'} matched at ${url} (HTTP ${response.statusCode})`,
+        };
+        return { success: true, version, evidence };
       }
     } else if (pattern.type === 'header') {
       const url = baseUrl;
@@ -181,7 +192,24 @@ export async function testPattern(
       }
 
       if (matchHeaders(response.headers, pattern.match)) {
-        return { success: true };
+        // Find the specific header that matched
+        const regex = typeof pattern.match === 'string' ? new RegExp(pattern.match, 'i') : pattern.match;
+        let matchedHeader = '';
+        for (const [k, v] of Object.entries(response.headers)) {
+          const headerLine = `${k}: ${Array.isArray(v) ? v.join(', ') : v}`;
+          if (regex.test(headerLine.toLowerCase())) {
+            matchedHeader = headerLine;
+            break;
+          }
+        }
+        const evidence: DetectionEvidence = {
+          method: 'header',
+          url,
+          pattern: regex.source,
+          matchedValue: matchedHeader,
+          description: `Header matched: ${matchedHeader}`,
+        };
+        return { success: true, evidence };
       }
     } else if (pattern.type === 'favicon') {
       const faviconPath = pattern.path || '/favicon.ico';
@@ -211,7 +239,14 @@ export async function testPattern(
         const hash = faviconHash(buf);
         const hashes = matchStr.split('|').map(Number);
         if (hashes.includes(hash)) {
-          return { success: true };
+          const evidence: DetectionEvidence = {
+            method: 'favicon',
+            url,
+            pattern: matchStr,
+            matchedValue: String(hash),
+            description: `Favicon hash ${hash} matched at ${url}`,
+          };
+          return { success: true, evidence };
         }
       } else {
         const result = await httpRequest(url, 'GET', httpOpts);
@@ -241,7 +276,14 @@ export async function testPattern(
               version = versionMatch[1];
             }
           }
-          return { success: true, version };
+          const evidence: DetectionEvidence = {
+            method: 'favicon',
+            url,
+            pattern: matchPattern2.source,
+            matchedValue: response.body.slice(0, 200),
+            description: `Favicon body matched at ${url}`,
+          };
+          return { success: true, version, evidence };
         }
       }
     } else if (pattern.type === 'certificate') {
@@ -257,8 +299,16 @@ export async function testPattern(
         ? new RegExp(pattern.match, 'i')
         : pattern.match;
 
-      if (matchPattern.test(certResult.data)) {
-        return { success: true };
+      const certMatch = certResult.data.match(matchPattern);
+      if (certMatch) {
+        const evidence: DetectionEvidence = {
+          method: 'certificate',
+          url,
+          pattern: matchPattern.source,
+          matchedValue: certMatch[0].length > 200 ? certMatch[0].slice(0, 200) + '...' : certMatch[0],
+          description: `Certificate matched: ${certMatch[0].length > 100 ? certMatch[0].slice(0, 100) + '...' : certMatch[0]}`,
+        };
+        return { success: true, evidence };
       }
     }
   } catch (err) {
@@ -330,7 +380,7 @@ export async function detectDeviceForUrl(
     return undefined;
   }
 
-  const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string }> = new Map();
+  const scores: Map<string, { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string; evidence: DetectionEvidence[] }> = new Map();
 
   let fingerprintsToTest = fingerprints;
   if (opts.vendor) {
@@ -341,6 +391,7 @@ export async function detectDeviceForUrl(
     let totalScore = 0;
     const methods: DetectionMethod[] = [];
     const endpoints: string[] = [];
+    const evidenceList: DetectionEvidence[] = [];
     let detectedVersion: string | undefined;
 
     for (const pattern of fingerprint.patterns) {
@@ -351,6 +402,10 @@ export async function detectDeviceForUrl(
 
         if (matched.version && !detectedVersion) {
           detectedVersion = matched.version;
+        }
+
+        if (matched.evidence) {
+          evidenceList.push(matched.evidence);
         }
 
         if (pattern.type === 'endpoint') {
@@ -379,6 +434,7 @@ export async function detectDeviceForUrl(
           methods: [...new Set(methods)],
           endpoints: [...new Set(endpoints)],
           version: detectedVersion,
+          evidence: evidenceList,
         });
       }
 
@@ -393,12 +449,13 @@ export async function detectDeviceForUrl(
           confidence,
           detectionMethod: [...new Set(methods)],
           endpoints: [...new Set(endpoints)],
+          evidence: evidenceList.length > 0 ? evidenceList : undefined,
         };
       }
     }
   }
 
-  let bestMatch: { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string } | undefined;
+  let bestMatch: { fingerprint: Fingerprint; score: number; methods: DetectionMethod[]; endpoints: string[]; version?: string; evidence: DetectionEvidence[] } | undefined;
 
   for (const match of scores.values()) {
     if (!bestMatch || match.score > bestMatch.score) {
@@ -417,6 +474,7 @@ export async function detectDeviceForUrl(
       confidence,
       detectionMethod: bestMatch.methods,
       endpoints: bestMatch.endpoints,
+      evidence: bestMatch.evidence.length > 0 ? bestMatch.evidence : undefined,
     };
   }
 

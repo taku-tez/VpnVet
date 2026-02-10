@@ -117,6 +117,16 @@ export function formatTable(results: ScanResult[]): string {
       if (result.jarmHash) {
         lines.push(`  JARM Hash: ${result.jarmHash}`);
       }
+      if (d.evidence && d.evidence.length > 0) {
+        lines.push(`  Evidence:`);
+        for (const ev of d.evidence) {
+          const parts = [`[${ev.method}]`];
+          if (ev.url) parts.push(ev.url);
+          if (ev.matchedValue) parts.push(`matched: "${ev.matchedValue.slice(0, 120)}"`);
+          if (ev.description) parts.push(`(${ev.description})`);
+          lines.push(`    - ${parts.join(' ')}`);
+        }
+      }
       
       if (result.vulnerabilities.length > 0) {
         lines.push(`\nPotential Vulnerabilities:`);
@@ -234,6 +244,7 @@ export function formatSarif(results: ScanResult[], version: string): string {
             properties: {
               confidence: vuln.confidence,
               device: result.device,
+              ...(result.device?.evidence ? { evidence: result.device.evidence } : {}),
               ...(result.jarmHash ? { jarmHash: result.jarmHash } : {}),
               ...(originalTarget ? { originalTarget } : {}),
               ...(result.coverageWarning ? { coverageWarning: result.coverageWarning } : {}),
@@ -258,6 +269,7 @@ export function formatSarif(results: ScanResult[], version: string): string {
               properties: {
                 confidence: 'informational',
                 device: result.device,
+                ...(result.device?.evidence ? { evidence: result.device.evidence } : {}),
                 ...(originalTarget ? { originalTarget } : {}),
               },
             });
@@ -313,10 +325,16 @@ function escapeCsvCell(value: string): string {
 }
 
 export function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,confidence,jarm_hash,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds'];
+  const lines = ['target,vendor,product,version,confidence,jarm_hash,evidence_summary,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds'];
   
   for (const result of results) {
     const errorKinds = result.scanErrors?.map(e => e.kind).join(';') || '';
+    const evidenceSummary = result.device?.evidence?.map(ev => {
+      const parts: string[] = [ev.method];
+      if (ev.url) parts.push(ev.url);
+      if (ev.matchedValue) parts.push(`"${ev.matchedValue.slice(0, 80)}"`);
+      return parts.join(':');
+    }).join('; ') || '';
     if (result.device) {
       if (result.vulnerabilities.length > 0) {
         for (const vuln of result.vulnerabilities) {
@@ -327,6 +345,7 @@ export function formatCsv(results: ScanResult[]): string {
             result.device.version || '',
             String(result.device.confidence),
             result.jarmHash || '',
+            evidenceSummary,
             vuln.vulnerability.cve,
             vuln.vulnerability.severity,
             vuln.vulnerability.cvss != null ? String(vuln.vulnerability.cvss) : '',
@@ -345,13 +364,14 @@ export function formatCsv(results: ScanResult[]): string {
           result.device.version || '',
           String(result.device.confidence),
           result.jarmHash || '',
+          evidenceSummary,
           '', '', '', '', '', '',
           result.coverageWarning || '',
           errorKinds,
         ].map(escapeCsvCell).join(','));
       }
     } else {
-      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
+      lines.push([result.target, '', '', '', '', '', '', '', '', '', '', '', '', '', errorKinds].map(escapeCsvCell).join(','));
     }
   }
   

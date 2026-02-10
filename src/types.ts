@@ -2,6 +2,14 @@
  * VpnVet Types
  */
 
+export interface DetectionEvidence {
+  method: DetectionMethod;
+  url?: string;
+  pattern?: string;
+  matchedValue?: string;
+  description?: string;
+}
+
 export interface VpnDevice {
   vendor: VpnVendor;
   product: string;
@@ -9,6 +17,7 @@ export interface VpnDevice {
   confidence: number; // 0-100
   detectionMethod: DetectionMethod[];
   endpoints: string[];
+  evidence?: DetectionEvidence[];
 }
 
 export type VpnVendor =

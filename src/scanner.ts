@@ -307,6 +307,35 @@ export class VpnScanner {
     });
   }
 
+  /** Build a human-readable summary of device detection evidence */
+  private buildEvidenceSummary(device: VpnDevice): string {
+    if (!device.evidence || device.evidence.length === 0) {
+      return `Device detected as ${device.vendor} ${device.product}`;
+    }
+    const parts = device.evidence.map(e => {
+      if (e.method === 'header' && e.matchedValue) {
+        return `header '${e.matchedValue}'`;
+      }
+      if (e.method === 'endpoint' && e.url) {
+        return `endpoint match at ${e.url}`;
+      }
+      if (e.method === 'html' && e.url) {
+        return `HTML body match at ${e.url}`;
+      }
+      if (e.method === 'certificate' && e.matchedValue) {
+        return `certificate ${e.matchedValue}`;
+      }
+      if (e.method === 'favicon' && e.matchedValue) {
+        return `favicon hash ${e.matchedValue}`;
+      }
+      if (e.method === 'jarm' && e.matchedValue) {
+        return `JARM hash ${e.matchedValue}`;
+      }
+      return e.description || `${e.method} match`;
+    });
+    return `Detected via ${parts.join(' + ')}`;
+  }
+
   private checkVulnerabilities(
     device: VpnDevice,
     _baseUrl: string,
@@ -346,7 +375,7 @@ export class VpnScanner {
 
       if (productMatch) {
         let confidence: 'confirmed' | 'likely' | 'potential' = 'potential';
-        let evidence = `Device detected as ${device.vendor} ${device.product}`;
+        let evidence = this.buildEvidenceSummary(device);
 
         if (device.version && !this.options.skipVersionDetection) {
           const matchingAffected = vuln.affected.filter(
