@@ -17,11 +17,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS out-of-bounds write vulnerability allowing RCE via SSL VPN',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.2' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.6' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.13' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.14' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.2.0', versionEnd: '6.2.15' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.2', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.6', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.13', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.14', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.2.0', versionEnd: '6.2.15', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-24-015',
@@ -37,11 +37,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS heap-based buffer overflow (XORtigate) allowing RCE',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.4' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.11' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.12' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.2.0', versionEnd: '6.2.13' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.0.0', versionEnd: '6.0.16' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.4', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.11', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.12', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.2.0', versionEnd: '6.2.13', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.0.0', versionEnd: '6.0.16', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-23-097',
@@ -57,10 +57,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS SSL-VPN heap-based buffer overflow allowing RCE',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.2' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.8' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.10' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.2.0', versionEnd: '6.2.11' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.2', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.8', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.10', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.2.0', versionEnd: '6.2.11', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-22-398',
@@ -76,10 +76,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS/FortiProxy/FortiSwitchManager authentication bypass via alternate path (admin panel takeover)',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.1' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.6' },
-      { vendor: 'fortinet', product: 'FortiProxy', versionStart: '7.2.0', versionEnd: '7.2.0' },
-      { vendor: 'fortinet', product: 'FortiProxy', versionStart: '7.0.0', versionEnd: '7.0.6' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.1', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.6', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiProxy', versionStart: '7.2.0', versionEnd: '7.2.0', cpe: 'cpe:2.3:o:fortinet:fortiproxy:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiProxy', versionStart: '7.0.0', versionEnd: '7.0.6', cpe: 'cpe:2.3:o:fortinet:fortiproxy:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-22-377',
@@ -95,9 +95,9 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS SSL VPN path traversal allowing credential theft',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.0.0', versionEnd: '6.0.4' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '5.6.3', versionEnd: '5.6.7' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '5.4.6', versionEnd: '5.4.12' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.0.0', versionEnd: '6.0.4', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '5.6.3', versionEnd: '5.6.7', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '5.4.6', versionEnd: '5.4.12', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-18-384',
@@ -113,7 +113,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS Node.js WebSocket authentication bypass allowing super-admin access',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.16' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.16', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-24-535',
@@ -129,7 +129,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.4,
     description: 'FortiOS/FortiManager/FortiAnalyzer FortiCloud SSO authentication bypass zero-day',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.4.10' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.4.10', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
       { vendor: 'fortinet', product: 'FortiManager' },
     ],
     references: [
@@ -146,9 +146,9 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS/FortiProxy/FortiSwitchManager/FortiWeb FortiCloud SSO cryptographic signature bypass allowing unauthenticated admin access',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.1' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.6' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.10' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.1', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.6', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.10', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
       { vendor: 'fortinet', product: 'FortiProxy' },
       { vendor: 'fortinet', product: 'FortiWeb' },
     ],
@@ -166,8 +166,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiWeb FortiCloud SSO authentication bypass allowing unauthorized device management access',
     affected: [
-      { vendor: 'fortinet', product: 'FortiWeb', versionStart: '7.4.0', versionEnd: '7.4.9' },
-      { vendor: 'fortinet', product: 'FortiWeb', versionStart: '7.6.0', versionEnd: '7.6.4' },
+      { vendor: 'fortinet', product: 'FortiWeb', versionStart: '7.4.0', versionEnd: '7.4.9', cpe: 'cpe:2.3:o:fortinet:fortiweb:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiWeb', versionStart: '7.6.0', versionEnd: '7.6.4', cpe: 'cpe:2.3:o:fortinet:fortiweb:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-255',
@@ -182,11 +182,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 8.1,
     description: 'FortiOS/FortiSwitchManager CAPWAP daemon RCE via crafted network packets',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.3' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.8' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.11' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.17' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.16' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.3', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.8', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.11', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.17', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.16', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-084',
@@ -201,7 +201,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiSIEM unauthenticated OS command injection allowing root-level RCE (PoC available, actively exploited)',
     affected: [
-      { vendor: 'fortinet', product: 'FortiSIEM', versionStart: '7.0.0', versionEnd: '7.2.0' },
+      { vendor: 'fortinet', product: 'FortiSIEM', versionStart: '7.0.0', versionEnd: '7.2.0', cpe: 'cpe:2.3:a:fortinet:fortisiem:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-085',
@@ -216,10 +216,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiOS/FortiVoice/FortiNDR/FortiMail/FortiRecorder stack-based buffer overflow allowing RCE',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.7' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.11' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.17' },
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.16' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.0', versionEnd: '7.4.7', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.2.0', versionEnd: '7.2.11', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.0.17', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '6.4.0', versionEnd: '6.4.16', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://fortiguard.fortinet.com/psirt/FG-IR-25-254',
@@ -235,10 +235,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'FortiManager missing authentication for critical function (FortiJump) allowing RCE',
     affected: [
-      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.6.0', versionEnd: '7.6.0' },
-      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.4.0', versionEnd: '7.4.4' },
-      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.2.0', versionEnd: '7.2.7' },
-      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.0.0', versionEnd: '7.0.12' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.6.0', versionEnd: '7.6.0', cpe: 'cpe:2.3:o:fortinet:fortimanager:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.4.0', versionEnd: '7.4.4', cpe: 'cpe:2.3:o:fortinet:fortimanager:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.2.0', versionEnd: '7.2.7', cpe: 'cpe:2.3:o:fortinet:fortimanager:*:*:*:*:*:*:*:*' },
+      { vendor: 'fortinet', product: 'FortiManager', versionStart: '7.0.0', versionEnd: '7.0.12', cpe: 'cpe:2.3:o:fortinet:fortimanager:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.fortiguard.com/psirt/FG-IR-24-423',
@@ -258,9 +258,9 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 10.0,
     description: 'PAN-OS GlobalProtect command injection allowing unauthenticated RCE',
     affected: [
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.2-h2' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.4-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.9-h1' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.2-h2', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.4-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.9-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://security.paloaltonetworks.com/CVE-2024-3400',
@@ -276,9 +276,9 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 10.0,
     description: 'PAN-OS SAML authentication bypass allowing unauthorized access',
     affected: [
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '9.1.0', versionEnd: '9.1.2' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '9.0.0', versionEnd: '9.0.8' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '8.1.0', versionEnd: '8.1.14' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '9.1.0', versionEnd: '9.1.2', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '9.0.0', versionEnd: '9.0.8', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '8.1.0', versionEnd: '8.1.14', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://security.paloaltonetworks.com/CVE-2020-2021',
@@ -295,10 +295,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'PAN-OS management web interface authentication bypass allowing admin access',
     affected: [
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.5-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.6-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.12-h2' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.5-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.6-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.12-h2', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://security.paloaltonetworks.com/CVE-2024-0012',
@@ -314,11 +314,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.2,
     description: 'PAN-OS privilege escalation in management web interface allowing root access',
     affected: [
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.5-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.6-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.12-h2' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h6' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.5-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.6-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.12-h2', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h6', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://security.paloaltonetworks.com/CVE-2024-9474',
@@ -334,11 +334,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.7,
     description: 'PAN-OS GlobalProtect gateway/portal DoS via improper exceptional condition check (PoC available)',
     affected: [
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h4' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.6-h1' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.7' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.13-h3' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h11' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h4', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.6-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.7', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.13-h3', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h11', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://security.paloaltonetworks.com/CVE-2026-0227',
@@ -394,8 +394,8 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Ivanti Connect Secure command injection allowing RCE',
     affected: [
       { vendor: 'pulse', product: 'Pulse Connect Secure' },
-      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '9.0', versionEnd: '22.6R1.1' },
-      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.1R1', versionEnd: '22.6R2.2' },
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '9.0', versionEnd: '22.6R1.1', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.1R1', versionEnd: '22.6R2.2', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/CVE-2024-21887-Command-Injection-Vulnerability',
@@ -429,7 +429,7 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Ivanti Connect Secure authentication bypass',
     affected: [
       { vendor: 'pulse', product: 'Pulse Connect Secure' },
-      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '9.0', versionEnd: '22.6R1.1' },
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '9.0', versionEnd: '22.6R1.1', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/CVE-2023-46805',
@@ -445,8 +445,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.0,
     description: 'Ivanti Connect Secure stack-based buffer overflow allowing unauthenticated RCE',
     affected: [
-      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.4' },
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9' },
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.4', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Connect-Secure-Policy-Secure-ZTA-Gateways-CVE-2025-0282-CVE-2025-0283',
@@ -462,8 +462,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.0,
     description: 'Ivanti Connect Secure/Policy Secure/ZTA stack-based buffer overflow for local privilege escalation',
     affected: [
-      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.4' },
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9' },
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.4', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Connect-Secure-Policy-Secure-ZTA-Gateways-CVE-2025-0282-CVE-2025-0283',
@@ -478,8 +478,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.0,
     description: 'Ivanti Connect Secure stack-based buffer overflow allowing RCE (TRAILBLAZE/BRUSHFIRE)',
     affected: [
-      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.5' },
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9' },
+      { vendor: 'ivanti', product: 'Connect Secure', versionStart: '22.7R2', versionEnd: '22.7R2.5', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.1R18', versionEnd: '9.1R18.9', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://forums.ivanti.com/s/article/April-Security-Advisory-Ivanti-Connect-Secure-Policy-Secure-ZTA-Gateways-CVE-2025-22457',
@@ -524,10 +524,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 10.0,
     description: 'Pulse Secure arbitrary file reading (credential theft)',
     affected: [
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '8.1R1', versionEnd: '8.1R15.1' },
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '8.2', versionEnd: '8.2R12.1' },
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '8.3', versionEnd: '8.3R7.1' },
-      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.0', versionEnd: '9.0R3.4' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '8.1R1', versionEnd: '8.1R15.1', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '8.2', versionEnd: '8.2R12.1', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '8.3', versionEnd: '8.3R7.1', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
+      { vendor: 'pulse', product: 'Pulse Connect Secure', versionStart: '9.0', versionEnd: '9.0R3.4', cpe: 'cpe:2.3:a:ivanti:connect_secure:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://kb.pulsesecure.net/articles/Pulse_Security_Advisories/SA44101',
@@ -598,8 +598,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.5,
     description: 'SonicWall SonicOS SSLVPN NULL pointer dereference causing DoS (Gen7/Gen8)',
     affected: [
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '7.1.1-7040', versionEnd: '7.1.3-7015' },
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '8.0.0', versionEnd: '8.0.0-8037' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '7.1.1-7040', versionEnd: '7.1.3-7015', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '8.0.0', versionEnd: '8.0.0-8037', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0009',
@@ -614,7 +614,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'SonicWall SMA 100 SQL injection allowing credential access',
     affected: [
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.0.5-d-29sv' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.0.5-d-29sv', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2021-0001',
@@ -630,7 +630,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'SonicWall SMA 100 Series pre-auth RCE with OVERSTEP rootkit in-the-wild exploitation',
     affected: [
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.1.15-81sv' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.1.15-81sv', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0011',
@@ -645,7 +645,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.8,
     description: 'SonicWall SMA 1000 AMC local privilege escalation zero-day',
     affected: [
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '12.4.0', versionEnd: '12.4.3-02758' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '12.4.0', versionEnd: '12.4.3-02758', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0015',
@@ -664,9 +664,9 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.4,
     description: 'Citrix NetScaler ADC/Gateway session token leakage (Citrix Bleed)',
     affected: [
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '14.1', versionEnd: '14.1-8.49' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.1', versionEnd: '13.1-49.14' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.0', versionEnd: '13.0-92.18' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '14.1', versionEnd: '14.1-8.49', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.1', versionEnd: '13.1-49.14', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.0', versionEnd: '13.0-92.18', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://support.citrix.com/article/CTX579459',
@@ -682,8 +682,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'Citrix NetScaler ADC/Gateway unauthenticated RCE',
     affected: [
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.1', versionEnd: '13.1-49.12' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.0', versionEnd: '13.0-91.12' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.1', versionEnd: '13.1-49.12', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.0', versionEnd: '13.0-91.12', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://support.citrix.com/article/CTX561482',
@@ -699,11 +699,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'Citrix ADC/Gateway path traversal allowing RCE (Shitrix)',
     affected: [
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.0', versionEnd: '13.0.47.24' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '12.1', versionEnd: '12.1.55.18' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '12.0', versionEnd: '12.0.63.13' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '11.1', versionEnd: '11.1.63.15' },
-      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '10.5', versionEnd: '10.5.70.12' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '13.0', versionEnd: '13.0.47.24', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '12.1', versionEnd: '12.1.55.18', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '12.0', versionEnd: '12.0.63.13', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '11.1', versionEnd: '11.1.63.15', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
+      { vendor: 'citrix', product: 'Citrix Gateway', versionStart: '10.5', versionEnd: '10.5.70.12', cpe: 'cpe:2.3:a:citrix:netscaler_gateway:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://support.citrix.com/article/CTX267027',
@@ -723,10 +723,10 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'F5 BIG-IP iControl REST authentication bypass allowing RCE',
     affected: [
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '16.1.0', versionEnd: '16.1.2.1' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '15.1.5' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.4.5' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.4' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '16.1.0', versionEnd: '16.1.2.1', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '15.1.5', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.4.5', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.4', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://support.f5.com/csp/article/K23605346',
@@ -742,11 +742,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'F5 BIG-IP Configuration utility authentication bypass',
     affected: [
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '17.1.0', versionEnd: '17.1.0' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '16.1.0', versionEnd: '16.1.4' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '15.1.10' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.5' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.5' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '17.1.0', versionEnd: '17.1.0', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '16.1.0', versionEnd: '16.1.4', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '15.1.10', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.5', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.5', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://my.f5.com/manage/s/article/K000137353',
@@ -762,11 +762,11 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'F5 BIG-IP TMUI RCE vulnerability',
     affected: [
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.0.0', versionEnd: '15.1.0.3' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.2.5' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.3.3' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '12.1.0', versionEnd: '12.1.5.1' },
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '11.6.1', versionEnd: '11.6.5.1' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.0.0', versionEnd: '15.1.0.3', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '14.1.0', versionEnd: '14.1.2.5', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '13.1.0', versionEnd: '13.1.3.3', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '12.1.0', versionEnd: '12.1.5.1', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '11.6.1', versionEnd: '11.6.5.1', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://support.f5.com/csp/article/K52145254',
@@ -899,7 +899,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.2,
     description: 'Zyxel ATP/USG FLEX DDNS CLI command injection allowing OS command execution',
     affected: [
-      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: '5.35', versionEnd: '5.41' },
+      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: '5.35', versionEnd: '5.41', cpe: 'cpe:2.3:o:zyxel:atp_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.zyxel.com/global/en/support/security-advisories',
@@ -914,7 +914,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.2,
     description: 'Zyxel ATP/USG FLEX/USG20 post-authentication command injection via IPSec VPN configuration',
     affected: [
-      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: '4.32', versionEnd: '5.40' },
+      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: '4.32', versionEnd: '5.40', cpe: 'cpe:2.3:o:zyxel:atp_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.zyxel.com/global/en/support/security-advisories',
@@ -1015,8 +1015,8 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'WatchGuard Firebox Fireware OS LDAP injection in authentication interface allowing data exfiltration',
     affected: [
       { vendor: 'watchguard', product: 'Firebox', versionEnd: '12.11.6' },
-      { vendor: 'watchguard', product: 'Firebox', versionStart: '12.5', versionEnd: '12.5.15' },
-      { vendor: 'watchguard', product: 'Firebox', versionStart: '2025.1', versionEnd: '2025.1' },
+      { vendor: 'watchguard', product: 'Firebox', versionStart: '12.5', versionEnd: '12.5.15', cpe: 'cpe:2.3:o:watchguard:fireware:*:*:*:*:*:*:*:*' },
+      { vendor: 'watchguard', product: 'Firebox', versionStart: '2025.1', versionEnd: '2025.1', cpe: 'cpe:2.3:o:watchguard:fireware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.watchguard.com/wgrd-psirt/advisory/wgsa-2026-00001',
@@ -1234,7 +1234,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'Cisco ASA and FTD Software VPN Web Server RCE allowing root-level code execution',
     affected: [
-      { vendor: 'cisco', product: 'ASA', versionStart: '9.8.0', versionEnd: '9.22.99' },
+      { vendor: 'cisco', product: 'ASA', versionStart: '9.8.0', versionEnd: '9.22.99', cpe: 'cpe:2.3:o:cisco:adaptive_security_appliance_software:*:*:*:*:*:*:*:*' },
       { vendor: 'cisco', product: 'FTD' },
     ],
     references: [
@@ -1285,8 +1285,8 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.5,
     description: 'SonicOS SSLVPN buffer overflow causing remote firewall crash (Gen7/Gen8)',
     affected: [
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '7.0.0', versionEnd: '7.3.0-7012' },
-      { vendor: 'sonicwall', product: 'SMA', versionStart: '8.0.0', versionEnd: '8.0.2-8011' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '7.0.0', versionEnd: '7.3.0-7012', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '8.0.0', versionEnd: '8.0.2-8011', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0016',
@@ -1302,7 +1302,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 7.2,
     description: 'Zyxel ATP/USG FLEX/USG20-VPN missing authorization vulnerability allowing unauthorized configuration access',
     affected: [
-      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: 'V4.16', versionEnd: 'V5.40' },
+      { vendor: 'zyxel', product: 'USG/ZyWALL', versionStart: 'V4.16', versionEnd: 'V5.40', cpe: 'cpe:2.3:o:zyxel:atp_firmware:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://nvd.nist.gov/vuln/detail/CVE-2025-9133',
@@ -1318,9 +1318,9 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Juniper Junos OS SRX Series GTP plugin improper locking DoS via malformed GTP Modify Bearer Request',
     affected: [
       { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '22.4R3-S8' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S5' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '24.2', versionEnd: '24.2R2-S3' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S5', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '24.2', versionEnd: '24.2R2-S3', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://nvd.nist.gov/vuln/detail/CVE-2026-21914',
@@ -1336,9 +1336,9 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Juniper Junos OS SRX Series PFE crash via ICMP packet through GRE tunnel with PMI enabled',
     affected: [
       { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '21.4R3-S12' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S8' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S5' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S5' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S8', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S5', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S5', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://nvd.nist.gov/vuln/detail/CVE-2026-21906',
@@ -1355,10 +1355,10 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Juniper Junos OS SRX Series Web-Filtering module FPC crash via malformed SSL packet',
     affected: [
       { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '21.4R3-S12' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.2', versionEnd: '22.2R3-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S4' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S4' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.2', versionEnd: '22.2R3-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S4', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S4', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://nvd.nist.gov/vuln/detail/CVE-2026-21917',
@@ -1391,10 +1391,10 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Juniper Junos OS SRX/MX Series flowd double free via crafted network traffic causing DoS',
     affected: [
       { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '21.4R3-S12' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.2', versionEnd: '22.2R3-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S4' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S4' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.2', versionEnd: '22.2R3-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S4', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.4', versionEnd: '23.4R2-S4', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://nvd.nist.gov/vuln/detail/CVE-2026-21918',
@@ -1411,9 +1411,9 @@ export const vulnerabilities: Vulnerability[] = [
     description: 'Juniper Junos OS SRX Series SIP ALG parsing loop causing watchdog-triggered crash via crafted TCP SIP messages',
     affected: [
       { vendor: 'juniper', product: 'SRX SSL VPN', versionEnd: '21.4R3-S12' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.2', versionEnd: '22.2R3-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S6' },
-      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S4' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.2', versionEnd: '22.2R3-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '22.4', versionEnd: '22.4R3-S6', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
+      { vendor: 'juniper', product: 'SRX SSL VPN', versionStart: '23.2', versionEnd: '23.2R2-S4', cpe: 'cpe:2.3:o:juniper:junos:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://nvd.nist.gov/vuln/detail/CVE-2026-21905',
@@ -1431,7 +1431,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 6.5,
     description: 'OpenVPN 2.7 alpha/rc epoch key slot processing allows authenticated remote users to trigger assert causing DoS',
     affected: [
-      { vendor: 'openvpn', product: 'Access Server', versionStart: '2.7_alpha1', versionEnd: '2.7_rc5' },
+      { vendor: 'openvpn', product: 'Access Server', versionStart: '2.7_alpha1', versionEnd: '2.7_rc5', cpe: 'cpe:2.3:a:openvpn:openvpn_access_server:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://community.openvpn.net/Security%20Announcements/CVE-2025-15497',
@@ -1448,9 +1448,9 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 9.8,
     description: 'OpenSSL CMS AuthEnvelopedData stack-based buffer overflow enabling pre-authentication RCE; affects OpenSSL 3.0-3.6 used in many VPN appliances',
     affected: [
-      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.2' },
-      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.0.0', versionEnd: '12.1.3' },
-      { vendor: 'openvpn', product: 'Access Server', versionStart: '2.11.0', versionEnd: '2.14.2' },
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.0.0', versionEnd: '7.6.2', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.0.0', versionEnd: '12.1.3', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'openvpn', product: 'Access Server', versionStart: '2.11.0', versionEnd: '2.14.2', cpe: 'cpe:2.3:a:openvpn:openvpn_access_server:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://www.openssl.org/news/secadv/20260127.txt',
@@ -1467,7 +1467,7 @@ export const vulnerabilities: Vulnerability[] = [
     cvss: 5.9,
     description: 'BIG-IP Advanced WAF/ASM bd process termination causing DoS via undisclosed requests',
     affected: [
-      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '17.1.2' },
+      { vendor: 'f5', product: 'BIG-IP APM', versionStart: '15.1.0', versionEnd: '17.1.2', cpe: 'cpe:2.3:a:f5:big-ip_access_policy_manager:*:*:*:*:*:*:*:*' },
     ],
     references: [
       'https://my.f5.com/manage/s/article/K000150901',

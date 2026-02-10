@@ -18,6 +18,7 @@ export interface VpnDevice {
   detectionMethod: DetectionMethod[];
   endpoints: string[];
   evidence?: DetectionEvidence[];
+  cpe?: string;
 }
 
 export type VpnVendor =
@@ -118,6 +119,7 @@ export interface AffectedVersion {
   versionStart?: string;
   versionEnd?: string;
   versionExact?: string;
+  cpe?: string;
 }
 
 export interface ScanResult {

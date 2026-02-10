@@ -28,6 +28,7 @@ import {
 import type { HttpClientOptions } from './http-client.js';
 import { detectDevice } from './detector.js';
 import { scanJarm, lookupJarmHash } from './jarm.js';
+import { buildCpe } from './cpe.js';
 import type {
   ScanResult,
   ScanOptions,
@@ -194,6 +195,10 @@ export class VpnScanner {
       }
 
       if (device) {
+        // Attach CPE string
+        const cpe = buildCpe(device.vendor, device.product, device.version);
+        if (cpe) device.cpe = cpe;
+
         result.device = device;
 
         if (!this.options.skipVulnCheck) {

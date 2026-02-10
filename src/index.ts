@@ -39,6 +39,10 @@ export { resolveProductAlias, resolveProductAndVendor, PRODUCT_ALIASES } from '.
 // JARM fingerprinting
 export { scanJarm, computeJarmHash, lookupJarmHash, KNOWN_JARM_HASHES } from './jarm.js';
 
+// CPE (Common Platform Enumeration)
+export { buildCpe, getCpeMapping, CPE_MAPPINGS } from './cpe.js';
+export type { CpeMapping } from './cpe.js';
+
 // Types
 export type {
   VpnDevice,
