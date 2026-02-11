@@ -326,8 +326,15 @@ function escapeCsvCell(value: string): string {
   return value;
 }
 
+export const CSV_COLUMNS = [
+  'target', 'vendor', 'product', 'version', 'cpe', 'confidence',
+  'jarm_hash', 'evidence_summary', 'cve', 'severity', 'cvss',
+  'vuln_confidence', 'cisa_kev', 'known_ransomware', 'coverage_warning',
+  'scan_error_kinds',
+] as const;
+
 export function formatCsv(results: ScanResult[]): string {
-  const lines = ['target,vendor,product,version,cpe,confidence,jarm_hash,evidence_summary,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds'];
+  const lines = [CSV_COLUMNS.join(',')];
   
   for (const result of results) {
     const errorKinds = result.scanErrors?.map(e => e.kind).join(';') || '';

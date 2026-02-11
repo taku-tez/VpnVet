@@ -7,6 +7,7 @@
 
 import { execSync } from 'node:child_process';
 import type { ScanResult, VulnerabilityMatch } from '../src/types.js';
+import { CSV_COLUMNS } from '../src/formatters.js';
 
 const CLI = 'npx tsx src/cli.ts';
 const CWD = process.cwd();
@@ -239,7 +240,8 @@ describe('SARIF output schema', () => {
 // ─── CSV Schema Tests ────────────────────────────────────────────
 
 describe('CSV output schema', () => {
-  const CSV_HEADER = 'target,vendor,product,version,cpe,confidence,jarm_hash,evidence_summary,cve,severity,cvss,vuln_confidence,cisa_kev,known_ransomware,coverage_warning,scan_error_kinds';
+  const CSV_HEADER = CSV_COLUMNS.join(',');
+  const COL_COUNT = CSV_COLUMNS.length;
 
   it('should have fixed column order header', () => {
     const output = runCli('scan 192.0.2.1 -f csv --timeout 2000');
@@ -249,19 +251,17 @@ describe('CSV output schema', () => {
     expect(lines[0]).toBe(CSV_HEADER);
   });
 
-  it('should have 12 columns per row', () => {
+  it(`should have ${CSV_COLUMNS.length} columns per row`, () => {
     const output = runCli('scan 192.0.2.1 -f csv --timeout 2000');
     if (!output.trim()) return;
 
     const lines = output.trim().split('\n');
     const headerCols = lines[0].split(',').length;
-    expect(headerCols).toBe(16);
+    expect(headerCols).toBe(COL_COUNT);
 
-    // Each data row should also have 13 columns (accounting for CSV escaping)
     for (let i = 1; i < lines.length; i++) {
-      // Simple count: split by comma but respect quoted fields
       const cols = parseCsvRow(lines[i]);
-      expect(cols.length).toBe(16);
+      expect(cols.length).toBe(COL_COUNT);
     }
   });
 
@@ -301,14 +301,14 @@ describe('CSV output schema', () => {
   });
 
   it('should handle empty device rows with correct column count', () => {
-    // No device detected should still produce 16 columns (including known_ransomware)
+    // No device detected should still produce correct column count
     const output = runCli('scan 192.0.2.1 -f csv --timeout 2000');
     if (!output.trim()) return;
 
     const lines = output.trim().split('\n');
     for (let i = 1; i < lines.length; i++) {
       const cols = parseCsvRow(lines[i]);
-      expect(cols.length).toBe(16);
+      expect(cols.length).toBe(COL_COUNT);
     }
   });
 });
