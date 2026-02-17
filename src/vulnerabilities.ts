@@ -1477,6 +1477,61 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: false,
   },
 
+  // ============================================================
+  // New CVEs - February 2026 batch
+  // ============================================================
+
+  // FortiOS LDAP authentication bypass in Agentless VPN / FSSO
+  {
+    cve: 'CVE-2026-22153',
+    severity: 'high',
+    cvss: 8.1,
+    description: 'FortiOS authentication bypass via LDAP in Agentless VPN and FSSO policy configurations',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.6.0', versionEnd: '7.6.4', cpe: 'cpe:2.3:o:fortinet:fortios:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-1052',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-22153',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+
+  // FortiClientEMS critical SQL injection - unauthenticated RCE
+  {
+    cve: 'CVE-2026-21643',
+    severity: 'critical',
+    cvss: 9.1,
+    description: 'FortiClientEMS SQL injection allowing unauthenticated remote code execution via crafted HTTP requests',
+    affected: [
+      { vendor: 'fortinet', product: 'FortiGate', versionStart: '7.4.4', versionEnd: '7.4.4', cpe: 'cpe:2.3:a:fortinet:forticlient_enterprise_management_server:7.4.4:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://fortiguard.fortinet.com/psirt/FG-IR-25-1142',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-21643',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+
+  // PAN-OS GlobalProtect DoS - reboot loop via crafted packets
+  {
+    cve: 'CVE-2026-0229',
+    severity: 'high',
+    cvss: 8.7,
+    description: 'PAN-OS Advanced DNS Security DoS vulnerability forcing firewall into reboot loop and maintenance mode',
+    affected: [
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '11.2.4', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://security.paloaltonetworks.com/CVE-2026-0229',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-0229',
+    ],
+    exploitAvailable: false,
+    cisaKev: false,
+  },
+
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

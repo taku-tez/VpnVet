@@ -143,6 +143,23 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         weight: 7,
       },
 
+      // FortiCloud SSO login page indicator (CVE-2026-24858 attack surface)
+      {
+        type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'forticloud|FortiCloud|ftnt-cloud-sso',
+        weight: 8,
+      },
+      // FortiOS node.js websocket management (7.6.x)
+      {
+        type: 'endpoint',
+        path: '/api/v2/monitor/system/status',
+        method: 'GET',
+        match: 'serial|version|build|hostname',
+        weight: 6,
+      },
+
       // === TIER 4: Static Resources & Fingerprinting ===
 
       // SSL VPN CSS (pre-auth accessible)

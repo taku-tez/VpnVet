@@ -142,6 +142,29 @@ describe('Vulnerabilities', () => {
     });
   });
 
+  describe('February 2026 CVE additions', () => {
+    it('should include CVE-2026-22153 FortiOS auth bypass', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-22153');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('high');
+      expect(vuln!.affected.some(a => a.vendor === 'fortinet')).toBe(true);
+    });
+
+    it('should include CVE-2026-21643 FortiClientEMS SQLi RCE', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-21643');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('critical');
+      expect(vuln!.cvss).toBeGreaterThanOrEqual(9.0);
+    });
+
+    it('should include CVE-2026-0229 PAN-OS ADNS DoS', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-0229');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('high');
+      expect(vuln!.affected.some(a => a.vendor === 'paloalto')).toBe(true);
+    });
+  });
+
   describe('cross-reference integrity with fingerprints', () => {
     // Products that intentionally lack fingerprints (management-plane only, not VPN endpoints)
     const KNOWN_NO_FINGERPRINT = new Set([
