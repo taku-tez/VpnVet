@@ -265,3 +265,64 @@ describe('Fingerprints', () => {
     });
   });
 });
+
+describe('Fingerprint improvements - February 2026', () => {
+  describe('FortiGate SAML SSO attack surface', () => {
+    it('should have SAML ACS endpoint pattern for CVE-2025-59718/59719', () => {
+      const fortinet = getFingerprintsByVendor('fortinet')[0];
+      const samlAcs = fortinet.patterns.find(
+        p => p.type === 'endpoint' && p.path === '/remote/saml/acs'
+      );
+      expect(samlAcs).toBeDefined();
+    });
+
+    it('should have FortiCloud SAML discovery endpoint', () => {
+      const fortinet = getFingerprintsByVendor('fortinet')[0];
+      const samlSp = fortinet.patterns.find(
+        p => p.type === 'endpoint' && p.path === '/saml-sp/login'
+      );
+      expect(samlSp).toBeDefined();
+    });
+  });
+
+  describe('Cisco AnyConnect WebVPN version detection', () => {
+    it('should have versionExtract on /+webvpn+/index.html endpoint', () => {
+      const cisco = getFingerprintsByVendor('cisco')[0];
+      const webvpnPattern = cisco.patterns.find(
+        p => p.type === 'endpoint' && p.path === '/+webvpn+/index.html'
+      );
+      expect(webvpnPattern).toBeDefined();
+      expect(webvpnPattern!.versionExtract).toBeDefined();
+    });
+
+    it('should have WebVPN auth login endpoint for CVE-2025-20362', () => {
+      const cisco = getFingerprintsByVendor('cisco')[0];
+      const loginPattern = cisco.patterns.find(
+        p => p.type === 'endpoint' && p.path?.includes('webvpn_login')
+      );
+      expect(loginPattern).toBeDefined();
+    });
+  });
+
+  describe('Ivanti Connect Secure REST API version detection', () => {
+    it('should have system information API endpoint', () => {
+      const ivanti = getFingerprintsByVendor('ivanti')[0];
+      const sysInfoPattern = ivanti.patterns.find(
+        p => p.type === 'endpoint' && p.path?.includes('configuration/system/information')
+      );
+      expect(sysInfoPattern).toBeDefined();
+      expect(sysInfoPattern!.versionExtract).toBeDefined();
+    });
+
+    it('system info versionExtract should match ICS version format', () => {
+      const ivanti = getFingerprintsByVendor('ivanti')[0];
+      const sysInfoPattern = ivanti.patterns.find(
+        p => p.type === 'endpoint' && p.path?.includes('configuration/system/information')
+      );
+      expect(sysInfoPattern?.versionExtract).toBeDefined();
+      const match = '{"productVersion":"22.7.2.1","build":"1234"}'.match(sysInfoPattern!.versionExtract!);
+      expect(match).not.toBeNull();
+      expect(match![1]).toBe('22.7.2.1');
+    });
+  });
+});

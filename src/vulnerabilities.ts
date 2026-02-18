@@ -1532,6 +1532,50 @@ export const vulnerabilities: Vulnerability[] = [
     cisaKev: false,
   },
 
+  // ============================================================
+  // Ivanti EPMM exploit chain - May 2025
+  // CVE-2025-4427 (auth bypass) + CVE-2025-4428 (post-auth RCE)
+  // Together: unauthenticated RCE on EPMM ≤ 12.5.0.0
+  // ============================================================
+
+  // Ivanti EPMM authentication bypass via API component
+  {
+    cve: 'CVE-2025-4427',
+    severity: 'medium',
+    cvss: 5.3,
+    description: 'Ivanti Endpoint Manager Mobile (EPMM) API authentication bypass allowing access to protected resources without credentials; chained with CVE-2025-4428 for unauthenticated RCE',
+    affected: [
+      { vendor: 'ivanti', product: 'EPMM', versionEnd: '12.5.0.0', cpe: 'cpe:2.3:a:ivanti:endpoint_manager_mobile:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Endpoint-Manager-Mobile-EPMM-CVE-2025-4427-CVE-2025-4428',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-4427',
+      'https://labs.watchtowr.com/expression-payloads-meet-mayhem-cve-2025-4427-and-cve-2025-4428/',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+    knownRansomware: false,
+  },
+
+  // Ivanti EPMM post-authentication RCE via SSTI
+  {
+    cve: 'CVE-2025-4428',
+    severity: 'high',
+    cvss: 7.2,
+    description: 'Ivanti Endpoint Manager Mobile (EPMM) Server-Side Template Injection (SSTI) allowing remote code execution for authenticated users; exploited in wild via CVE-2025-4427 auth bypass chain',
+    affected: [
+      { vendor: 'ivanti', product: 'EPMM', versionEnd: '12.5.0.0', cpe: 'cpe:2.3:a:ivanti:endpoint_manager_mobile:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://forums.ivanti.com/s/article/Security-Advisory-Ivanti-Endpoint-Manager-Mobile-EPMM-CVE-2025-4427-CVE-2025-4428',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-4428',
+      'https://www.wiz.io/blog/ivanti-epmm-rce-vulnerability-chain-cve-2025-4427-cve-2025-4428',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+    knownRansomware: false,
+  },
+
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

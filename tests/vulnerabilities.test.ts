@@ -597,3 +597,44 @@ describe('February 2026 CVE additions', () => {
     expect(vendors).toContain('openvpn');
   });
 });
+
+describe('Ivanti EPMM exploit chain CVE-2025-4427/4428', () => {
+  it('should include CVE-2025-4427 Ivanti EPMM auth bypass', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-4427');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('medium');
+    expect(vuln!.cvss).toBe(5.3);
+    expect(vuln!.exploitAvailable).toBe(true);
+    expect(vuln!.cisaKev).toBe(true);
+    expect(vuln!.affected.some(a => a.vendor === 'ivanti')).toBe(true);
+    expect(vuln!.affected.some(a => a.product === 'EPMM')).toBe(true);
+  });
+
+  it('should include CVE-2025-4428 Ivanti EPMM SSTI RCE', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-4428');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('high');
+    expect(vuln!.cvss).toBe(7.2);
+    expect(vuln!.exploitAvailable).toBe(true);
+    expect(vuln!.cisaKev).toBe(true);
+    expect(vuln!.affected.some(a => a.vendor === 'ivanti')).toBe(true);
+  });
+
+  it('CVE-2025-4427/4428 should have valid references', () => {
+    for (const cve of ['CVE-2025-4427', 'CVE-2025-4428']) {
+      const vuln = vulnerabilities.find(v => v.cve === cve);
+      expect(vuln).toBeDefined();
+      expect(vuln!.references.length).toBeGreaterThanOrEqual(2);
+      for (const ref of vuln!.references) {
+        expect(ref).toMatch(/^https?:\/\//);
+      }
+    }
+  });
+
+  it('CVE-2025-4428 version range should be ≤ 12.5.0.0', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-4428');
+    expect(vuln).toBeDefined();
+    const affected = vuln!.affected[0];
+    expect(affected.versionEnd).toBe('12.5.0.0');
+  });
+});

@@ -115,6 +115,23 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'saml|redirect',
         weight: 8,
       },
+      // SAML callback / ACS endpoint (present on FortiOS 7.0+ with SAML enabled)
+      {
+        type: 'endpoint',
+        path: '/remote/saml/acs',
+        method: 'GET',
+        match: 'saml|redirect|FortiGate',
+        weight: 7,
+      },
+      // FortiCloud SSO SAML discovery (CVE-2025-59718/59719 attack surface)
+      // Improper SAML signature verification allows FortiCloud SSO bypass
+      {
+        type: 'endpoint',
+        path: '/saml-sp/login',
+        method: 'GET',
+        match: 'saml|FortiCloud|sso',
+        weight: 8,
+      },
 
       // === TIER 3: Admin Interface Endpoints (pre-auth) ===
 
@@ -388,6 +405,16 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'Cisco|WebVPN|ASA',
         weight: 9,
+        versionExtract: /(?:ASA|Cisco.*Firewall)\s+Version\s+(\d+\.\d+(?:\.\d+)?(?:\(\d+\))?)/i,
+      },
+      // WebVPN auth endpoint (CVE-2025-20362 target - auth bypass)
+      {
+        type: 'endpoint',
+        path: '/+webvpn+/webvpn_login.html',
+        method: 'GET',
+        match: 'Cisco|WebVPN|webvpnlogin',
+        weight: 8,
+        versionExtract: /(?:ASA|Cisco.*Firewall)\s+Version\s+(\d+\.\d+(?:\.\d+)?(?:\(\d+\))?)/i,
       },
       // Translation table (CVE-2020-3452 target)
       {
@@ -610,6 +637,24 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: 'license|keys',
         weight: 8,
       },
+      // System info endpoint (version extraction - pre-auth accessible in some builds)
+      {
+        type: 'endpoint',
+        path: '/api/v1/configuration/system/information',
+        method: 'GET',
+        match: 'Ivanti|Connect Secure|version|build',
+        weight: 7,
+        versionExtract: /"productVersion"\s*:\s*"([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)"/i,
+      },
+      // Upgrade check endpoint exposed pre-auth (ICS 22.x series)
+      {
+        type: 'endpoint',
+        path: '/api/v1/upgrade-status',
+        method: 'GET',
+        match: 'Ivanti|version|status',
+        weight: 6,
+        versionExtract: /"currentVersion"\s*:\s*"([0-9.R]+)"/i,
+      },
       // SAML endpoints (CVE-2024-21893 SSRF targets)
       {
         type: 'endpoint',
@@ -624,6 +669,16 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         method: 'GET',
         match: 'saml',
         weight: 8,
+      },
+      // CVE-2025-22457 target - stack-based buffer overflow in heartbeat path
+      // Detection: Probe for characteristic 502/400 response that differs from 404
+      {
+        type: 'endpoint',
+        path: '/dana-na/auth/url_default/welcome.cgi',
+        method: 'GET',
+        match: 'Ivanti|Connect Secure|ICS',
+        weight: 10,
+        versionExtract: /ProductVersion"\s+VALUE="([0-9.]+)"|<b>Version\s*([0-9.R]+)</i,
       },
       // Host Checker (version in binary)
       {
