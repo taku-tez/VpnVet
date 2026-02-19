@@ -710,6 +710,89 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
       },
     ],
   },
+  // ============================================================
+  // Ivanti EPMM (formerly MobileIron Core)
+  // 4 active CVEs: CVE-2025-4427/4428 (CISA KEV), CVE-2026-1281/1340 (CISA KEV)
+  // Key endpoint: /mifs/ prefix (Apache RewriteMap-based routing)
+  // Version: /mifs/login or API-based extraction
+  // 4,400+ instances on Cortex Xpanse telemetry (Feb 2026)
+  // ============================================================
+  {
+    vendor: 'mobileiron',
+    product: 'Ivanti EPMM',
+    patterns: [
+      // === TIER 1: Definitive EPMM indicators ===
+
+      // MIFS portal - the single strongest indicator of EPMM presence
+      // All exploitation paths (CVE-2026-1281: /mifs/c/aftstore/fob/) go through this prefix
+      {
+        type: 'endpoint',
+        path: '/mifs/login',
+        method: 'GET',
+        match: 'MobileIron|Ivanti|EPMM|mifs',
+        weight: 10,
+        versionExtract: /(?:version|v)[:\s"]*([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)/i,
+      },
+      // Admin portal (distinct from user portal)
+      {
+        type: 'endpoint',
+        path: '/mifs/admin',
+        method: 'GET',
+        match: 'MobileIron|Ivanti|EPMM|admin',
+        weight: 10,
+        versionExtract: /(?:version|build)[:\s"]*([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)/i,
+      },
+      // CISA nuclei-template detection endpoint (CVE-2023-35081 / general EPMM probing)
+      {
+        type: 'endpoint',
+        path: '/mifs/aad/api/v2/',
+        method: 'GET',
+        match: 'MobileIron|Ivanti|EPMM|api',
+        weight: 9,
+      },
+      // Device enrollment endpoint (always exposed on EPMM)
+      {
+        type: 'endpoint',
+        path: '/mifs/c/i/mdm/checkin.html',
+        method: 'GET',
+        match: '.*',
+        weight: 8,
+      },
+      // Version API endpoint (pre-auth on some EPMM builds)
+      {
+        type: 'endpoint',
+        path: '/api/v2/server/info',
+        method: 'GET',
+        match: 'MobileIron|Ivanti|EPMM|version',
+        weight: 8,
+        versionExtract: /"version"\s*:\s*"([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)"/i,
+      },
+      // === TIER 2: HTML body indicators ===
+
+      // Root redirect to MIFS portal
+      {
+        type: 'body',
+        path: '/',
+        match: '/mifs/login|mobileiron|MobileIron',
+        weight: 9,
+      },
+      // EPMM title pattern
+      {
+        type: 'body',
+        path: '/',
+        match: 'Ivanti Endpoint Manager Mobile|MobileIron Core',
+        weight: 10,
+      },
+      // === TIER 3: Certificate / header signals ===
+
+      // Certificate CN often contains "mobileiron" or "ivanti"
+      {
+        type: 'certificate',
+        match: 'MobileIron|mobileiron|Ivanti EPMM',
+        weight: 7,
+      },
+    ],
+  },
   {
     vendor: 'citrix',
     product: 'Citrix Gateway',

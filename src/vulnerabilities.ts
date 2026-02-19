@@ -1576,6 +1576,30 @@ export const vulnerabilities: Vulnerability[] = [
     knownRansomware: false,
   },
 
+  // ============================================================
+  // BeyondTrust Remote Support / Privileged Remote Access
+  // ============================================================
+
+  // BeyondTrust PRA/RS pre-auth OS command injection - Feb 2026
+  {
+    cve: 'CVE-2026-1731',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'BeyondTrust Remote Support (RS) and Privileged Remote Access (PRA) unauthenticated remote code execution via OS command injection in client request handling; no credentials or user interaction required; CISA KEV-listed Feb 2026',
+    affected: [
+      { vendor: 'beyondtrust', product: 'Remote Support', versionEnd: '25.3.1', cpe: 'cpe:2.3:a:beyondtrust:remote_support:*:*:*:*:*:*:*:*' },
+      { vendor: 'beyondtrust', product: 'Privileged Remote Access', versionEnd: '24.3.4', cpe: 'cpe:2.3:a:beyondtrust:privileged_remote_access:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://www.beyondtrust.com/trust-center/security-advisories/bt26-02',
+      'https://nvd.nist.gov/vuln/detail/CVE-2026-1731',
+      'https://www.helpnetsecurity.com/2026/02/09/beyondtrust-remote-access-vulnerability-cve-2026-1731/',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+    knownRansomware: false,
+  },
+
 ];
 
 export function getVulnerabilitiesByVendor(vendor: string): Vulnerability[] {

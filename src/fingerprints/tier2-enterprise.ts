@@ -811,4 +811,70 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
       },
     ],
   },
+  // ============================================================
+  // BeyondTrust Remote Support / Privileged Remote Access
+  // CVE-2026-1731: pre-auth RCE (CISA KEV, Feb 2026) - OS cmd injection
+  // CVE-2024-12356: pre-auth RCE (CISA KEV, Dec 2024) - exploited by China APT
+  // Affects RS ≤ 25.3.1 / PRA ≤ 24.3.4; ~1,000+ internet-facing instances
+  // ============================================================
+  {
+    vendor: 'beyondtrust',
+    product: 'Remote Support',
+    patterns: [
+      // Login page - most reliable indicator
+      {
+        type: 'endpoint',
+        path: '/login',
+        method: 'GET',
+        match: 'BeyondTrust|Remote Support|Privileged Remote Access',
+        weight: 10,
+        versionExtract: /(?:version|build)[:\s"v]*([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i,
+      },
+      // Representative console download endpoint (pre-auth, always present)
+      {
+        type: 'endpoint',
+        path: '/api/client_side_errors',
+        method: 'GET',
+        match: 'BeyondTrust',
+        weight: 9,
+      },
+      // Status endpoint (leaks version in some builds)
+      {
+        type: 'endpoint',
+        path: '/status',
+        method: 'GET',
+        match: 'BeyondTrust|Remote Support',
+        weight: 8,
+        versionExtract: /(?:version|build)[:\s"v]*([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i,
+      },
+      // Support portal API - characteristic to BeyondTrust RS/PRA
+      {
+        type: 'endpoint',
+        path: '/api/public/v1/license',
+        method: 'GET',
+        match: 'BeyondTrust|license|Support',
+        weight: 9,
+        versionExtract: /"(?:version|buildVersion)"\s*:\s*"([0-9]+\.[0-9]+(?:\.[0-9]+)?)"/i,
+      },
+      // HTML body indicators
+      {
+        type: 'body',
+        path: '/',
+        match: 'BeyondTrust|Privileged Remote Access|Remote Support Console',
+        weight: 10,
+      },
+      // Server/X-Powered-By header sometimes leaks "BeyondTrust"
+      {
+        type: 'header',
+        match: 'BeyondTrust',
+        weight: 10,
+      },
+      // TLS certificate CN
+      {
+        type: 'certificate',
+        match: 'BeyondTrust|beyondtrust',
+        weight: 7,
+      },
+    ],
+  },
 ];

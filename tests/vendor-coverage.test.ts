@@ -32,7 +32,7 @@ const VPN_VENDOR_VALUES: string[] = [
   // Open Source
   'openvpn',
   // Enterprise Mobility
-  'netmotion',
+  'netmotion', 'mobileiron', 'beyondtrust',
   // Cloud / ZTNA
   'zscaler', 'cloudflare',
   // Other

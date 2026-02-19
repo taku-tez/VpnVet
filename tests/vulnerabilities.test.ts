@@ -175,6 +175,8 @@ describe('Vulnerabilities', () => {
       'ivanti:EPMM',           // Mobile device management, not a VPN endpoint
       'cisco:ASA',   // ASA is the firewall; VPN endpoint detected as AnyConnect
       'cisco:FTD',   // FTD is threat defense; VPN endpoint detected as AnyConnect
+      // BeyondTrust PRA shares login UI with Remote Support; single fingerprint covers both
+      'beyondtrust:Privileged Remote Access',
     ]);
 
     it('affected vendor+product should exist in fingerprints (or be in known exceptions)', () => {
@@ -204,7 +206,11 @@ describe('Vulnerabilities', () => {
       // If a new vendor gets CVEs added, remove it from this list
       const expectedNoCve = [
         'ahnlab', 'cloudflare', 'dptech', 'endian', 'h3c', 'hillstone',
-        'kerio', 'lancom', 'meraki', 'netmotion', 'nsfocus',
+        'kerio', 'lancom', 'meraki',
+        // mobileiron fingerprints detect Ivanti EPMM on the network; EPMM CVEs are filed
+        // under vendor:'ivanti' per NVD taxonomy, so mobileiron has no direct CVE mapping here
+        'mobileiron',
+        'netmotion', 'nsfocus',
         'opnsense', 'ruijie', 'secui', 'stormshield', 'topsec', 'ubiquiti',
         'untangle', 'venustech', 'zscaler',
       ].sort();
@@ -636,5 +642,53 @@ describe('Ivanti EPMM exploit chain CVE-2025-4427/4428', () => {
     expect(vuln).toBeDefined();
     const affected = vuln!.affected[0];
     expect(affected.versionEnd).toBe('12.5.0.0');
+  });
+});
+
+describe('BeyondTrust CVE-2026-1731 pre-auth RCE', () => {
+  it('should include CVE-2026-1731 in vulnerabilities database', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('critical');
+    expect(vuln!.cvss).toBe(9.8);
+    expect(vuln!.exploitAvailable).toBe(true);
+    expect(vuln!.cisaKev).toBe(true);
+  });
+
+  it('CVE-2026-1731 should affect beyondtrust vendor', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');
+    expect(vuln).toBeDefined();
+    expect(vuln!.affected.some(a => a.vendor === 'beyondtrust')).toBe(true);
+  });
+
+  it('CVE-2026-1731 should cover both Remote Support and PRA products', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');
+    expect(vuln).toBeDefined();
+    const products = vuln!.affected.map(a => a.product);
+    expect(products).toContain('Remote Support');
+    expect(products).toContain('Privileged Remote Access');
+  });
+
+  it('CVE-2026-1731 RS version boundary: ≤ 25.3.1', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');
+    const rsEntry = vuln!.affected.find(a => a.product === 'Remote Support');
+    expect(rsEntry).toBeDefined();
+    expect(rsEntry!.versionEnd).toBe('25.3.1');
+  });
+
+  it('CVE-2026-1731 PRA version boundary: ≤ 24.3.4', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');
+    const praEntry = vuln!.affected.find(a => a.product === 'Privileged Remote Access');
+    expect(praEntry).toBeDefined();
+    expect(praEntry!.versionEnd).toBe('24.3.4');
+  });
+
+  it('CVE-2026-1731 should have valid references', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');
+    expect(vuln).toBeDefined();
+    expect(vuln!.references.length).toBeGreaterThanOrEqual(2);
+    for (const ref of vuln!.references) {
+      expect(ref).toMatch(/^https?:\/\//);
+    }
   });
 });

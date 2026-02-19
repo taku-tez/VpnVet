@@ -72,6 +72,7 @@ export type VpnVendor =
   // Enterprise Mobility
   | 'netmotion'
   | 'mobileiron'
+  | 'beyondtrust'
   // Cloud / ZTNA (also detectable when self-hosted)
   | 'zscaler'
   | 'cloudflare'

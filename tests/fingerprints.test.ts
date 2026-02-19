@@ -266,6 +266,75 @@ describe('Fingerprints', () => {
   });
 });
 
+describe('Ivanti EPMM (mobileiron) fingerprints', () => {
+  it('should have mobileiron fingerprints', () => {
+    const epmm = getFingerprintsByVendor('mobileiron');
+    expect(epmm.length).toBeGreaterThan(0);
+  });
+
+  it('should have /mifs/login endpoint as primary detection', () => {
+    const epmm = getFingerprintsByVendor('mobileiron')[0];
+    const mifsLogin = epmm.patterns.find(
+      p => p.type === 'endpoint' && p.path === '/mifs/login'
+    );
+    expect(mifsLogin).toBeDefined();
+    expect(mifsLogin!.weight).toBeGreaterThanOrEqual(9);
+  });
+
+  it('/mifs/login should have versionExtract', () => {
+    const epmm = getFingerprintsByVendor('mobileiron')[0];
+    const mifsLogin = epmm.patterns.find(
+      p => p.type === 'endpoint' && p.path === '/mifs/login'
+    );
+    expect(mifsLogin?.versionExtract).toBeDefined();
+  });
+
+  it('should have CISA nuclei-template detection endpoint /mifs/aad/api/v2/', () => {
+    const epmm = getFingerprintsByVendor('mobileiron')[0];
+    const cisaEndpoint = epmm.patterns.find(
+      p => p.type === 'endpoint' && p.path === '/mifs/aad/api/v2/'
+    );
+    expect(cisaEndpoint).toBeDefined();
+  });
+
+  it('should have body pattern detecting /mifs/ prefix redirect', () => {
+    const epmm = getFingerprintsByVendor('mobileiron')[0];
+    const bodyPattern = epmm.patterns.find(
+      p => p.type === 'body' && String(p.match).includes('mifs')
+    );
+    expect(bodyPattern).toBeDefined();
+  });
+});
+
+describe('BeyondTrust fingerprints', () => {
+  it('should have beyondtrust fingerprints', () => {
+    const bt = getFingerprintsByVendor('beyondtrust');
+    expect(bt.length).toBeGreaterThan(0);
+  });
+
+  it('should have /login endpoint as primary detection', () => {
+    const bt = getFingerprintsByVendor('beyondtrust')[0];
+    const loginPattern = bt.patterns.find(
+      p => p.type === 'endpoint' && p.path === '/login'
+    );
+    expect(loginPattern).toBeDefined();
+    expect(loginPattern!.weight).toBeGreaterThanOrEqual(9);
+  });
+
+  it('should detect BeyondTrust product name in body', () => {
+    const bt = getFingerprintsByVendor('beyondtrust')[0];
+    const bodyPattern = bt.patterns.find(
+      p => p.type === 'body' && String(p.match).includes('BeyondTrust')
+    );
+    expect(bodyPattern).toBeDefined();
+  });
+
+  it('should have at least 5 detection patterns', () => {
+    const bt = getFingerprintsByVendor('beyondtrust')[0];
+    expect(bt.patterns.length).toBeGreaterThanOrEqual(5);
+  });
+});
+
 describe('Fingerprint improvements - February 2026', () => {
   describe('FortiGate SAML SSO attack surface', () => {
     it('should have SAML ACS endpoint pattern for CVE-2025-59718/59719', () => {
