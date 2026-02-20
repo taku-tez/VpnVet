@@ -977,6 +977,25 @@ export const vulnerabilities: Vulnerability[] = [
   // ============================================================
   // WatchGuard
   // ============================================================
+
+  // WatchGuard Fireware OS IKEv2 OOB write - Nov 2025 (first wave, KEV)
+  {
+    cve: 'CVE-2025-9242',
+    severity: 'critical',
+    cvss: 9.3,
+    description: 'WatchGuard Fireware OS iked process out-of-bounds write in IKEv2 VPN handshake allowing unauthenticated RCE on Firebox appliances; CISA KEV-listed November 2025, 50,000+ devices exposed',
+    affected: [
+      { vendor: 'watchguard', product: 'Firebox', versionEnd: '12.11.3', cpe: 'cpe:2.3:o:watchguard:fireware:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://www.watchguard.com/wgrd-psirt/advisory/wgsa-2025-00015',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-9242',
+      'https://securityaffairs.com/185896/hacking/u-s-cisa-adds-a-flaw-in-watchguard-fireware-os-to-its-known-exploited-vulnerabilities-catalog.html',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+    knownRansomware: false,
+  },
   {
     cve: 'CVE-2025-14733',
     severity: 'critical',
@@ -1530,6 +1549,30 @@ export const vulnerabilities: Vulnerability[] = [
     ],
     exploitAvailable: false,
     cisaKev: false,
+  },
+
+  // PAN-OS management web interface authentication bypass - Feb 2025
+  // Chained with CVE-2024-9474 (priv-esc) and CVE-2025-0111 (file read) for full compromise
+  {
+    cve: 'CVE-2025-0108',
+    severity: 'high',
+    cvss: 8.8,
+    description: 'PAN-OS management web interface authentication bypass enabling unauthenticated access to restricted PHP scripts via Nginx/Apache path confusion; actively exploited in chains with CVE-2024-9474 and CVE-2025-0111',
+    affected: [
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.2.0', versionEnd: '11.2.4-h4', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.1.0', versionEnd: '11.1.6-h1', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '11.0.0', versionEnd: '11.0.7', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.2.0', versionEnd: '10.2.14', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+      { vendor: 'paloalto', product: 'GlobalProtect', versionStart: '10.1.0', versionEnd: '10.1.14-h10', cpe: 'cpe:2.3:o:paloaltonetworks:pan-os:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://security.paloaltonetworks.com/CVE-2025-0108',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-0108',
+      'https://socradar.io/blog/palo-alto-firewall-vulnerability-cve-2025-0108-exploit/',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+    knownRansomware: false,
   },
 
   // ============================================================

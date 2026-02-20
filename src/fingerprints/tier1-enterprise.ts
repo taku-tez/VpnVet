@@ -362,6 +362,17 @@ export const tier1enterpriseFingerprints: Fingerprint[] = [
         match: '<prelogin-response>|<saml-auth-method>|<authentication-message>',
         weight: 10,
       },
+      // Management web interface login page (CVE-2025-0108 attack surface)
+      // Returns PAN-OS branding; enables management-plane exposure detection
+      {
+        type: 'endpoint',
+        path: '/php/login.php',
+        method: 'GET',
+        match: 'PAN_FORM_CONTENT|Palo Alto Networks|MGMT_INTERFACE|pan-os',
+        weight: 8,
+        versionExtract: /PAN-OS\s+(?:Version\s+)?v?(\d+\.\d+(?:\.\d+)*)/i,
+        status: [200, 302, 403],
+      },
       // HTML body patterns
       {
         type: 'body',

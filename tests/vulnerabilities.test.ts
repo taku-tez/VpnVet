@@ -645,6 +645,86 @@ describe('Ivanti EPMM exploit chain CVE-2025-4427/4428', () => {
   });
 });
 
+describe('WatchGuard CVE-2025-9242 - KEV Nov 2025 OOB write', () => {
+  it('should include CVE-2025-9242 in vulnerabilities database', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-9242');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('critical');
+    expect(vuln!.cvss).toBe(9.3);
+    expect(vuln!.exploitAvailable).toBe(true);
+    expect(vuln!.cisaKev).toBe(true);
+  });
+
+  it('CVE-2025-9242 should affect watchguard vendor', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-9242');
+    expect(vuln).toBeDefined();
+    expect(vuln!.affected.some(a => a.vendor === 'watchguard')).toBe(true);
+  });
+
+  it('CVE-2025-9242 affected version end should be 12.11.3', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-9242');
+    const entry = vuln!.affected.find(a => a.vendor === 'watchguard');
+    expect(entry).toBeDefined();
+    expect(entry!.versionEnd).toBe('12.11.3');
+  });
+
+  it('CVE-2025-9242 should reference watchguard advisory wgsa-2025-00015', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-9242');
+    expect(vuln).toBeDefined();
+    const hasAdvisory = vuln!.references.some(r => r.includes('wgsa-2025-00015'));
+    expect(hasAdvisory).toBe(true);
+  });
+
+  it('should have both CVE-2025-9242 (Nov) and CVE-2025-14733 (Dec) for WatchGuard IKEv2', () => {
+    const wg9242 = vulnerabilities.find(v => v.cve === 'CVE-2025-9242');
+    const wg14733 = vulnerabilities.find(v => v.cve === 'CVE-2025-14733');
+    expect(wg9242).toBeDefined();
+    expect(wg14733).toBeDefined();
+    // Both should be critical WatchGuard IKEv2 vulnerabilities
+    expect(wg9242!.cvss).toBe(9.3);
+    expect(wg14733!.cvss).toBe(9.3);
+  });
+});
+
+describe('PAN-OS CVE-2025-0108 management web interface auth bypass', () => {
+  it('should include CVE-2025-0108 in vulnerabilities database', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-0108');
+    expect(vuln).toBeDefined();
+    expect(vuln!.severity).toBe('high');
+    expect(vuln!.cvss).toBe(8.8);
+    expect(vuln!.exploitAvailable).toBe(true);
+  });
+
+  it('CVE-2025-0108 should affect paloalto vendor', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-0108');
+    expect(vuln).toBeDefined();
+    expect(vuln!.affected.some(a => a.vendor === 'paloalto')).toBe(true);
+  });
+
+  it('CVE-2025-0108 should cover multiple PAN-OS version ranges', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-0108');
+    expect(vuln).toBeDefined();
+    // Should cover at least 4 version ranges
+    expect(vuln!.affected.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('CVE-2025-0108 description should mention management web interface and exploit chain', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-0108');
+    expect(vuln).toBeDefined();
+    expect(vuln!.description.toLowerCase()).toMatch(/management|auth.*bypass|bypass.*auth/);
+    expect(vuln!.description).toMatch(/CVE-2024-9474/);
+  });
+
+  it('CVE-2025-0108 references should include Palo Alto security advisory', () => {
+    const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-0108');
+    expect(vuln).toBeDefined();
+    const hasPaloAltoAdvisory = vuln!.references.some(r =>
+      r.includes('security.paloaltonetworks.com')
+    );
+    expect(hasPaloAltoAdvisory).toBe(true);
+  });
+});
+
 describe('BeyondTrust CVE-2026-1731 pre-auth RCE', () => {
   it('should include CVE-2026-1731 in vulnerabilities database', () => {
     const vuln = vulnerabilities.find(v => v.cve === 'CVE-2026-1731');

@@ -394,4 +394,37 @@ describe('Fingerprint improvements - February 2026', () => {
       expect(match![1]).toBe('22.7.2.1');
     });
   });
+
+  describe('PAN-OS management web interface fingerprint (CVE-2025-0108 surface)', () => {
+    it('should have /php/login.php endpoint pattern for management interface detection', () => {
+      const paloalto = getFingerprintsByVendor('paloalto')[0];
+      const mgmtPattern = paloalto.patterns.find(
+        p => p.type === 'endpoint' && p.path === '/php/login.php'
+      );
+      expect(mgmtPattern).toBeDefined();
+      expect(mgmtPattern!.weight).toBeGreaterThanOrEqual(7);
+    });
+
+    it('/php/login.php pattern should accept 200/302/403 status codes', () => {
+      const paloalto = getFingerprintsByVendor('paloalto')[0];
+      const mgmtPattern = paloalto.patterns.find(
+        p => p.type === 'endpoint' && p.path === '/php/login.php'
+      );
+      expect(mgmtPattern).toBeDefined();
+      expect(mgmtPattern!.status).toContain(200);
+      expect(mgmtPattern!.status).toContain(302);
+      expect(mgmtPattern!.status).toContain(403);
+    });
+
+    it('/php/login.php versionExtract should parse PAN-OS version string', () => {
+      const paloalto = getFingerprintsByVendor('paloalto')[0];
+      const mgmtPattern = paloalto.patterns.find(
+        p => p.type === 'endpoint' && p.path === '/php/login.php'
+      );
+      expect(mgmtPattern?.versionExtract).toBeDefined();
+      const match = 'PAN-OS Version 11.1.4-h7'.match(mgmtPattern!.versionExtract!);
+      expect(match).not.toBeNull();
+      expect(match![1]).toBe('11.1.4');
+    });
+  });
 });
