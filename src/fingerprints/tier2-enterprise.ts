@@ -116,6 +116,41 @@ export const tier2enterpriseFingerprints: Fingerprint[] = [
         match: 'Set-Cookie: swap=',
         weight: 7,
       },
+      // SMA 1000 AMC (Appliance Management Console) - CVE-2025-23006 attack surface
+      // AMC typically runs on port 8443; body contains "Appliance Management Console"
+      {
+        type: 'endpoint',
+        path: '/appliance/home.cgi',
+        method: 'GET',
+        match: 'Appliance Management Console|SonicWall|SMA',
+        weight: 10,
+        versionExtract: /SMA.*?(\d+\.\d+\.\d+(?:\.\d+)?(?:-\d+)?)/i,
+      },
+      // SMA 1000 WorkPlace portal (end-user access portal)
+      {
+        type: 'endpoint',
+        path: '/workplace',
+        method: 'GET',
+        match: 'WorkPlace|SonicWall|SMA',
+        weight: 9,
+        versionExtract: /WorkPlace.*?v?(\d+\.\d+(?:\.\d+)*)/i,
+      },
+      // SMA 1000 REST API version endpoint (most reliable version source)
+      {
+        type: 'endpoint',
+        path: '/appliance/api/v1/version',
+        method: 'GET',
+        match: 'version|build|SMA',
+        weight: 9,
+        versionExtract: /(?:"version"|"firmware")\s*:\s*"([^"]+)"/,
+      },
+      // SMA 1000 Central Management Console (CMC) indicator
+      {
+        type: 'body',
+        path: '/',
+        match: 'Central Management Console|Appliance Management Console',
+        weight: 10,
+      },
       {
         type: 'certificate',
         match: 'SonicWall|SonicWALL',

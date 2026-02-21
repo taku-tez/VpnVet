@@ -165,6 +165,53 @@ describe('Vulnerabilities', () => {
     });
   });
 
+  describe('SonicWall SMA exploit chain CVEs (2025)', () => {
+    it('should include CVE-2025-23006 SonicWall SMA 1000 deserialization RCE (CISA KEV)', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-23006');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('critical');
+      expect(vuln!.cvss).toBe(9.8);
+      expect(vuln!.cisaKev).toBe(true);
+      expect(vuln!.exploitAvailable).toBe(true);
+      expect(vuln!.affected.some(a => a.vendor === 'sonicwall')).toBe(true);
+      expect(vuln!.affected[0].versionEnd).toBe('12.4.3-02804');
+    });
+
+    it('should include CVE-2025-32819 SonicWall SMA 100 path traversal (exploit chain step 1)', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-32819');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('high');
+      expect(vuln!.cvss).toBe(8.8);
+      expect(vuln!.exploitAvailable).toBe(true);
+      expect(vuln!.affected.some(a => a.vendor === 'sonicwall')).toBe(true);
+    });
+
+    it('should include CVE-2025-32820 SonicWall SMA 100 path traversal write (exploit chain step 2)', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-32820');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('high');
+      expect(vuln!.cvss).toBe(8.3);
+      expect(vuln!.exploitAvailable).toBe(true);
+    });
+
+    it('should include CVE-2025-32821 SonicWall SMA 100 OS cmd injection (exploit chain step 3)', () => {
+      const vuln = vulnerabilities.find(v => v.cve === 'CVE-2025-32821');
+      expect(vuln).toBeDefined();
+      expect(vuln!.severity).toBe('high');
+      expect(vuln!.cvss).toBe(7.1);
+      expect(vuln!.exploitAvailable).toBe(true);
+    });
+
+    it('all SonicWall SMA 100 chain CVEs should target same affected product', () => {
+      const chainCves = ['CVE-2025-32819', 'CVE-2025-32820', 'CVE-2025-32821'];
+      for (const cveId of chainCves) {
+        const vuln = vulnerabilities.find(v => v.cve === cveId);
+        expect(vuln).toBeDefined();
+        expect(vuln!.affected.some(a => a.product === 'SMA')).toBe(true);
+      }
+    });
+  });
+
   describe('cross-reference integrity with fingerprints', () => {
     // Products that intentionally lack fingerprints (management-plane only, not VPN endpoints)
     const KNOWN_NO_FINGERPRINT = new Set([

@@ -209,6 +209,45 @@ describe('Fingerprints', () => {
       const match = 'SonicOS 7.1.1-7040'.match(sonicui!.versionExtract!);
       expect(match?.[1]).toBe('7.1.1-7040');
     });
+
+    it('should have SMA 1000 AMC endpoint pattern (CVE-2025-23006 attack surface)', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const amcPattern = sw.patterns.find(p => p.path === '/appliance/home.cgi');
+      expect(amcPattern).toBeDefined();
+      expect(amcPattern?.weight).toBeGreaterThanOrEqual(10);
+      expect(amcPattern?.versionExtract).toBeDefined();
+    });
+
+    it('should have SMA 1000 WorkPlace portal pattern', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const wpPattern = sw.patterns.find(p => p.path === '/workplace');
+      expect(wpPattern).toBeDefined();
+      expect(wpPattern?.weight).toBeGreaterThanOrEqual(9);
+    });
+
+    it('should have SMA 1000 REST API version endpoint', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const restPattern = sw.patterns.find(p => p.path === '/appliance/api/v1/version');
+      expect(restPattern).toBeDefined();
+      expect(restPattern?.versionExtract).toBeDefined();
+    });
+
+    it('should extract SMA 1000 version from REST API response', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const restPattern = sw.patterns.find(p => p.path === '/appliance/api/v1/version');
+      const mockResponse = '{"version": "12.4.3-02758", "build": "release"}';
+      const match = mockResponse.match(restPattern!.versionExtract!);
+      expect(match?.[1]).toBe('12.4.3-02758');
+    });
+
+    it('should detect SMA 1000 AMC/CMC body pattern', () => {
+      const sw = getFingerprintsByVendor('sonicwall')[0];
+      const cmcPattern = sw.patterns.find(
+        p => p.type === 'body' && typeof p.match === 'string' && p.match.includes('Central Management Console')
+      );
+      expect(cmcPattern).toBeDefined();
+      expect(cmcPattern?.weight).toBeGreaterThanOrEqual(10);
+    });
   });
 
   describe('Sophos patterns', () => {

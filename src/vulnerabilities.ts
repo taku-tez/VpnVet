@@ -560,6 +560,79 @@ export const vulnerabilities: Vulnerability[] = [
   // ============================================================
   // SonicWall
   // ============================================================
+  // SonicWall SMA 1000 AMC/CMC pre-auth RCE via deserialization - Jan 2025 zero-day
+  // CISA KEV-listed, linked to SMA 1000 exploit chains with CVE-2025-40602
+  {
+    cve: 'CVE-2025-23006',
+    severity: 'critical',
+    cvss: 9.8,
+    description: 'SonicWall SMA 1000 Appliance Management Console (AMC) and Central Management Console (CMC) pre-authentication deserialization of untrusted data allowing unauthenticated RCE under specific conditions; zero-day exploited in the wild',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '12.4.0', versionEnd: '12.4.3-02804', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0002',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-23006',
+      'https://www.bleepingcomputer.com/news/security/sonicwall-warns-of-sma1000-rce-flaw-exploited-in-zero-day-attacks/',
+    ],
+    exploitAvailable: true,
+    cisaKev: true,
+    knownRansomware: false,
+  },
+  // SonicWall SMA 100 exploit chain (Rapid7 research, May 2025)
+  // CVE-2025-32819 + CVE-2025-32820 + CVE-2025-32821 = authenticated root RCE
+  // Start: post-auth SSLVPN user → SQLite DB delete → admin reset → /bin writable → RCE
+  {
+    cve: 'CVE-2025-32819',
+    severity: 'high',
+    cvss: 8.8,
+    description: 'SonicWall SMA 100 post-auth SSLVPN path traversal allowing deletion of arbitrary files including the SQLite authentication database, enabling admin password reset; used as first step in authenticated-to-root RCE chain',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.1.15-81sv', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0011',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-32819',
+      'https://www.rapid7.com/blog/post/2025/05/07/multiple-vulnerabilities-in-sonicwall-sma-100-series-2025/',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+    knownRansomware: false,
+  },
+  {
+    cve: 'CVE-2025-32820',
+    severity: 'high',
+    cvss: 8.3,
+    description: 'SonicWall SMA 100 post-auth path traversal allowing authenticated SSLVPN users to make arbitrary directories world-writable; second step in CVE-2025-32819/32820/32821 exploit chain leading to root RCE',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.1.15-81sv', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0011',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-32820',
+      'https://www.rapid7.com/blog/post/2025/05/07/multiple-vulnerabilities-in-sonicwall-sma-100-series-2025/',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+    knownRansomware: false,
+  },
+  {
+    cve: 'CVE-2025-32821',
+    severity: 'high',
+    cvss: 7.1,
+    description: 'SonicWall SMA 100 post-auth OS command injection via the web admin interface allowing authenticated admins to inject arbitrary commands; final step in CVE-2025-32819/32820/32821 exploit chain achieving root RCE',
+    affected: [
+      { vendor: 'sonicwall', product: 'SMA', versionStart: '10.2.0.0', versionEnd: '10.2.1.15-81sv', cpe: 'cpe:2.3:o:sonicwall:sma_firmware:*:*:*:*:*:*:*:*' },
+    ],
+    references: [
+      'https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2025-0011',
+      'https://nvd.nist.gov/vuln/detail/CVE-2025-32821',
+      'https://www.rapid7.com/blog/post/2025/05/07/multiple-vulnerabilities-in-sonicwall-sma-100-series-2025/',
+    ],
+    exploitAvailable: true,
+    cisaKev: false,
+    knownRansomware: false,
+  },
   {
     cve: 'CVE-2024-40766',
     severity: 'critical',
